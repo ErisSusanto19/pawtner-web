@@ -8,6 +8,7 @@ import ProductsPage from '../pages/petshop/products/ProductPage';
 import ProductDetailPage from '../pages/petshop/products/ProductDetailPage';
 import OrderPage from '../pages/petshop/orders/OrderPage';
 import OrderDetailPage from '../pages/petshop/orders/OrderDetailPage';
+import ServicePage from '../pages/petshop/petservice/ServicePage';
 
 const router = createBrowserRouter([
 
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
             {
                 path: 'orders/:orderId',
                 element: <OrderDetailPage />,
+            },
+            {
+                path: 'services',
+                element: <ServicePage />,
             },
             
         ],
