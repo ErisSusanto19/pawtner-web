@@ -6,6 +6,8 @@ import LoginPage from '../pages/petshop/auth/LoginPage';
 import DashboardPage from '../pages/petshop/dashboard/DashboardPage';
 import ProductsPage from '../pages/petshop/products/ProductPage';
 import ProductDetailPage from '../pages/petshop/products/ProductDetailPage';
+import OrderPage from '../pages/petshop/orders/OrderPage';
+import OrderDetailPage from '../pages/petshop/orders/OrderDetailPage';
 
 const router = createBrowserRouter([
 
@@ -14,16 +16,24 @@ const router = createBrowserRouter([
         element: <PetshopLayout />,
         children: [
             {
-            index: true,
-            element: <DashboardPage />,
+                index: true,
+                element: <DashboardPage />,
             },
             {
-            path: 'products',
-            element: <ProductsPage />,
+                path: 'products',
+                element: <ProductsPage />,
             },
             {
-            path: 'products/:productId',
-            element: <ProductDetailPage />,
+                path: 'products/:productId',
+                element: <ProductDetailPage />,
+            },
+            {
+                path: 'orders',
+                element: <OrderPage />,
+            },
+            {
+                path: 'orders/:orderId',
+                element: <OrderDetailPage />,
             },
             
         ],
