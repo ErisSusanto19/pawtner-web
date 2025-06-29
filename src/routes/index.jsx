@@ -1,11 +1,12 @@
 import { createBrowserRouter } from 'react-router-dom'
 import RegisterPage from '../pages/petshop/auth/RegisterPage'
 import LoginPage from '../pages/petshop/auth/LoginPage'
+import DashboardPage from '../pages/petshop/dashboard/DashboardPage'
 
 const router = createBrowserRouter([
     {
         path: '/',
-        element: <div className='bg-sky-200'><h1 className='text-green-400'>Yooo</h1></div>
+        element: <DashboardPage/>
     },
     {
         path: '/signup',
