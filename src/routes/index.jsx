@@ -9,6 +9,9 @@ import ProductDetailPage from '../pages/petshop/products/ProductDetailPage';
 import OrderPage from '../pages/petshop/orders/OrderPage';
 import OrderDetailPage from '../pages/petshop/orders/OrderDetailPage';
 import ServicePage from '../pages/petshop/petservice/ServicePage';
+import BookingPage from '../pages/petshop/booking/BookingPage';
+import SettingPage from '../pages/petshop/shopsettings/SettingPage';
+import BookingDetailPage from '../pages/petshop/booking/BookingDetailPage';
 
 const router = createBrowserRouter([
 
@@ -39,6 +42,18 @@ const router = createBrowserRouter([
             {
                 path: 'services',
                 element: <ServicePage />,
+            },
+            {
+                path: 'bookings',
+                element: <BookingPage />,
+            },
+            {
+                path: 'bookings/:bookingId',
+                element: <BookingDetailPage />,
+            },
+            {
+                path: 'settings',
+                element: <SettingPage />,
             },
             
         ],

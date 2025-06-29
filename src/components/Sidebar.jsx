@@ -9,7 +9,7 @@ const menuItems = [
   { name: 'Orders', icon: ShoppingCart, path: "/orders" },
   { name: 'Services', icon: Wrench, path: "/services" },
   { name: 'Bookings', icon: Calendar, path: "/bookings" },
-];
+]
 
 const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" };
 
