@@ -122,7 +122,7 @@ const RegisterPage = () => {
                 </form>
 
                 <div className="flex flex-col justify-center items-center mt-12">
-                    <p>Already have an account?  <a href="#" className="text-[#545F71] font-bold">Sign up</a></p>
+                    <p>Already have an account?  <a href="#" className="text-[#545F71] font-bold">Sign in</a></p>
                     <p>Need help? contact our support team at  <a href="#">support@pawtner.com</a></p>
                 </div>
                 
