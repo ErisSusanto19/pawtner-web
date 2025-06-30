@@ -24,6 +24,8 @@ const RegisterPage = () => {
             address: "",
             password: "",
             confirmPassword: "",
+            latitude: null,
+            longitude: null,
             //Step 2
             bussinessName: "",
             bussinessType: "",
@@ -31,6 +33,8 @@ const RegisterPage = () => {
             bussinessEmail: "",
             bussinessPhone: "",
             bussinessAddress: "",
+            bussinessLatitude: null,
+            bussinessLongitude: null,
             //Step 3
             operationHours: {
                 monday:    { isOpen: true, open: '09:00', close: '17:00' },
@@ -91,7 +95,7 @@ const RegisterPage = () => {
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     {currStep === 1 && <RegisterStep1 register={register} errors={errors} getValues={getValues} watch={watch} setValue={setValue}/>}
-                    {currStep === 2 && <RegisterStep2 register={register} errors={errors} />}
+                    {currStep === 2 && <RegisterStep2 register={register} errors={errors} setValue={setValue}/>}
                     {currStep === 3 && <RegisterStep3 register={register} errors={errors} watch={watch} getValues={getValues} setValue={setValue} />}
 
                     <div className="flex justify-between mt-6">

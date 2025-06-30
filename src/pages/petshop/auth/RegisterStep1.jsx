@@ -1,9 +1,53 @@
 import Input from '../../../components/Input'
 import TextArea from '../../../components/TextArea'
 import FileUpload from '../../../components/FileUpload'
-import { UserRound } from 'lucide-react'
+import { UserRound, MapPin } from 'lucide-react'
+import { useState } from 'react'
 
 const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
+
+    const [isLocating, setIsLocating] = useState(false)
+    const [locationError, setLocationError] = useState('')
+
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationError('Geolocation tidak didukung oleh browser Anda.')
+            return
+        }
+
+        setIsLocating(true)
+        setLocationError('')
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords
+                
+                setValue('latitude', latitude, { shouldValidate: true })
+                setValue('longitude', longitude, { shouldValidate: true })
+
+                alert(`Location retrieved successfully: Lat: ${latitude}, Long: ${longitude}`)
+                
+                setIsLocating(false)
+            },
+            (error) => {
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        setLocationError('You denied the request for location access.')
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        setLocationError('Location information is unavailable.')
+                        break;
+                    case error.TIMEOUT:
+                        setLocationError('The request to get your location timed out.')
+                        break;
+                    default:
+                        setLocationError('An unknown error occurred while retrieving your location.')
+                        break;
+                }
+                setIsLocating(false);
+            }
+        )
+    }
 
     return (
         <div className="space-y-6">
@@ -68,6 +112,22 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 register={register} 
                 errors={errors}
             />
+
+            <input type="hidden" {...register('latitude')} />
+            <input type="hidden" {...register('longitude')} />
+
+            <div className="mt-2">
+                <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={isLocating}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-[#545F71] rounded-md hover:bg-[#495057] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                    <MapPin size={16} className="mr-2" />
+                    {isLocating ? 'Searching for location...' : 'Use Current Location'}
+                </button>
+                {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
+            </div>
 
             <div className='flex space-x-4'>
                 <Input 
