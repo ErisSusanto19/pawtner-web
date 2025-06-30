@@ -11,7 +11,7 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
 
     const handleGetLocation = () => {
         if (!navigator.geolocation) {
-            setLocationError('Geolocation tidak didukung oleh browser Anda.')
+            setLocationError('Geolocation is not supported by your browser.')
             return
         }
 

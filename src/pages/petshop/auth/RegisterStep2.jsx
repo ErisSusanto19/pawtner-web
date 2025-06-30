@@ -18,7 +18,7 @@ const RegisterStep2 = ({register, errors, setValue}) => {
 
     const handleGetLocation = () => {
         if (!navigator.geolocation) {
-            setLocationError('Geolocation tidak didukung oleh browser Anda.')
+            setLocationError('Geolocation is not supported by your browser.')
             return
         }
 
@@ -87,7 +87,7 @@ const RegisterStep2 = ({register, errors, setValue}) => {
                         errors["bussinessType"] && "ring-rose-500",
                     )}
                 >
-                    <option value="" disabled>Select a type</option>
+                    <option value="" disabled className="text-sm text-gray-500">Select a type</option>
 
                     {bussinessTypeOptions.map(el => (
                         <option key={el.value} value={el.value}>{el.label}</option>

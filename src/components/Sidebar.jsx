@@ -8,7 +8,7 @@ const menuItems = [
   { name: 'Products', icon: Package, path: "/products" },
   { name: 'Orders', icon: ShoppingCart, path: "/orders" },
   { name: 'Services', icon: Wrench, path: "/services" },
-  { name: 'Bookings', icon: Calendar, path: "/bookings" },
+  { name: 'Bookings', icon: Calendar, path: "/bookings" }
 ]
 
 const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" };
@@ -18,7 +18,7 @@ const Sidebar = () => {
   return (
     <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
       
-      <div className="flex items-center p-4 space-x-3 border-b border-[#E9ECEF]">
+      <div className="flex items-center p-4 space-x-3 border-b shadow-sm border-[#E9ECEF]">
         <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
         <div>
           <h1 className="text-xl font-bold text-[#545F71]">Pawtner</h1>

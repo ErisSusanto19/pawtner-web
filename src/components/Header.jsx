@@ -29,7 +29,7 @@ const Header = ({ title, user, setSidebarOpen }) => {
   }, [])
 
   return (
-    <header className="bg-white px-4 sm:px-6 py-4 border-b border-[#E9ECEF] shadow-sm sticky top-0 z-20">
+    <header className="bg-white px-4 sm:px-6 py-4 border-b border-[#E9ECEF] shadow-sm sticky top-0">
       <div className="flex items-center justify-between">
 
         <div className="flex items-center">

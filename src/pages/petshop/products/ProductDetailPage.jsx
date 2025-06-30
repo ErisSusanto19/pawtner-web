@@ -1,16 +1,24 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { formatCurrencyIDR } from '../../../utils/formatter'
+import { useState } from 'react';
+import ProductModal from './ProductModal';
+import Button from '../../../components/Button';
 
 const dummyProducts = [
-    { id: 'prod_001', name: 'Royal Canin Maxi Adult', description: 'Dry dog food for large breed adult dogs.', imageUrl: 'https://via.placeholder.com/150', category: 'Dog Food', price: 59.99, stock: 120, status: 'In Stock' },
-    { id: 'prod_002', name: 'Catit Flower Fountain', description: 'Encourages your cat to drink more water.', imageUrl: 'https://via.placeholder.com/150', category: 'Accessories', price: 24.50, stock: 45, status: 'In Stock' },
-    { id: 'prod_003', name: 'KONG Classic Dog Toy', description: 'Durable rubber toy for chewing.', imageUrl: 'https://via.placeholder.com/150', category: 'Toys', price: 12.99, stock: 8, status: 'Low Stock' },
-    { id: 'prod_004', name: 'Orijen Cat & Kitten Food', description: 'High-protein, grain-free cat food.', imageUrl: 'https://via.placeholder.com/150', category: 'Cat Food', price: 35.00, stock: 0, status: 'Out of Stock' },
+    { id: 'prod_001', name: 'Royal Canin Maxi Adult', description: 'Dry dog food for large breed adult dogs.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 59990, stock_quantity: 120},
+    { id: 'prod_002', name: 'Catit Flower Fountain', description: 'Encourages your cat to drink more water.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'accessories', price: 24500, stock_quantity: 45},
+    { id: 'prod_003', name: 'KONG Classic Dog Toy', description: 'Durable rubber toy for chewing.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'toys', price: 12990, stock_quantity: 8},
+    { id: 'prod_004', name: 'Orijen Cat & Kitten Food', description: 'High-protein, grain-free cat food.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 35000, stock_quantity: 0},
+    { id: 'prod_005', name: 'V-X1', description: 'blablabla.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'health', price: 90000, stock_quantity: 0},
+    { id: 'prod_006', name: 'Brush teeth', description: 'blablabla', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'grooming_kit', price: 25000, stock_quantity: 2},
 ]
 
 const ProductDetailPage = () => {
     const { productId } = useParams()
+    const navigate = useNavigate()
+
+    const [isModalOpen, setIsModalOpen] = useState(false)
     
     const product = dummyProducts.find(p => p.id === productId)
 
@@ -22,7 +30,18 @@ const ProductDetailPage = () => {
                     Back to all products
                 </Link>
             </div>
-        );
+        )
+    }
+
+    const handleEdit = () => {
+        setIsModalOpen(true)
+    }
+
+    const handleDelete = () => {
+        if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
+            console.log("Deleting product with ID:", product.id);
+            navigate('/products')
+        }
     }
 
     return (
@@ -36,12 +55,19 @@ const ProductDetailPage = () => {
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-[#495057]">{product.name}</h1>
                     <div className="flex gap-2">
-                        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">
+                        <Button
+                            buttonType="button"
+                            onClick={handleEdit}
+                        >
                             <Edit size={16} /> Edit
-                        </button>
-                         <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700]">
+                        </Button>
+                        <Button
+                            buttonType="button"
+                            onClick={handleDelete}
+                            danger={true}
+                        >
                             <Trash2 size={16} /> Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -60,15 +86,15 @@ const ProductDetailPage = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-[#E9ECEF] pt-4">
                         <div>
                             <h3 className="text-xs text-[#ADB5BD] uppercase font-semibold">Price</h3>
-                            <p className="text-lg font-bold text-[#545F71] mt-1">${product.price.toFixed(2)}</p>
+                            <p className="text-lg font-bold text-[#545F71] mt-1">{formatCurrencyIDR(product.price)}</p>
                         </div>
                         <div>
                             <h3 className="text-xs text-[#ADB5BD] uppercase font-semibold">Stock</h3>
-                            <p className="text-lg font-bold text-[#545F71] mt-1">{product.stock}</p>
+                            <p className="text-lg font-bold text-[#545F71] mt-1">{product.stock_quantity}</p>
                         </div>
                          <div>
                             <h3 className="text-xs text-[#ADB5BD] uppercase font-semibold">Category</h3>
-                            <p className="text-[#495057] mt-1">{product.category}</p>
+                            <p className="text-[#495057] mt-1">{product?.category? product.category.replace('-', ' ').charAt(0).toUpperCase() + product.category.slice(1) : ""}</p>
                         </div>
                          <div>
                             <h3 className="text-xs text-[#ADB5BD] uppercase font-semibold">Product ID</h3>
@@ -77,6 +103,13 @@ const ProductDetailPage = () => {
                     </div>
                 </div>
             </div>
+
+            {isModalOpen && (
+                <ProductModal 
+                    product={product}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
         </div>
     )
 }

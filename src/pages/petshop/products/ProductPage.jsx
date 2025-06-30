@@ -2,12 +2,24 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import ProductModal from './ProductModal'
+import Button from '../../../components/Button';
+import { formatCurrencyIDR } from '../../../utils/formatter'
+
+const categoryOptions = [
+  {value: "food", label: "Food"},
+  {value: "toys", label: "Toys"},
+  {value: "accessories", label: "Accessories"},
+  {value: "health", label: "Health"},
+  {value: "grooming_kit", label: "Grooming Kit"}
+]
 
 const dummyProducts = [
-    { id: 'prod_001', name: 'Royal Canin Maxi Adult', description: 'Dry dog food for large breed adult dogs.', imageUrl: 'https://via.placeholder.com/150', category: 'Dog Food', price: 59.99, stock: 120, status: 'In Stock' },
-    { id: 'prod_002', name: 'Catit Flower Fountain', description: 'Encourages your cat to drink more water.', imageUrl: 'https://via.placeholder.com/150', category: 'Accessories', price: 24.50, stock: 45, status: 'In Stock' },
-    { id: 'prod_003', name: 'KONG Classic Dog Toy', description: 'Durable rubber toy for chewing.', imageUrl: 'https://via.placeholder.com/150', category: 'Toys', price: 12.99, stock: 8, status: 'Low Stock' },
-    { id: 'prod_004', name: 'Orijen Cat & Kitten Food', description: 'High-protein, grain-free cat food.', imageUrl: 'https://via.placeholder.com/150', category: 'Cat Food', price: 35.00, stock: 0, status: 'Out of Stock' },
+    { id: 'prod_001', name: 'Royal Canin Maxi Adult', description: 'Dry dog food for large breed adult dogs.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 59990, stock_quantity: 120},
+    { id: 'prod_002', name: 'Catit Flower Fountain', description: 'Encourages your cat to drink more water.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'accessories', price: 24500, stock_quantity: 45},
+    { id: 'prod_003', name: 'KONG Classic Dog Toy', description: 'Durable rubber toy for chewing.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'toys', price: 12990, stock_quantity: 8},
+    { id: 'prod_004', name: 'Orijen Cat & Kitten Food', description: 'High-protein, grain-free cat food.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 35000, stock_quantity: 0},
+    { id: 'prod_005', name: 'V-X1', description: 'blablabla.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'health', price: 90000, stock_quantity: 0},
+    { id: 'prod_006', name: 'Brush teeth', description: 'blablabla', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'grooming_kit', price: 25000, stock_quantity: 2},
 ]
 
 const getStatusBadge = (status) => {
@@ -30,19 +42,28 @@ const ProductsPage = () => {
     const [selectedStatus, setSelectedStatus] = useState('All')
 
     const filteredProducts = useMemo(() => {
-        return dummyProducts.filter(product => {
-    
-            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-            
-            const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+        const alarmLowStock = 10
 
-            const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus;
+        const productWithStatus = dummyProducts.map(el => {
+            let status
+            if(el.stock_quantity == 0){
+                status = "Out of Stock"
+            } else if(el.stock_quantity <= alarmLowStock){
+                status = "Low Stock"
+            } else {
+                status = "In Stock"
+            }
 
-            return matchesSearch && matchesCategory && matchesStatus;
-        });
+            return {...el, status}
+        })
+
+        return productWithStatus.filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+            const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory
+            const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus
+            return matchesSearch && matchesCategory && matchesStatus
+        })
     }, [searchTerm, selectedCategory, selectedStatus])
-
-    const categories = ['All', ...new Set(dummyProducts.map(p => p.category))]
 
     const handleAddNew = () => {
         setSelectedProduct(null)
@@ -52,6 +73,12 @@ const ProductsPage = () => {
     const handleEdit = (product) => {
         setSelectedProduct(product)
         setIsModalOpen(true)
+    }
+
+    const handleDelete = (product) => {
+        if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
+            console.log("Deleting product with ID:", product.id);
+        }
     }
 
     return (
@@ -80,12 +107,18 @@ const ProductsPage = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <select 
+                     <select 
                         className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                     >
-                        {categories.map(cat => <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : cat}</option>)}
+                        <option value="All">All Categories</option>
+                        
+                        {categoryOptions.map(cat => (
+                            <option key={cat.value} value={cat.value}>
+                                {cat.label}
+                            </option>
+                        ))}
                     </select>
                     <select 
                         className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white"
@@ -128,8 +161,8 @@ const ProductsPage = () => {
                                         </div>
                                     </td>
                                     <td className="py-3 px-4 text-[#495057]">{product.category}</td>
-                                    <td className="py-3 px-4 text-[#495057]">${product.price.toFixed(2)}</td>
-                                    <td className="py-3 px-4 text-[#495057]">{product.stock}</td>
+                                    <td className="py-3 px-4 text-[#495057]">{formatCurrencyIDR(product.price)}</td>
+                                    <td className="py-3 px-4 text-[#495057]">{product.stock_quantity}</td>
                                     <td className="py-3 px-4">
                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(product.status)}`}>
                                             {product.status}
@@ -137,18 +170,19 @@ const ProductsPage = () => {
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex items-center gap-2">
-                                            <button 
+                                            <Button
+                                                buttonType="button" 
                                                 onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
-                                                className="p-1 text-[#545F71] hover:text-blue-600"
                                             >
                                                 <Edit size={16} />
-                                            </button>
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); console.log('Delete', product.id); }}
-                                                className="p-1 text-[#545F71] hover:text-red-600"
+                                            </Button>
+                                            <Button
+                                                buttonType="button"
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(product); }}
+                                                danger={true}
                                             >
                                                 <Trash2 size={16} />
-                                            </button>
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -165,11 +199,12 @@ const ProductsPage = () => {
                 </div>
             </div>
             
-            <ProductModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
-                product={selectedProduct} 
-            />
+            {isModalOpen && (
+                <ProductModal
+                    onClose={() => setIsModalOpen(false)}
+                    product={ selectedProduct }
+                />
+            )}
         </div>
     )
 }
