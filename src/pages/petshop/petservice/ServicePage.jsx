@@ -3,12 +3,12 @@ import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import ServiceModal from './ServiceModal';
 
 const dummyServices = [
-    { id: 'svc_01', category: 'grooming', name: 'Premium Full Grooming', base_price: 55.00, capacity_per_day: 10, is_active: true },
-    { id: 'svc_02', category: 'boarding', name: 'Luxury Pet Suite (per day)', base_price: 35.00, capacity_per_day: 5, is_active: true },
-    { id: 'svc_03', category: 'veterinary', name: 'Annual Vaccination Package', base_price: 85.00, capacity_per_day: 20, is_active: true },
-    { id: 'svc_04', category: 'daycare', name: 'Full Day Playtime', base_price: 25.00, capacity_per_day: 15, is_active: true },
-    { id: 'svc_05', category: 'grooming', name: 'Basic Bath & Brush', base_price: 30.00, capacity_per_day: 15, is_active: false },
-    { id: 'svc_06', category: 'veterinary', name: 'General Health Check-up', base_price: 60.00, capacity_per_day: 25, is_active: true },
+    { id: 'svc_01', category: 'grooming', name: 'Premium Full Grooming', base_price: 55000, capacity_per_day: 10, is_active: true },
+    { id: 'svc_02', category: 'boarding', name: 'Luxury Pet Suite (per day)', base_price: 35000, capacity_per_day: 5, is_active: true },
+    { id: 'svc_03', category: 'veterinary', name: 'Annual Vaccination Package', base_price: 85000, capacity_per_day: 20, is_active: true },
+    { id: 'svc_04', category: 'daycare', name: 'Full Day Playtime', base_price: 25000, capacity_per_day: 15, is_active: true },
+    { id: 'svc_05', category: 'grooming', name: 'Basic Bath & Brush', base_price: 30000, capacity_per_day: 15, is_active: false },
+    { id: 'svc_06', category: 'veterinary', name: 'General Health Check-up', base_price: 60000, capacity_per_day: 25, is_active: true },
 ];
 
 const getStatusBadge = (isActive) => {
@@ -112,7 +112,7 @@ const ServicePage = () => {
                                         <p className="text-xs text-[#ADB5BD]">{service.id}</p>
                                     </td>
                                     <td className="py-3 px-4 text-[#495057] capitalize">{service.category}</td>
-                                    <td className="py-3 px-4 text-[#495057]">${service.base_price.toFixed(2)}</td>
+                                    <td className="py-3 px-4 text-[#495057]">Rp {service.base_price.toFixed(2)}</td>
                                     <td className="py-3 px-4 text-[#495057]">{service.capacity_per_day ?? 'N/A'}</td>
                                     <td className="py-3 px-4">
                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(service.is_active)}`}>

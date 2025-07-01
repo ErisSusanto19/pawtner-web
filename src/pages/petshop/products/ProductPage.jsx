@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import ProductModal from './ProductModal'
@@ -13,7 +13,7 @@ const categoryOptions = [
   {value: "grooming_kit", label: "Grooming Kit"}
 ]
 
-const dummyProducts = [
+export const dummyProducts = [
     { id: 'prod_001', name: 'Royal Canin Maxi Adult', description: 'Dry dog food for large breed adult dogs.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 59990, stock_quantity: 120},
     { id: 'prod_002', name: 'Catit Flower Fountain', description: 'Encourages your cat to drink more water.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'accessories', price: 24500, stock_quantity: 45},
     { id: 'prod_003', name: 'KONG Classic Dog Toy', description: 'Durable rubber toy for chewing.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'toys', price: 12990, stock_quantity: 8},
@@ -21,6 +21,41 @@ const dummyProducts = [
     { id: 'prod_005', name: 'V-X1', description: 'blablabla.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'health', price: 90000, stock_quantity: 0},
     { id: 'prod_006', name: 'Brush teeth', description: 'blablabla', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'grooming_kit', price: 25000, stock_quantity: 2},
 ]
+
+export const apiCreateProduct = async (newProductData) => {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    const newProduct = {
+        ...newProductData,
+        id: `prod_${Date.now()}`,
+        imageUrl: 'https://cdn.pixabay.com/photo/2024/08/21/10/16/helenium-8985687_1280.jpg'
+    };
+    dummyProducts.unshift(newProduct)
+    return newProduct
+}
+
+export const apiUpdateProduct = async (productId, updatedData) => {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    const index = dummyProducts.findIndex(p => p.id === productId)
+    if (index > -1) {
+        dummyProducts[index] = { ...dummyProducts[index], ...updatedData }
+        return dummyProducts[index]
+    }
+    throw new Error("Product not found for update")
+}
+
+export const apiDeleteProduct = async (productId) => {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    const index = dummyProducts.findIndex(p => p.id === productId)
+    if (index > -1) {
+        dummyProducts.splice(index, 1)
+        return { success: true }
+    }
+    throw new Error("Product not found for delete")
+}
+
+const formatCategory = (category) => {
+    return category.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+}
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -34,6 +69,10 @@ const getStatusBadge = (status) => {
 const ProductsPage = () => {
     const navigate = useNavigate()
 
+    const [products, setProducts] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
 
@@ -41,29 +80,51 @@ const ProductsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [selectedStatus, setSelectedStatus] = useState('All')
 
+    const fetchProducts = async () => {
+        setLoading(true)
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1500))
+            setProducts(dummyProducts)
+        } catch (err) {
+            setError('Failed to fetch product.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchProducts()
+    }, [])
+
     const filteredProducts = useMemo(() => {
         const alarmLowStock = 10
 
-        const productWithStatus = dummyProducts.map(el => {
-            let status
-            if(el.stock_quantity == 0){
-                status = "Out of Stock"
-            } else if(el.stock_quantity <= alarmLowStock){
-                status = "Low Stock"
-            } else {
-                status = "In Stock"
-            }
+        return products
+            .map(p => {
+                let status;
+                if (p.stock_quantity === 0) status = "Out of Stock"
+                else if (p.stock_quantity <= alarmLowStock) status = "Low Stock"
+                else status = "In Stock"
+                return { ...p, status }
+            })
+            .filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory
+                const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus
+                return matchesSearch && matchesCategory && matchesStatus
+            })
+    }, [products, searchTerm, selectedCategory, selectedStatus])
 
-            return {...el, status}
-        })
+    const handleCreateProduct = async (newData) => {
+        await apiCreateProduct(newData)
+        fetchProducts()
+    }
 
-        return productWithStatus.filter(product => {
-            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-            const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory
-            const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus
-            return matchesSearch && matchesCategory && matchesStatus
-        })
-    }, [searchTerm, selectedCategory, selectedStatus])
+    const handleUpdateProduct = async (updatedData) => {
+        if (!selectedProduct) return
+        await apiUpdateProduct(selectedProduct.id, updatedData)
+        fetchProducts()
+    }
 
     const handleAddNew = () => {
         setSelectedProduct(null)
@@ -75,11 +136,17 @@ const ProductsPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleDelete = (product) => {
+    const handleDelete = async (product) => {
         if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
-            console.log("Deleting product with ID:", product.id);
+            // await apiDeleteProduct(product.id)
+            fetchProducts()
+
+            console.log("Deleting product with ID:", product.id)
         }
     }
+
+    if (loading) return <div className="p-6 text-center">Loading products...</div>
+    if (error) return <div className="p-6 text-center text-red-600">{error}</div>
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -160,7 +227,7 @@ const ProductsPage = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="py-3 px-4 text-[#495057]">{product.category}</td>
+                                    <td className="py-3 px-4 text-[#495057]">{formatCategory(product.category)}</td>
                                     <td className="py-3 px-4 text-[#495057]">{formatCurrencyIDR(product.price)}</td>
                                     <td className="py-3 px-4 text-[#495057]">{product.stock_quantity}</td>
                                     <td className="py-3 px-4">
@@ -171,7 +238,7 @@ const ProductsPage = () => {
                                     <td className="py-3 px-4">
                                         <div className="flex items-center gap-2">
                                             <Button
-                                                buttonType="button" 
+                                                buttonType="button"
                                                 onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
                                             >
                                                 <Edit size={16} />
@@ -199,12 +266,12 @@ const ProductsPage = () => {
                 </div>
             </div>
             
-            {isModalOpen && (
-                <ProductModal
-                    onClose={() => setIsModalOpen(false)}
-                    product={ selectedProduct }
-                />
-            )}
+            <ProductModal
+                isOpen={isModalOpen}
+                product={selectedProduct}
+                onClose={() => setIsModalOpen(false)}
+                onSave={selectedProduct ? handleUpdateProduct : handleCreateProduct}
+            />
         </div>
     )
 }

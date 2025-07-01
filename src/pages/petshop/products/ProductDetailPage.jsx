@@ -1,48 +1,67 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { formatCurrencyIDR } from '../../../utils/formatter'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProductModal from './ProductModal';
 import Button from '../../../components/Button';
-
-const dummyProducts = [
-    { id: 'prod_001', name: 'Royal Canin Maxi Adult', description: 'Dry dog food for large breed adult dogs.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 59990, stock_quantity: 120},
-    { id: 'prod_002', name: 'Catit Flower Fountain', description: 'Encourages your cat to drink more water.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'accessories', price: 24500, stock_quantity: 45},
-    { id: 'prod_003', name: 'KONG Classic Dog Toy', description: 'Durable rubber toy for chewing.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'toys', price: 12990, stock_quantity: 8},
-    { id: 'prod_004', name: 'Orijen Cat & Kitten Food', description: 'High-protein, grain-free cat food.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'food', price: 35000, stock_quantity: 0},
-    { id: 'prod_005', name: 'V-X1', description: 'blablabla.', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'health', price: 90000, stock_quantity: 0},
-    { id: 'prod_006', name: 'Brush teeth', description: 'blablabla', imageUrl: 'https://cdn.pixabay.com/photo/2024/07/30/13/57/plums-8932336_1280.jpg', category: 'grooming_kit', price: 25000, stock_quantity: 2},
-]
+import { dummyProducts, apiUpdateProduct, apiDeleteProduct } from './ProductPage'
 
 const ProductDetailPage = () => {
     const { productId } = useParams()
     const navigate = useNavigate()
 
+    const [product, setProduct] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
     const [isModalOpen, setIsModalOpen] = useState(false)
-    
-    const product = dummyProducts.find(p => p.id === productId)
 
-    if (!product) {
-        return (
-            <div className="p-6 text-center">
-                <h2 className="text-xl text-[#495057]">Product not found.</h2>
-                <Link to="/products" className="text-[#545F71] hover:underline mt-4 inline-block">
-                    Back to all products
-                </Link>
-            </div>
-        )
-    }
+    useEffect(() => {
+        const fectProductById = async () => {
+            setLoading(true)
+            setError(null)
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000))
+                const selectedProduct = dummyProducts.find(p => p.id === productId)
 
-    const handleEdit = () => {
-        setIsModalOpen(true)
-    }
+                if(selectedProduct){
+                    setProduct(selectedProduct)
+                } else{
+                    throw new Error("Product not found")
+                }
+            } catch (error) {
+                setError(error.message)
+            } finally{
+                setLoading(false)
+            }
+        }
 
-    const handleDelete = () => {
+        fectProductById()
+    }, [productId])
+
+    const handleDelete = async (product) => {
         if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
+            // await apiDeleteProduct(product.id)
             console.log("Deleting product with ID:", product.id);
             navigate('/products')
         }
     }
+
+    const handleUpdateProduct = async (updatedData) => {
+        await apiUpdateProduct(product.id, updatedData)
+        setProduct(prev => ({ ...prev, ...updatedData }))
+    }
+
+    if (loading) return <div className="p-6 text-center">Loading product details...</div>
+    if (error) return (
+        <div className="p-6 text-center">
+            <h2 className="text-xl text-red-600">{error}</h2>
+            <Link to="/products" className="text-[#545F71] hover:underline mt-4 inline-block">
+                Back to all products
+            </Link>
+        </div>
+    )
+    if (!product) return null
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -57,7 +76,7 @@ const ProductDetailPage = () => {
                     <div className="flex gap-2">
                         <Button
                             buttonType="button"
-                            onClick={handleEdit}
+                            onClick={() => setIsModalOpen(true)}
                         >
                             <Edit size={16} /> Edit
                         </Button>
@@ -106,8 +125,10 @@ const ProductDetailPage = () => {
 
             {isModalOpen && (
                 <ProductModal 
+                    isOpen={isModalOpen}
                     product={product}
                     onClose={() => setIsModalOpen(false)}
+                    onSave={handleUpdateProduct}
                 />
             )}
         </div>

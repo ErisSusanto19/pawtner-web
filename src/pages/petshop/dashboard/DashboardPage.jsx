@@ -44,8 +44,8 @@ const DashboardPage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatCard title="Monthly Revenue" value="$4,250" iconName="revenue" />
-                <StatCard title="Today's Revenue" value="$189" iconName="revenue" />
+                <StatCard title="Monthly Revenue" value="Rp 4.000.000" iconName="revenue" />
+                <StatCard title="Today's Revenue" value="Rp 189.000" iconName="revenue" />
                 <StatCard title="Pending Orders" value={recentOrders.filter(o => o.status === 'Pending').length} iconName="orders" />
                 <StatCard title="Upcoming Bookings" value={upcomingBookings.length} iconName="bookings" />
             </div>

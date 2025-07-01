@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 import Input from '../../../components/Input';
@@ -15,37 +15,31 @@ const categoryProduct = [
   {value: "grooming_kit", label: "Grooming Kit"}
 ]
 
-const ProductModal = ({ onClose, product }) => {
+const ProductModal = ({isOpen, onClose, product, onSave }) => {
   const isEditMode = Boolean(product)
 
-  const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm({
-    mode: "onChange",
-    defaultValues: {
-      name: '',
-      description: '',
-      category: '',
-      price: 0,
-      stockQuantity: 0,
-      imageUrl: null,
-      isActive: true,
-    }
-  })
-
-  useEffect(() => {
-      if (isEditMode) {
-        reset(product)
-      } else {
-        reset({
+  const defaultValues = useMemo(() => {
+    return isEditMode 
+      ? product 
+      : {
           name: '',
           description: '',
           category: '',
           price: 0,
-          stockQuantity: 0,
-          imageUrl: null,
-          isActive: true,
-        })
-      }
-  }, [ product, reset, isEditMode]);
+          stock_quantity: 0,
+          image_url: null,
+          is_active: true,
+        }
+  }, [isEditMode, product])
+
+  const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm({
+    mode: "onChange",
+    defaultValues
+  })
+
+  useEffect(() => {
+    reset(defaultValues)
+  }, [defaultValues, reset])
 
   const onSubmit = (data) => {
     const finalData = {
@@ -54,19 +48,20 @@ const ProductModal = ({ onClose, product }) => {
       stock_quantity: parseInt(data.stock_quantity, 10),
     }
 
-    if (isEditMode) {
-      console.log('Updating product:', { ...product, ...finalData })
-    } else {
-      console.log('Creating new product:', finalData)
+    if (onSave) {
+      onSave(finalData)
     }
+
     onClose()
   }
 
-  const isActiveValue = watch('isActive')
+  const isActiveValue = watch('is_active')
+
+  if(!isOpen) return null
 
   return (
-    <div 
-        className="fixed inset-0 flex justify-center items-center z-50 before:absolute before:inset-0 before:bg-black before:opacity-50"
+    <div
+        className="fixed inset-0 flex justify-center items-center z-50 bg-black/50"
         onClick={onClose}
     >
 
@@ -167,9 +162,9 @@ const ProductModal = ({ onClose, product }) => {
               </div>
               
               <Input
-                id="stockQuantity"
+                id="stock_quantity"
                 label="Stock Quantity"
-                type="number"
+                buttonType="number"
                 register={register}
                 rules={{ required: 'Stock is required.', valueAsNumber: true }}
                 errors={errors}
@@ -180,7 +175,7 @@ const ProductModal = ({ onClose, product }) => {
               <label htmlFor="is_active" className="block text-sm text-gray-900 font-medium mb-2">Product Status</label>
               <div className="flex items-center gap-4">
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" id="is_active" {...register('isActive')} className="sr-only peer" />
+                  <input type="checkbox" id="is_active" {...register('is_active')} className="sr-only peer" />
                   <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-[#545F71] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#545F71]"></div>
                 </label>
                 <span className={clsx("font-medium", isActiveValue ? "text-green-600" : "text-red-600")}>
@@ -190,7 +185,7 @@ const ProductModal = ({ onClose, product }) => {
             </div>
 
             <FileUpload
-              name="imageUrl"
+              name="image_url"
               label="Profile Picture"
               accept={{ 'image/*': ['.jpeg', '.jpg', '.png'] }}
               register={register}
