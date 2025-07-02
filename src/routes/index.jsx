@@ -14,6 +14,9 @@ import SettingPage from '../pages/petshop/shopsettings/SettingPage';
 import BookingDetailPage from '../pages/petshop/booking/BookingDetailPage';
 import PaymentPage from '../pages/petshop/payments/PaymentPage';
 import PaymentDetailPage from '../pages/petshop/payments/PayementDetailPage';
+import ServiceDetailPage from '../pages/petshop/petservice/ServiceDetailPage';
+import RegisterAccountPage from '../pages/petshop/auth/RegisterAccountPage';
+import RegisterBussinessPage from '../pages/petshop/auth/RegisterBussinessPage';
 
 const router = createBrowserRouter([
 
@@ -46,6 +49,10 @@ const router = createBrowserRouter([
                 element: <ServicePage />,
             },
             {
+                path: 'services/:serviceId',
+                element: <ServiceDetailPage />,
+            },
+            {
                 path: 'bookings',
                 element: <BookingPage />,
             },
@@ -64,6 +71,10 @@ const router = createBrowserRouter([
             {
                 path: 'payments/:paymentId',
                 element: <PaymentDetailPage/>
+            },
+            {
+                path: 'register-bussiness',
+                element: <RegisterBussinessPage/>
             }
             
         ],
@@ -71,7 +82,7 @@ const router = createBrowserRouter([
       
     {
         path: 'signup',
-        element: <RegisterPage />,
+        element: <RegisterAccountPage />,
     },
     {
         path: 'signin',

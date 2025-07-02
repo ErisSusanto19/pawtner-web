@@ -1,7 +1,17 @@
 import { NavLink } from 'react-router-dom';
-import clsx from 'clsx';
 import { LayoutDashboard, Package, ShoppingCart, Wrench, Calendar, Settings, LogOut, Banknote } from 'lucide-react';
 import logoPawtner from '../assets/pawtner2.png'
+
+const getLinkClass = ({ isActive }, isDisabled) => {
+  let baseClass = 'flex items-center px-6 py-3 text-sm font-medium transition-colors'
+  if (isDisabled) {
+      return `${baseClass} text-gray-400 cursor-not-allowed`
+  }
+  if (isActive) {
+      return `${baseClass} bg-gray-200 text-[#495057]`
+  }
+  return `${baseClass} text-[#495057] hover:bg-gray-100`
+}
 
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: "/" },
@@ -12,10 +22,16 @@ const menuItems = [
   { name: 'Payments', icon: Banknote, path: "/payments" }
 ]
 
-const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" };
+const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" }
 
-const Sidebar = () => {
-  
+const DisabledAwareNavLink = ({ to, children, isDisabled }) => {
+  if (isDisabled) {
+    return <div className={getLinkClass({ isActive: false }, true)}>{children}</div>
+  }
+  return <NavLink to={to} end className={({ isActive }) => getLinkClass({ isActive }, false)}>{children}</NavLink>
+}
+
+const Sidebar = ({ menuDisabled }) => {
   return (
     <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
       
@@ -29,44 +45,29 @@ const Sidebar = () => {
 
       <nav className="flex-grow pt-6">
         {menuItems.map((item) => (
-          <NavLink
+          <DisabledAwareNavLink
             key={item.name}
             to={item.path}
-            end
-            className={({ isActive }) =>
-              clsx(
-                'flex items-center px-6 py-3 text-sm transition-colors',
-                isActive
-                  ? 'bg-[#E9ECEF] border-r-4 border-[#545F71] text-[#545F71] font-bold'
-                  : 'text-[#495057] hover:bg-[#E9ECEF] hover:text-[#545F71]'
-              )
-            }
+            isDisabled={menuDisabled}
           >
             <item.icon className="h-5 w-5 mr-4" />
             <span>{item.name}</span>
-          </NavLink>
+          </DisabledAwareNavLink>
         ))}
       </nav>
 
-      <div className="pb-4">
+      <div className="p-4 border-t border-[#E9ECEF]">
         <NavLink
           to={settingsMenuItem.path}
-          className={({ isActive }) =>
-            clsx(
-              'flex items-center px-6 py-3 text-sm transition-colors',
-              isActive
-                ? 'bg-[#E9ECEF] border-r-4 border-[#545F71] text-[#545F71] font-bold'
-                : 'text-[#495057] hover:bg-[#E9ECEF] hover:text-[#545F71]'
-            )
-          }
+          className={({ isActive }) => getLinkClass({ isActive }, false)}
         >
           <settingsMenuItem.icon className="h-5 w-5 mr-4" />
           <span>{settingsMenuItem.name}</span>
         </NavLink>
         
         <button
-          onClick={() => { console.log('Sign out clicked')}}
-          className="flex items-center w-full px-6 py-3 text-sm text-[#495057] hover:bg-[#E9ECEF] hover:text-rose-600 transition-colors"
+          onClick={() => { console.log('Sign out clicked') }}
+          className={`${getLinkClass({ isActive: false}, false)} w-full mt-1 hover:text-red-600`}
         >
           <LogOut className="h-5 w-5 mr-4" />
           <span>Sign out</span>

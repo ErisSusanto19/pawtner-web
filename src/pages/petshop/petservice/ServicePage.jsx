@@ -1,23 +1,26 @@
 import React, { useMemo, useState } from 'react';
 import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import ServiceModal from './ServiceModal';
+import { useNavigate } from 'react-router-dom';
 
-const dummyServices = [
-    { id: 'svc_01', category: 'grooming', name: 'Premium Full Grooming', base_price: 55000, capacity_per_day: 10, is_active: true },
-    { id: 'svc_02', category: 'boarding', name: 'Luxury Pet Suite (per day)', base_price: 35000, capacity_per_day: 5, is_active: true },
-    { id: 'svc_03', category: 'veterinary', name: 'Annual Vaccination Package', base_price: 85000, capacity_per_day: 20, is_active: true },
-    { id: 'svc_04', category: 'daycare', name: 'Full Day Playtime', base_price: 25000, capacity_per_day: 15, is_active: true },
-    { id: 'svc_05', category: 'grooming', name: 'Basic Bath & Brush', base_price: 30000, capacity_per_day: 15, is_active: false },
-    { id: 'svc_06', category: 'veterinary', name: 'General Health Check-up', base_price: 60000, capacity_per_day: 25, is_active: true },
-];
+export const dummyServices = [
+    { id: 'svc_01', category: 'grooming', name: 'Premium Full Grooming', description: 'Full grooming includes nail trimming, ear cleaning, and styling.', base_price: 55000, capacity_per_day: 10, is_active: true },
+    { id: 'svc_02', category: 'boarding', name: 'Luxury Pet Suite (per day)', description: 'Luxury accommodation with air conditioning and CCTV surveillance.', base_price: 35000, capacity_per_day: 5, is_active: true },
+    { id: 'svc_03', category: 'veterinary', name: 'Annual Vaccination Package', description: 'Annual vaccination package for cats and dogs.', base_price: 85000, capacity_per_day: 20, is_active: true },
+    { id: 'svc_04', category: 'daycare', name: 'Full Day Playtime', description: 'All-day supervised playtime for your pet, perfect for socialization and exercise.', base_price: 25000, capacity_per_day: 15, is_active: true },
+    { id: 'svc_05', category: 'grooming', name: 'Basic Bath & Brush', description: 'A refreshing bath and gentle brushing to keep your pet clean and comfortable.', base_price: 30000, capacity_per_day: 15, is_active: false },
+    { id: 'svc_06', category: 'veterinary', name: 'General Health Check-up', description: 'Routine health examination by a vet to ensure your pet’s overall well-being.', base_price: 60000, capacity_per_day: 25, is_active: true },
+]
 
 const getStatusBadge = (isActive) => {
     return isActive 
         ? "bg-green-100 text-green-800"
         : "bg-gray-200 text-gray-800"
-};
+}
 
 const ServicePage = () => {
+    const navigate = useNavigate()
+
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedService, setSelectedService] = useState(null)
 
@@ -106,7 +109,11 @@ const ServicePage = () => {
                         </thead>
                         <tbody>
                             {filteredServices.map((service) => (
-                                <tr key={service.id} className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA]">
+                                <tr 
+                                    key={service.id}
+                                    onClick={() => navigate(`/service/${service.id}`)}
+                                    className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA]"
+                                >
                                     <td className="py-3 px-4">
                                         <p className="font-medium text-[#545F71]">{service.name}</p>
                                         <p className="text-xs text-[#ADB5BD]">{service.id}</p>
