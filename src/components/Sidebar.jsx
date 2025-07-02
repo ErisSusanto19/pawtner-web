@@ -1,6 +1,8 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingCart, Wrench, Calendar, Settings, LogOut, Banknote } from 'lucide-react';
 import logoPawtner from '../assets/pawtner2.png'
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
 
 const getLinkClass = ({ isActive }, isDisabled) => {
   let baseClass = 'flex items-center px-6 py-3 text-sm font-medium transition-colors'
@@ -32,6 +34,17 @@ const DisabledAwareNavLink = ({ to, children, isDisabled }) => {
 }
 
 const Sidebar = ({ menuDisabled }) => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to sign out?")) {
+      dispatch(logout())
+      dispatch(clearBusinessData())
+      navigate('/signin')
+    }
+  }
+
   return (
     <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
       
@@ -66,7 +79,7 @@ const Sidebar = ({ menuDisabled }) => {
         </NavLink>
         
         <button
-          onClick={() => { console.log('Sign out clicked') }}
+          onClick={handleLogout}
           className={`${getLinkClass({ isActive: false}, false)} w-full mt-1 hover:text-red-600`}
         >
           <LogOut className="h-5 w-5 mr-4" />

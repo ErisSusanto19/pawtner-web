@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, User, ChevronDown, Menu as MenuIcon } from 'lucide-react';
 import clsx from 'clsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
+import { clearBusinessData } from '../store/slices/businessSlice'
 
-const Header = ({ title, user, setSidebarOpen }) => {
+const Header = ({ title, setSidebarOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const user = useSelector((state) => state.auth.user);
 
   const currentUser = user || {
     name: 'Shop Owner',
@@ -28,6 +36,15 @@ const Header = ({ title, user, setSidebarOpen }) => {
     }
   }, [])
 
+  const handleLogout = () => {
+    setIsDropdownOpen(false)
+    if (window.confirm("Are you sure you want to sign out?")) {
+        dispatch(logout());
+        dispatch(clearBusinessData())
+        navigate('/signin')
+    }
+  }
+
   return (
     <header className="bg-white px-4 sm:px-6 py-4 border-b border-[#E9ECEF] shadow-sm sticky top-0">
       <div className="flex items-center justify-between">
@@ -45,10 +62,10 @@ const Header = ({ title, user, setSidebarOpen }) => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <button className="p-2 text-[#ADB5BD] hover:text-[#545F71] transition-colors rounded-full hover:bg-[#E9ECEF]">
+          {/* <button className="p-2 text-[#ADB5BD] hover:text-[#545F71] transition-colors rounded-full hover:bg-[#E9ECEF]">
             <span className="sr-only">View notifications</span>
             <Bell className="h-5 w-5" />
-          </button>
+          </button> */}
 
           <div className="relative" ref={dropdownRef}>
             <button
@@ -86,7 +103,7 @@ const Header = ({ title, user, setSidebarOpen }) => {
                 </Link>
                 <button
                   onClick={() => {
-                    console.log('Sign out')
+                    handleLogout
                     setIsDropdownOpen(false)
                   }}
                   className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

@@ -6,8 +6,8 @@ const Stepper = ({ currentStep, totalSteps }) => {
   const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
   return (
-    <div className="w-full max-w-xs mx-auto mb-12">
-      <div className="flex items-center">
+    <div className="w-full mx-auto mb-12 max-w-[8rem]">
+      <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const isCompleted = currentStep > step;
           const isActive = currentStep === step;

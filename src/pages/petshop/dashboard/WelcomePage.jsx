@@ -6,7 +6,7 @@ const WelcomePage = ({ userName }) => {
     const navigate = useNavigate()
 
     const handleCreateBusiness = () => {
-        navigate('/register-bussiness')
+        navigate('/register-business')
     }
 
     return (

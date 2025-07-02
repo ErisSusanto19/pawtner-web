@@ -16,7 +16,7 @@ import PaymentPage from '../pages/petshop/payments/PaymentPage';
 import PaymentDetailPage from '../pages/petshop/payments/PayementDetailPage';
 import ServiceDetailPage from '../pages/petshop/petservice/ServiceDetailPage';
 import RegisterAccountPage from '../pages/petshop/auth/RegisterAccountPage';
-import RegisterBussinessPage from '../pages/petshop/auth/RegisterBussinessPage';
+import RegisterBusinessPage from '../pages/petshop/auth/RegisterBusinessPage';
 
 const router = createBrowserRouter([
 
@@ -73,8 +73,8 @@ const router = createBrowserRouter([
                 element: <PaymentDetailPage/>
             },
             {
-                path: 'register-bussiness',
-                element: <RegisterBussinessPage/>
+                path: 'register-business',
+                element: <RegisterBusinessPage/>
             }
             
         ],

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import ServiceModal from './ServiceModal';
 import { useNavigate } from 'react-router-dom';
+import { formatCurrencyIDR } from '../../../utils/formatter'
 
 export const dummyServices = [
     { id: 'svc_01', category: 'grooming', name: 'Premium Full Grooming', description: 'Full grooming includes nail trimming, ear cleaning, and styling.', base_price: 55000, capacity_per_day: 10, is_active: true },
@@ -111,7 +112,7 @@ const ServicePage = () => {
                             {filteredServices.map((service) => (
                                 <tr 
                                     key={service.id}
-                                    onClick={() => navigate(`/service/${service.id}`)}
+                                    onClick={() => navigate(`/services/${service.id}`)}
                                     className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA]"
                                 >
                                     <td className="py-3 px-4">
@@ -119,7 +120,7 @@ const ServicePage = () => {
                                         <p className="text-xs text-[#ADB5BD]">{service.id}</p>
                                     </td>
                                     <td className="py-3 px-4 text-[#495057] capitalize">{service.category}</td>
-                                    <td className="py-3 px-4 text-[#495057]">Rp {service.base_price.toFixed(2)}</td>
+                                    <td className="py-3 px-4 text-[#495057]">{formatCurrencyIDR(service.base_price)}</td>
                                     <td className="py-3 px-4 text-[#495057]">{service.capacity_per_day ?? 'N/A'}</td>
                                     <td className="py-3 px-4">
                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(service.is_active)}`}>

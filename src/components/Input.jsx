@@ -16,6 +16,9 @@ const Input = ({label, id, type, disabled, register, rules = {}, errors}) => {
             {label && (
                 <label htmlFor={id} className="block text-sm text-gray-900 font-medium mb-2">
                     {label}
+                    {rules?.required && (
+                        <span className="text-red-500"> *</span>
+                    )}
                 </label>
             )}
 

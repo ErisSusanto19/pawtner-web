@@ -3,9 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
 import logoPawtner from '@/assets/pawtner2.png'
+import { useDispatch, useSelector } from 'react-redux'
+import { loginUser, registerUser } from '../../../store/slices/authSlice';
+import { useEffect } from 'react';
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { isLoading, error, isAuthenticated } = useSelector((state) => state.auth)
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     mode: 'onChange',
@@ -16,10 +21,14 @@ const LoginPage = () => {
   })
 
   const onSubmit = (data) => {
-    console.log('Login data submitted:', data)
-    alert('Login attempt with email: ' + data.email)
-    navigate("/")
+    dispatch(loginUser(data))
   }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
 
   return (
     <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
@@ -64,8 +73,10 @@ const LoginPage = () => {
             />
           </div>
 
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
           <Button buttonType="submit" fullWidth>
-            Sign In
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>
 

@@ -95,7 +95,7 @@ const ServiceDetailPage = () => {
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
 
             <div>
-                <Link to="/petshop/services" className="flex items-center gap-2 text-sm text-[#545F71] hover:text-[#495057] mb-4">
+                <Link to="/services" className="flex items-center gap-2 text-sm text-[#545F71] hover:text-[#495057] mb-4">
                     <ArrowLeft size={16} /> Back to Services
                 </Link>
                 <div className="flex justify-between items-center">

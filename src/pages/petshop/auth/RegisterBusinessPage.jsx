@@ -1,18 +1,13 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import Stepper from '../../../components/Stepper';
 import Button from '../../../components/Button';
-import RegisterStep2 from '../auth/RegisterStep2'
-import RegisterStep3 from '../auth/RegisterStep3'
+import RegisterStep2 from './RegisterStep2'
+import RegisterStep3 from './RegisterStep3'
 import { ChevronLeft } from 'lucide-react';
-
-const apiCreateBusiness = async (data) => {
-    await new Promise(resolve => setTimeout(resolve, 800))
-    const response = "Success create bussiness"
-    console.log(data, 'request successs')
-    return response
-}
+import { useDispatch, useSelector } from 'react-redux';
+import { createBusiness } from '../../../store/slices/businessSlice'
 
 const TOTAL_STEPS = 2
 
@@ -20,8 +15,13 @@ const RegisterBusinessPage = () => {
     const [currStep, setCurrStep] = useState(1)
     const navigate = useNavigate()
 
-    const { register, handleSubmit, formState: { errors }, trigger, watch, setValue, getValues } = useForm({
-        mode: "onBlur",
+    const dispatch = useDispatch()
+    const { isLoading, status: businessStatus, error } = useSelector((state) => state.business)
+
+    const [isStepValid, setIsStepValid] = useState(false)
+
+    const { register, handleSubmit, formState: { errors, isValid }, trigger, watch, setValue, getValues } = useForm({
+        mode: "onChange",
         defaultValues: {
             //Step 2
             bussinessName: "",
@@ -69,17 +69,17 @@ const RegisterBusinessPage = () => {
     }
 
     const onSubmit = async (data) => {
-        console.log("Submitting business data:", data)
+        dispatch(createBusiness(data))
+    }
 
-        try {
-            const response = await apiCreateBusiness(data)
+    const hasBusiness = useSelector((state) => state.auth.user?.hasBusiness)
+    // const hasBusiness = true
+    useEffect(() => {
+        if (hasBusiness) {
             alert("Your business profile has been created successfully!")
             navigate('/')
-        } catch (error) {
-            console.error("Failed to create business:", error)
-            alert("Failed to create business profile. Please try again.")
         }
-    };
+    }, [hasBusiness, navigate])
 
     return (
         <div className="p-4 sm:p-6 md:p-8">
@@ -95,6 +95,8 @@ const RegisterBusinessPage = () => {
                     {currStep === 1 && <RegisterStep2 register={register} errors={errors} setValue={setValue} />}
                     {currStep === 2 && <RegisterStep3 register={register} errors={errors} watch={watch} getValues={getValues} setValue={setValue} />}
                     
+                    {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
+
                     <div className="flex justify-between mt-8 pt-6 border-t">
                         <Button
                             buttonType="button"
@@ -109,13 +111,14 @@ const RegisterBusinessPage = () => {
                             <button
                                 type="button" 
                                 onClick={handleNext}
-                                className="flex justify-center items-center py-2 px-3 text-sm text-gray-300 font-semibold rounded-md bg-[#545F71] hover:bg-[#353f52] focus:outline-[#353f52]"
+                                disabled={!isValid || isLoading}
+                                className="flex justify-center items-center py-2 px-3 text-sm text-white font-semibold rounded-md bg-[#545F71] hover:bg-[#353f52] focus:outline-[#353f52]"
                             >
                                 Next Step
                             </button>
                         ) : (
                             <Button buttonType="submit">
-                                Finish & Create Business
+                                {isLoading ? 'Creating Business...' : 'Finish & Create Business'}
                             </Button>
                         )}
                     </div>

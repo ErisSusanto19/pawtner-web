@@ -75,7 +75,13 @@ const RegisterStep2 = ({register, errors, setValue}) => {
             />
 
             <div className="w-full">
-                <label htmlFor="bussinessType" className="block text-sm text-gray-900 font-medium mb-2">Bussiness Type</label>
+                <label 
+                    htmlFor="bussinessType" 
+                    className="block text-sm text-gray-900 font-medium mb-2"
+                >
+                    Bussiness Type
+                    <span className="text-red-500"> *</span>
+                </label>
                 <select 
                     id="bussinessType" 
                     name="bussinessType"

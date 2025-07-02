@@ -85,7 +85,7 @@ const FileUpload = ({ name, label, register, setValue, watch, accept, errors, ru
               <span className="font-semibold text-[#545F71]">Click to upload</span> or drag and drop
             </p>
             <p className="text-xs text-[#ADB5BD]">
-              PNG, JPG, PDF, etc. up to 10MB
+              PNG, JPG, PDF, etc. up to 2MB
             </p>
           </div>
         )}
