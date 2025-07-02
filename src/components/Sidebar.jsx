@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
-import { LayoutDashboard, Package, ShoppingCart, Wrench, Calendar, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Wrench, Calendar, Settings, LogOut, Banknote } from 'lucide-react';
 import logoPawtner from '../assets/pawtner2.png'
 
 const menuItems = [
@@ -8,7 +8,8 @@ const menuItems = [
   { name: 'Products', icon: Package, path: "/products" },
   { name: 'Orders', icon: ShoppingCart, path: "/orders" },
   { name: 'Services', icon: Wrench, path: "/services" },
-  { name: 'Bookings', icon: Calendar, path: "/bookings" }
+  { name: 'Bookings', icon: Calendar, path: "/bookings" },
+  { name: 'Payments', icon: Banknote, path: "/payments" }
 ]
 
 const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" };
@@ -21,7 +22,7 @@ const Sidebar = () => {
       <div className="flex items-center p-4 space-x-3 border-b shadow-sm border-[#E9ECEF]">
         <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
         <div>
-          <h1 className="text-xl font-bold text-[#545F71]">Pawtner</h1>
+          <h2 className="text-xl font-bold text-[#545F71]">Pawtner</h2>
           <p className="text-xs text-[#ADB5BD]">Business Panel</p>
         </div>
       </div>

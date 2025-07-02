@@ -1,7 +1,7 @@
-import { DollarSign, Package, ShoppingCart, Calendar } from 'lucide-react';
+import { HandCoins, Package, ShoppingCart, Calendar } from 'lucide-react';
 
 const iconMap = {
-    revenue: DollarSign,
+    revenue: HandCoins,
     products: Package,
     orders: ShoppingCart,
     bookings: Calendar
@@ -9,7 +9,7 @@ const iconMap = {
 
 const StatCard = ({ title, value, iconName }) => {
 
-  const IconComponent = iconMap[iconName] || DollarSign
+  const IconComponent = iconMap[iconName] || HandCoins
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 transition-transform transform hover:-translate-y-1">
