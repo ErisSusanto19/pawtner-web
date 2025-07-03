@@ -12,7 +12,7 @@ const LoginPage = () => {
   const dispatch = useDispatch()
   const { isLoading, error, isAuthenticated } = useSelector((state) => state.auth)
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors, isValid } } = useForm({
     mode: 'onChange',
     defaultValues: {
       email: '',
@@ -75,7 +75,7 @@ const LoginPage = () => {
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-          <Button buttonType="submit" fullWidth>
+          <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
             {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>

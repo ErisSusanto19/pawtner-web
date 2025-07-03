@@ -12,7 +12,7 @@ const bussinessTypeOptions = [
     {value: "HYBRID", label: "Hybrid"},
 ]
 
-const RegisterStep2 = ({register, errors, setValue}) => {
+const RegisterStep2 = ({register, errors, setValue, watch}) => {
     const [isLocating, setIsLocating] = useState(false)
     const [locationError, setLocationError] = useState('')
 

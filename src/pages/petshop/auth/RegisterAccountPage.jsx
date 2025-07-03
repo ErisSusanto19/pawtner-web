@@ -1,10 +1,11 @@
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import logoPawtner from '@/assets/pawtner2.png';
 import Button from '../../../components/Button';
 import RegisterStep1 from './RegisterStep1';
 import { useDispatch, useSelector } from 'react-redux'
 import { registerUser } from '../../../store/slices/authSlice';
+import { useEffect } from 'react';
 
 const RegisterAccountPage = () => {
     const navigate = useNavigate()
@@ -31,6 +32,13 @@ const RegisterAccountPage = () => {
         dispatch(registerUser(userData))
     }
 
+    useEffect(() => {
+        if (message && !error) {
+            const email = getValues('email')
+            navigate('/verify-email', { state: { email: email } })
+        }
+    }, [message, error, navigate, getValues])
+
     return (
         <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-8">
             <div className="bg-white w-11/12 md:max-w-2xl p-6 md:p-8 rounded-xl shadow-lg">
@@ -55,14 +63,14 @@ const RegisterAccountPage = () => {
                     </div>
 
                     <div className="mt-4">
-                        <Button buttonType="submit" fullWidth>
+                        <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
                             {isLoading ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </div>
                 </form>
 
                 <div className="text-center mt-8 text-sm">
-                    <p>Already have an account? <a href="/signin" className="text-[#545F71] font-bold hover:underline">Sign in</a></p>
+                    <p>Already have an account? <Link to="/signin" className="text-[#545F71] font-bold hover:underline">Sign in</Link></p>
                 </div>
             </div>
         </div>

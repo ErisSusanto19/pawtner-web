@@ -3,6 +3,7 @@ import { LayoutDashboard, Package, ShoppingCart, Wrench, Calendar, Settings, Log
 import logoPawtner from '../assets/pawtner2.png'
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
+import { clearBusinessData } from '../store/slices/businessSlice';
 
 const getLinkClass = ({ isActive }, isDisabled) => {
   let baseClass = 'flex items-center px-6 py-3 text-sm font-medium transition-colors'
@@ -33,6 +34,8 @@ const DisabledAwareNavLink = ({ to, children, isDisabled }) => {
   return <NavLink to={to} end className={({ isActive }) => getLinkClass({ isActive }, false)}>{children}</NavLink>
 }
 
+const alwaysEnabledPaths = ['/', '/settings']
+
 const Sidebar = ({ menuDisabled }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -57,16 +60,19 @@ const Sidebar = ({ menuDisabled }) => {
       </div>
 
       <nav className="flex-grow pt-6">
-        {menuItems.map((item) => (
-          <DisabledAwareNavLink
-            key={item.name}
-            to={item.path}
-            isDisabled={menuDisabled}
-          >
-            <item.icon className="h-5 w-5 mr-4" />
-            <span>{item.name}</span>
-          </DisabledAwareNavLink>
-        ))}
+        {menuItems.map((item) => {
+          const isItemDisabled = menuDisabled && !alwaysEnabledPaths.includes(item.path);
+          return (
+            <DisabledAwareNavLink
+              key={item.name}
+              to={item.path}
+              isDisabled={isItemDisabled}
+            >
+              <item.icon className="h-5 w-5 mr-4" />
+              <span>{item.name}</span>
+            </DisabledAwareNavLink>
+          )
+        })}
       </nav>
 
       <div className="p-4 border-t border-[#E9ECEF]">

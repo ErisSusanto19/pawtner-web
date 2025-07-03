@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import WelcomePage from '../pages/petshop/dashboard/WelcomePage';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import CompleteProfileBanner from '../components/CompleteProfileBanner';
 
 const getTitleFromPath = (path) => {
   if (path === '/') return 'Dashboard'
@@ -18,36 +18,16 @@ const getTitleFromPath = (path) => {
 const PetshopLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-
-  const { user, isAuthenticated, status } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.auth)
 
   const title = getTitleFromPath(location.pathname)
 
-  useEffect(() => {
-    if (!isAuthenticated && status !== 'loading') {
-      navigate('/signin')
-    }
-    
-    // if (isAuthenticated && !user && status === 'idle') {
-    //   dispatch(fetchUserProfile()); 
-    // }
+  const menuDisabled = user && !user.hasBusiness
 
-  }, [isAuthenticated, status, user, navigate, dispatch])
+  const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/'
 
-  const isBusinessOwnerWithoutBusiness = user && user.role === 'business_owner' && !user.hasBusiness
-  const isOnCreateBusinessPage = location.pathname === '/register-business'
-
-  const showWelcomePage = isBusinessOwnerWithoutBusiness && !isOnCreateBusinessPage
-  const menuDisabled = isBusinessOwnerWithoutBusiness
-
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <p>Loading application...</p>
-      </div>
-    )
+  if (!user) {
+    return null
   }
 
   return (
@@ -60,12 +40,12 @@ const PetshopLayout = ({ children }) => {
 
       <div className="flex flex-col flex-1 w-0">
         <Header title={title} setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-y-auto focus:outline-none">
-          {showWelcomePage ? (
-            <WelcomePage userName={user.name} />
-          ) : (
-            <Outlet />
-          )}
+        <main className="flex-1 overflow-y-auto focus:outline-none p-4 sm:p-6">
+
+          {shouldShowBanner && <CompleteProfileBanner />}
+
+          <Outlet />
+
         </main>
       </div>
     </div>

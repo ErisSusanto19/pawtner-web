@@ -7,6 +7,7 @@ const initialState = {
   isLoading: false,
   error: null,
   message: null,
+  status: 'idle',
 }
 
 const authSlice = createSlice({
@@ -17,11 +18,13 @@ const authSlice = createSlice({
       state.isLoading = true
       state.error = null
       state.message = null
+      state.status = 'loading'
     },
 
     registerSuccess: (state, action) => {
       state.isLoading = false
       state.message = action.payload.message
+      state.status = 'registered'
     },
 
     loginSuccess: (state, action) => {
@@ -29,17 +32,19 @@ const authSlice = createSlice({
       state.isAuthenticated = true
       state.user = action.payload.user
       state.token = action.payload.token
+      state.status = 'succeeded'
+      state.message = null
+      state.error = null
     },
 
     authFail: (state, action) => {
       state.isLoading = false
       state.error = action.payload.error
+      state.status = 'failed'
     },
 
     logoutSuccess: (state) => {
-      state.user = null
-      state.isAuthenticated = false
-      state.token = null
+      Object.assign(state, { ...initialState, token: null, isAuthenticated: false, status: 'idle' })
     },
 
     updateUserBusinessStatus: (state, action) => {

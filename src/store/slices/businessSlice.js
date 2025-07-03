@@ -5,6 +5,7 @@ const initialState = {
   details: null,
   isLoading: false,
   error: null,
+  status: 'idle',
 }
 
 const businessSlice = createSlice({
@@ -14,19 +15,20 @@ const businessSlice = createSlice({
     businessOperationStart: (state) => {
       state.isLoading = true
       state.error = null
+      state.status = 'loading'
     },
     businessOperationSuccess: (state, action) => {
       state.isLoading = false;
       state.details = action.payload.businessDetails
+      state.status = 'succeeded'
     },
     businessOperationFail: (state, action) => {
       state.isLoading = false
       state.error = action.payload.error
+       state.status = 'failed'
     },
     clearBusinessData: (state) => {
-      state.details = null
-      state.isLoading = false
-      state.error = null
+      Object.assign(state, initialState)
     },
   },
 })

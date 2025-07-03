@@ -1,9 +1,18 @@
+import { useSelector } from 'react-redux';
 import StatCard from '../../../components/StatCard';
 import { PlusCircle } from 'lucide-react';
+import WelcomePage from './WelcomePage';
 
 const DashboardPage = () => {
+    const user = useSelector((state) => state.auth.user);
+    const business = useSelector((state) => state.business.details);
 
-    const businessName = "Pawtner Pet Shop"
+    if (!user || !user.hasBusiness) {
+        return <WelcomePage userName={user?.name || 'there'} />
+    }
+
+    const businessName = business?.name || "Your Business"
+    
     const recentOrders = [
         { id: '#ORD123', item: 'Royal Canin Mini Adult - 8kg', status: 'Pending' },
         { id: '#ORD122', item: 'Cat Tree Condo', status: 'Shipped' },
