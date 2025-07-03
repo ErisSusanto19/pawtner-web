@@ -46,7 +46,7 @@ const RegisterStep3 = ({register, errors, watch, getValues, setValue}) => {
                         )}
                     />
                     <label htmlFor="hasEmergencyServices" className="block text-sm text-gray-900 font-medium ml-2">
-                        This business offers an on-call emergency phone service
+                        Offers an on-call emergency phone service
                     </label>
                 </div>
                 <p className="text-sm text-gray-500">
@@ -91,7 +91,7 @@ const RegisterStep3 = ({register, errors, watch, getValues, setValue}) => {
                 />
             </div>
 
-            <div lassName="pt-6 border-t border-gray-200 space-y-4">
+            <div className="pt-6 border-t border-gray-200 space-y-4">
                 <AgreementCheckbox
                     id="termsAccepted"
                     label="I agree to the"

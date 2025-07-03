@@ -24,7 +24,7 @@ const PetshopLayout = ({ children }) => {
 
   const menuDisabled = user && !user.hasBusiness
 
-  const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/'
+  const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/' && location.pathname !== '/register-business'
 
   if (!user) {
     return null

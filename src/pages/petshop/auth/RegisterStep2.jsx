@@ -4,7 +4,7 @@ import TextArea from '../../../components/TextArea'
 import clsx from 'clsx'
 import { Building2, MapPin } from 'lucide-react'
 
-const bussinessTypeOptions = [
+const businessTypeOptions = [
     {value: "VETERINARY_CLINIC", label: "Veterinary Clinic"},
     {value: "PET_SHOP", label: "Pet Shop"},
     {value: "GROOMING_SALON", label: "Grooming Salon"},
@@ -29,8 +29,8 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
             (position) => {
                 const { latitude, longitude } = position.coords
                 
-                setValue('bussinessLatitude', latitude, { shouldValidate: true })
-                setValue('bussinessLongitude', longitude, { shouldValidate: true })
+                setValue('businessLatitude', latitude, { shouldValidate: true })
+                setValue('businessLongitude', longitude, { shouldValidate: true })
 
                 alert(`Location retrieved successfully: Lat: ${latitude}, Long: ${longitude}`)
                 
@@ -60,57 +60,57 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
         <div className="space-y-6">
             <div className="flex">
                 <Building2 size={20} className="text-[#545F71] font-bold"/>
-                <p className="text-[#545F71] font-medium ml-2">Bussiness Information</p>
+                <p className="text-[#545F71] font-medium ml-2">Business Information</p>
             </div>
 
             <Input 
-                id="bussinessName" 
-                label="Bussiness Name" 
+                id="businessName" 
+                label="Business Name" 
                 type="text" 
                 register={register} 
                 errors={errors}
                 rules={{
-                    required: {value: true, message: "Bussiness name is required"}, 
+                    required: {value: true, message: "Business name is required"}, 
                 }}
             />
 
             <div className="w-full">
                 <label 
-                    htmlFor="bussinessType" 
+                    htmlFor="businessType" 
                     className="block text-sm text-gray-900 font-medium mb-2"
                 >
-                    Bussiness Type
+                    Business Type
                     <span className="text-red-500"> *</span>
                 </label>
                 <select 
-                    id="bussinessType" 
-                    name="bussinessType"
-                    {...register("bussinessType", {
-                        required: {value: true, message: "Bussiness type is required"}
+                    id="businessType" 
+                    name="businessType"
+                    {...register("businessType", {
+                        required: {value: true, message: "Business type is required"}
                     })}
                     className={clsx(
                         "block w-full border rounded-md border-[#545F71] focus:outline-none p-1.5 focus:ring focus:ring-[#545F71] focus:border-none shadow-md",
-                        errors["bussinessType"] && "ring-rose-500",
+                        errors["businessType"] && "ring-rose-500",
                     )}
                 >
                     <option value="" disabled className="text-sm text-gray-500">Select a type</option>
 
-                    {bussinessTypeOptions.map(el => (
+                    {businessTypeOptions.map(el => (
                         <option key={el.value} value={el.value}>{el.label}</option>
                     ))}
 
                 </select>
 
-                {errors["bussinessType"] && (
+                {errors["businessType"] && (
                     <p className="text-rose-500 text-sm mt-1">
-                        {errors["bussinessType"].message}
+                        {errors["businessType"].message}
                     </p>
                 )}
             </div>
 
             <TextArea 
-                id="bussinessDescription" 
-                label="Bussiness Description" 
+                id="businessDescription" 
+                label="Business Description" 
                 rows={3} 
                 register={register} 
                 errors={errors}
@@ -118,40 +118,40 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
 
             <div className="flex space-x-4">
                 <Input 
-                    id="bussinessEmail" 
-                    label="Bussiness Email" 
+                    id="businessEmail" 
+                    label="Business Email" 
                     type="email" 
                     register={register} 
                     errors={errors}
                     rules={{
-                        required: {value: true, message: "Bussiness email is required"}, 
+                        required: {value: true, message: "Business email is required"}, 
                         pattern: {value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/, message: "Please use a valid email address"}
                     }}
                 />
 
                 <Input 
-                    id="bussinessPhone" 
-                    label="Bussiness Phone" 
+                    id="businessPhone" 
+                    label="Business Phone" 
                     type="tel" 
                     register={register} 
                     errors={errors}
                     rules={{
-                        required: {value: true, message: "Bussiness email is required"},
+                        required: {value: true, message: "Business email is required"},
                         pattern: {value: /^(\+62|62|0)8[0-9]{8,15}$/, message: "Please use a valid phone number"}
                     }}
                 />
             </div>
 
             <TextArea 
-                id="bussinessAddress"
-                label="Bussiness Address" 
+                id="businessAddress"
+                label="Business Address" 
                 rows={3}
                 register={register} 
                 errors={errors}
             />
 
-            <input type="hidden" {...register('bussinessLatitude')} />
-            <input type="hidden" {...register('bussinessLongitude')} />
+            <input type="hidden" {...register('businessLatitude')} />
+            <input type="hidden" {...register('businessLongitude')} />
 
             <div className="mt-2">
                 <button

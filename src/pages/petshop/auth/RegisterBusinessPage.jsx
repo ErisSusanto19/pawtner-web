@@ -12,12 +12,12 @@ import { createBusiness } from '../../../store/slices/businessSlice'
 const TOTAL_STEPS = 2
 
 const stepFields = {
-    1: ["bussinessName", "bussinessType", "bussinessEmail", "bussinessPhone", "bussinessAddress"],
+    1: ["businessName", "businessType", "businessEmail", "businessPhone", "businessAddress"],
     2: ["termsAccepted", "privacyAccepted"]
 }
 
 const requiredFieldsByStep = {
-    1: ["bussinessName", "bussinessType", "bussinessEmail", "bussinessPhone"],
+    1: ["businessName", "businessType", "businessEmail", "businessPhone"],
     2: ["termsAccepted", "privacyAccepted"]
 }
 
@@ -35,14 +35,14 @@ const RegisterBusinessPage = () => {
         mode: "onChange",
         defaultValues: {
             //Step 2
-            bussinessName: "",
-            bussinessType: "",
-            bussinessDescription: "",
-            bussinessEmail: "",
-            bussinessPhone: "",
-            bussinessAddress: "",
-            bussinessLatitude: null,
-            bussinessLongitude: null,
+            businessName: "",
+            businessType: "",
+            businessDescription: "",
+            businessEmail: "",
+            businessPhone: "",
+            businessAddress: "",
+            businessLatitude: null,
+            businessLongitude: null,
             //Step 3
             operationHours: { 
                 monday:    { isOpen: true, open: '09:00', close: '17:00' },
