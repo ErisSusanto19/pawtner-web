@@ -23,6 +23,11 @@ import AuthGuard from '../pages/petshop/guard/AuthGuard';
 import BusinessSetupGuard from '../pages/petshop/guard/BusinessSetupGuard';
 import VerifyEmailGuard from '../pages/petshop/guard/VerifyEmailGuard';
 
+import AdminRootLayout from '../layouts/AdminRootLayout';
+import AdminLayout from '../layouts/AdminLayout';
+import AdminDashboardPage from '../pages/admin/dashboard/AdminDashboardPage';
+import AdminLoginPage from '../pages/admin/auth/LoginPage';
+
 const router = createBrowserRouter([
     {
         element: <RootLayout/>,
@@ -95,7 +100,6 @@ const router = createBrowserRouter([
                     
                 ],
             },
-
         ]
     },
 
@@ -117,6 +121,27 @@ const router = createBrowserRouter([
             },
         ],
     },
+
+    {
+        path: '/admin',
+        element: <AdminRootLayout/>,
+        children: [
+            {
+                element: <AdminLayout/>,
+                children: [
+                    {
+                        path: '/admin/dashboard',
+                        element: <AdminDashboardPage/>
+                    }
+                ]
+            }
+        ]
+    },
+
+    {
+        path: '/admin/login',
+        element: <AdminLoginPage/>
+    }
   
 ])
 

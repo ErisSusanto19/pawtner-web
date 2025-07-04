@@ -32,7 +32,7 @@ const LoginPage = () => {
 
   return (
     <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-lg space-y-8">
+      <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl space-y-8">
 
         <div className="text-center">
           <img 
