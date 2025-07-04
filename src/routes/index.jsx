@@ -29,6 +29,8 @@ import AdminLoginPage from '../pages/admin/auth/LoginPage';
 import AdminDashboardPage from '../pages/admin/dashboard/AdminDashboardPage';
 import UserManagementPage from '../pages/admin/user-management/UserManagementPage';
 import UserDetailPage from '../pages/admin/user-management/UserDetailPage';
+import BusinessManagementPage from '../pages/admin/business-management/BusinessManagementPage';
+import BusinessDetailPage from '../pages/admin/business-management/BusinessDetailPage';
 
 
 const router = createBrowserRouter([
@@ -143,6 +145,14 @@ const router = createBrowserRouter([
                     {
                         path: '/admin/users/:userId',
                         element: <UserDetailPage/>
+                    },
+                    {
+                        path: '/admin/businesses',
+                        element: <BusinessManagementPage/>
+                    },
+                    {
+                        path: '/admin/businesses/:businessId',
+                        element: <BusinessDetailPage/>
                     }
                 ]
             }

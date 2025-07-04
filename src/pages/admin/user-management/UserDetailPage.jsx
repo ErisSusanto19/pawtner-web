@@ -78,12 +78,12 @@ const AdminActionsCard = ({ user, onAction }) => (
                 </button>
             </div>
 
-            <div>
+            {/* <div>
                 <p className="text-sm font-semibold mb-2">Password</p>
                 <button onClick={() => onAction('reset_password')} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-800 bg-blue-100 rounded-md hover:bg-blue-200">
                     <Lock size={16} /> Send Password Reset Link
                 </button>
-            </div>
+            </div> */}
         </div>
     </div>
 )

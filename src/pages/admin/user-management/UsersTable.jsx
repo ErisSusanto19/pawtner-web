@@ -66,7 +66,6 @@ const UsersTable = ({ users, onAction }) => {
                 {new Date(user.created_at).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                {/* Di dunia nyata, ini akan menjadi komponen dropdown */}
                 <Link to={`/admin/users/${user.id}`} className="text-gray-600 hover:text-gray-900">
                   View
                 </Link>
