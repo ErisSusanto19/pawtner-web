@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { updateUserBusinessStatus } from './authSlice';
+import * as businessApi from '../../api/businessApi'
+import { formatToBackendHours, formatToFrontendHours } from '../../utils/formatter'
 
 const initialState = {
   details: null,
@@ -41,89 +43,101 @@ export const {
 } = businessSlice.actions
 
 export const createBusiness = (formData) => {
+  console.log(formData, '<<< cek form data');
+  
   return async (dispatch, getState) => {
-    dispatch(businessOperationStart());
+    dispatch(businessOperationStart())
 
     try {
-      const dataForApi = {
-        name: formData.businessName,
-        description: formData.businessDescription,
-        business_type: formData.businessType,
-        business_email: formData.businessEmail,
-        business_phone: formData.businessPhone,
-        address: formData.businessAddress,
-        latitude: formData.businessLatitude,
-        longitude: formData.businessLongitude,
-        has_emergency_services: formData.hasEmergencyServices,
-        emergency_phone: formData.emergencyPhone,
-        business_image_url: formData.businessImageUrl?.name,
-        certificate_image_url: formData.certificateImageUrl?.name,
+      const dataToSend = { ...formData }
+      console.log(dataToSend, '<<< cek dataToSend');
+      
 
-        operation_hours: Object.keys(formData.operationHours).map(day => {
-            const dayData = formData.operationHours[day];
-            return {
-                day: day.charAt(0).toUpperCase() + day.slice(1),
-                isOpen: dayData.isOpen,
-                open: dayData.open,
-                close: dayData.close
-            }
-        })
+      if (dataToSend.operationHours) {
+        dataToSend.operationHours = formatToBackendHours(dataToSend.operationHours)
       }
 
-      console.log("Simulating API call with snake_case data:", dataForApi)
-      await new Promise(res => setTimeout(res, 1000))
-      
-      const newBusinessDetails = {
-        id: 101,
-        ownerId: 'uuid-123-abc',
-        name: dataForApi.name,
-        description: dataForApi.description,
-        businessType: dataForApi.business_type,
-        businessEmail: dataForApi.business_email,
-        businessPhone: dataForApi.business_phone,
-        businessImageUrl: dataForApi.business_image_url,
-        certificateImageUrl: dataForApi.certificate_image_url,
-        hasEmergencyServices: dataForApi.has_emergency_services,
-        emergencyPhone: dataForApi.emergency_phone,
-        address: dataForApi.address,
-        latitude: dataForApi.latitude,
-        longitude: dataForApi.longitude,
+      delete dataToSend.termsAccepted
+      delete dataToSend.privacyAccepted
 
-        operationHours: dataForApi.operation_hours,
-      }
+      const businessImageFile = formData.businessImageUrl
+      const certificateFile = formData.certificateImageUrl
       
-      console.log("Saving camelCase data to Redux state & localStorage:", newBusinessDetails)
+      // Hapus properti file dari objek JSON agar tidak terkirim dua kali
+      delete formData.businessImageUrl;
+      delete formData.certificateImageUrl;
+
+      dataToSend.latitude = String(dataToSend.latitude)
+      dataToSend.longitude = String(dataToSend.longitude)
+
+      console.log("Data being sent to API after transformation:", dataToSend)
+
+      const apiFormData = new FormData()
+
+      apiFormData.append(
+        'business', 
+        new Blob([JSON.stringify(dataToSend)], { type: "application/json" })
+      )
+
+      if (businessImageFile) {
+        apiFormData.append('businessImageFile', businessImageFile)
+        console.log("Appending business image:", businessImageFile?.name)
+      }
+
+      if (certificateFile) {
+        apiFormData.append('certificateFile', certificateFile)
+        console.log("Appending certificate file:", certificateFile?.name)
+      }
+
+      const token = localStorage.getItem('token')
+
+      const response = await businessApi.registerBusiness(apiFormData, token)
+
+      const newBusinessDetails = response.data
+
+      console.log(response, '<< cek response create bisnis')
+      
+      console.log("Saving data from response to Redux state:", newBusinessDetails)
 
       localStorage.setItem('businessDetails', JSON.stringify(newBusinessDetails))
       dispatch(businessOperationSuccess({ businessDetails: newBusinessDetails }))
-      dispatch(updateUserBusinessStatus(true));
+      dispatch(updateUserBusinessStatus(true))
       
     } catch (error) {
-      dispatch(businessOperationFail({ error: error.message }))
+      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred.';
+      dispatch(businessOperationFail({ error: errorMessage }))
     }
   }
 }
 
-export const fetchBusinessDetails = () => {
+export const fetchBusinessDetails = (id) => {
     return async (dispatch) => {
         dispatch(businessOperationStart())
         try {
-          await new Promise(res => setTimeout(res, 500))
-          const savedDataString = localStorage.getItem('businessDetails')
+            const response = await businessApi.getBusinessById(id)
 
-          if (!savedDataString) {
-              dispatch(businessOperationSuccess({ businessDetails: null }))
-              return;
-          }
-          
-          const existingBusiness = JSON.parse(savedDataString)
-          dispatch(businessOperationSuccess({ businessDetails: existingBusiness }))
+            if (response.data.operationHours) {
+              response.data.operationHours = formatToFrontendHours(
+                response.data.operationHours
+              )
+            }
+            
+            localStorage.setItem('businessDetails', JSON.stringify(response.data))
+            
+            dispatch(businessOperationSuccess({ businessDetails: response.data }))
 
         } catch (error) {
-          dispatch(businessOperationFail({ error: error.message }))
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch business details.';
+            
+            if (error.response && error.response.status === 404) {
+                localStorage.removeItem('businessDetails');
+                dispatch(businessOperationSuccess({ businessDetails: null }))
+            } else {
+                dispatch(businessOperationFail({ error: errorMessage }))
+            }
         }
-    }
-}
+    };
+};
 
 export const updateBusinessDetails = (formData) => {
   return async (dispatch, getState) => {

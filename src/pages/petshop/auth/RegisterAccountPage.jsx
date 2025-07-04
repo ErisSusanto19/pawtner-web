@@ -15,10 +15,10 @@ const RegisterAccountPage = () => {
     const { register, handleSubmit, formState: { errors, isValid }, getValues, watch, setValue } = useForm({
         mode: "onChange",
         defaultValues: {
-            fullName: "",
+            name: "",
             email: "",
             phone: "",
-            imageUrl: null,
+            image_url: null,
             address: "",
             password: "",
             confirmPassword: "",

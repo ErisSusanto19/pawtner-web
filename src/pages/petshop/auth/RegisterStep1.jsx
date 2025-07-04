@@ -71,7 +71,7 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 </div>
                 <div className="md:col-span-2 space-y-6">
                     <Input 
-                        id="fullName" 
+                        id="name" 
                         label="Full Name" 
                         type="text" 
                         register={register} 

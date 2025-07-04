@@ -29,8 +29,8 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
             (position) => {
                 const { latitude, longitude } = position.coords
                 
-                setValue('businessLatitude', latitude, { shouldValidate: true })
-                setValue('businessLongitude', longitude, { shouldValidate: true })
+                setValue('latitude', latitude, { shouldValidate: true })
+                setValue('longitude', longitude, { shouldValidate: true })
 
                 alert(`Location retrieved successfully: Lat: ${latitude}, Long: ${longitude}`)
                 
@@ -64,7 +64,7 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
             </div>
 
             <Input 
-                id="businessName" 
+                id="nameBusiness" 
                 label="Business Name" 
                 type="text" 
                 register={register} 
@@ -109,7 +109,7 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
             </div>
 
             <TextArea 
-                id="businessDescription" 
+                id="descriptionBusiness" 
                 label="Business Description" 
                 rows={3} 
                 register={register} 
@@ -150,8 +150,8 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
                 errors={errors}
             />
 
-            <input type="hidden" {...register('businessLatitude')} />
-            <input type="hidden" {...register('businessLongitude')} />
+            <input type="hidden" {...register('latitude')} />
+            <input type="hidden" {...register('longitude')} />
 
             <div className="mt-2">
                 <button

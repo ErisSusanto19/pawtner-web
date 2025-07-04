@@ -25,3 +25,34 @@ export const formatDate = (isoString) => {
 
   return `${day}/${month}/${year} ${hours}:${minutes}`
 }
+
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+export const formatToBackendHours = (frontendHours) => {
+  if (!frontendHours) return {}
+
+  const backendHours = {}
+  DAYS.forEach(day => {
+    const dayData = frontendHours[day]
+    if (dayData && dayData.isOpen && dayData.open && dayData.close) {
+      backendHours[day] = `${dayData.open}-${dayData.close}`
+    } else {
+      backendHours[day] = null
+    }
+  })
+  return backendHours
+}
+
+export const formatToFrontendHours = (backendHours = {}) => {
+  const frontendHours = {};
+  DAYS.forEach(day => {
+    const hours = backendHours[day];
+    if (hours && typeof hours === 'string' && hours.includes('-')) {
+      const [open, close] = hours.split('-')
+      frontendHours[day] = { isOpen: true, open, close }
+    } else {
+      frontendHours[day] = { isOpen: false, open: '', close: '' }
+    }
+  })
+  return frontendHours
+}

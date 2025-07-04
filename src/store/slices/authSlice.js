@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { clearBusinessData } from './businessSlice';
+import * as authApi from '../../api/authApi'
+import { getBusinessById, getMyBusiness } from '../../api/businessApi'
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -42,7 +44,11 @@ const authSlice = createSlice({
       state.status = 'succeeded'
       state.error = null
     },
-    
+
+    setToken: (state, action) => {
+        state.token = action.payload
+    },
+
     fetchProfileSuccess: (state, action) => {
       state.isLoading = false
       state.isAuthenticated = true
@@ -73,6 +79,13 @@ const authSlice = createSlice({
             state.user.hasBusiness = action.payload;
         }
     },
+
+    verifyEmailSuccess: (state, action) => {
+      state.isLoading = false
+      state.message = action.payload.message
+      state.status = 'verified'
+      state.error = null
+    },
   },
 })
 
@@ -86,89 +99,132 @@ export const {
   changePasswordSuccess,
   logoutSuccess,
   updateUserBusinessStatus,
+  verifyEmailSuccess, 
+  setToken
 } = authSlice.actions
 
 export const registerUser = (userData) => {
   return async (dispatch) => {
     dispatch(authOperationStart())
     try {
-      await new Promise(res => setTimeout(res, 1000))
+      const data = await authApi.register(userData)
       console.log('API CALL: Registering user...', userData)
+      console.log(data, 'cek response from BE')
 
-      dispatch(registerSuccess({ message: 'Registration successful. Please check your email.' }))
+      dispatch(registerSuccess({ message: data.message || 'Registration successful. Please check your email.' }))
 
     } catch (error) {
-      dispatch(authOperationFail({ error: error.message || 'Registration failed' }))
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed.'
+      dispatch(authOperationFail({error: errorMessage}))
     }
+  }
+}
+
+export const verifyUserEmail = (verificationData) => async (dispatch) => {
+  dispatch(authOperationStart())
+  try {
+    const data = await authApi.verifyEmail(verificationData)
+    console.log(data, 'cek response vrifikasi from BE')
+    
+    dispatch(verifyEmailSuccess({ message: data.message || 'Email verified successfully!' }))
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message || 'Verification failed'
+    dispatch(authOperationFail({ error: errorMessage }))
+    throw new Error(errorMessage)
+  }
+}
+
+export const resendVerificationLink = (email) => async (dispatch) => {
+  dispatch(authOperationStart())
+  try {
+    const data = await authApi.resendVerificationEmail({ email })
+    console.log(data, 'cek response resend verifikasi from BE')
+    dispatch(registerSuccess({ message: data.message || 'Verification link sent.' }))
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to resend link.'
+    dispatch(authOperationFail({ error: errorMessage }))
   }
 }
 
 export const loginUser = (credentials) => {
   return async (dispatch) => {
-    dispatch(authOperationStart())
+    dispatch(authOperationStart());
     try {
-      await new Promise(res => setTimeout(res, 1000))
-      console.log('API CALL: Logging in...', credentials)
-      let data
-      if (credentials.email === 'erissusanto997@gmail.com') {
-        data = { 
-            user: { 
-                id: 'uuid-123-abc',
-                name: 'Eris Susanto',
-                email: 'erissusanto997@gmail.com',
-                role: 'business_owner',
-                hasBusiness: false
-            }, 
-            token: 'mock_jwt_token_no_business' 
-         }
-      } else {
-        throw new Error('Invalid credentials')
+      const loginResponse = await authApi.login(credentials);
+      const userId = loginResponse.data.userId
+      const token = loginResponse.data.token
+
+      if (!token || !userId) {
+        throw new Error("Login response from server is incomplete.");
       }
 
-      localStorage.setItem('token', data.token)
+      localStorage.setItem('token', token);
+      dispatch(setToken(token));
+
+      const userWithUndefinedBusiness = { ...loginResponse.data, hasBusiness: null };
+      localStorage.setItem('user', JSON.stringify(userWithUndefinedBusiness));
       
-      dispatch(loginSuccess({ user: data.user, token: data.token }))
-      
+      dispatch(loginSuccess({ user: userWithUndefinedBusiness, token: token }));
+
     } catch (error) {
-      dispatch(authOperationFail({ error: error.message || 'Login failed' }))
+      const errorMessage = error.response?.data?.message || error.message || 'Login process failed.';
+      dispatch(authOperationFail({ error: errorMessage }));
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      throw error
     }
   }
 }
 
-export const fetchUserProfile = () => {
-  return async (dispatch, getState) => {
-    dispatch(authOperationStart())
-    
-    const token = getState().auth.token
-
-    if (!token) {
-        return dispatch(authOperationFail({ error: 'No token found' }))
-    }
-
-    try {
-      console.log('API CALL: Fetching user profile with token...', token)
-      await new Promise(res => setTimeout(res, 500))
-
-      let userProfile
-      if (token === 'mock_jwt_token_no_business') {
-        userProfile = {
-          id: 'uuid-123-abc',
-          name: 'Eris Susanto',
-          email: 'erissusanto997@gmail.com',
-          role: 'business_owner',
-          hasBusiness: false // true
+export const checkUserBusinessStatus = (userId) => {
+    return async (dispatch) => {
+        try {
+            const response = await getMyBusiness()
+            console.log(response, '<<< cek my business')
+            return true
+        } catch (error) {
+            if (error.response?.status === 404) {
+                return false
+            }
+            throw error
         }
-      } else {
-        throw new Error('Invalid or expired token')
-      }
-
-      dispatch(loginSuccess({ user: userProfile, token: token }))
-
-    } catch (error) {
-      dispatch(authOperationFail({ error: error.message || 'Failed to fetch user' }))
-      dispatch(logout())
     }
-  }
+}
+
+export const fetchUserProfile = () => {
+    return async (dispatch, getState) => {
+        const token = getState().auth.token
+        if (!token) return
+
+        const userFromStorage = getState().auth.user
+        if (!userFromStorage || !userFromStorage.id) {
+            dispatch(logout())
+            return
+        }
+
+        dispatch(authOperationStart())
+        try {
+
+            const userId = userFromStorage.id;
+            
+            const profileResponse = await authApi.getProfile(userId)
+            const baseUser = profileResponse.data.user || profileResponse.data
+
+            const hasBusiness = await dispatch(checkUserBusinessStatus(userId))
+
+            const finalUserProfile = { ...baseUser, hasBusiness }
+
+            localStorage.setItem('user', JSON.stringify(finalUserProfile))
+            dispatch(loginSuccess({ user: finalUserProfile, token: token }))
+
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Session expired or invalid.'
+            dispatch(authOperationFail({ error: errorMessage }))
+            if (error.response?.status === 401) {
+                dispatch(logout())
+            }
+        }
+    }
 }
 
 export const updateUserProfile = (formData) => {

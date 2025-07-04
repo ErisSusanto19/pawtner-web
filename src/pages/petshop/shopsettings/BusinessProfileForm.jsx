@@ -23,8 +23,8 @@ const BusinessProfileForm = ({ initialData }) => {
     const { register, handleSubmit, watch, reset, setValue, formState: { errors, isSubmitting, dirtyFields } } = useForm({
         mode: 'onChange',
         defaultValues: {
-           name: '',
-           description: '', 
+           nameBusiness: '',
+           descriptionBusiness: '', 
            businessEmail: '', 
            businessPhone: '',
            operationHours: {},
@@ -72,14 +72,14 @@ const BusinessProfileForm = ({ initialData }) => {
                 <h3 className="text-lg font-semibold text-[#495057] mb-4">General Information</h3>
                 <div className="space-y-4">
                     <Input
-                        id="name"
+                        id="nameBusiness"
                         label="Business Name"
                         register={register}
                         errors={errors}
                         rules={{ required: "Business name is required" }}
                     />
                     <TextArea
-                        id="description"
+                        id="descriptionBusiness"
                         label="Business Description"
                         rows={3}
                         register={register}
@@ -102,7 +102,7 @@ const BusinessProfileForm = ({ initialData }) => {
                         <Input id="businessEmail" label="Business Email" type="email" register={register} errors={errors} rules={{ required: "Business email is required" }} />
                         <Input id="businessPhone" label="Business Phone" type="tel" register={register} errors={errors} rules={{ required: "Business phone is required" }} />
                     </div>
-                    <TextArea id="address" label="Full Address" register={register} errors={errors} rows={3} />
+                    <TextArea id="businessAddress" label="Full Address" register={register} errors={errors} rows={3} />
                     
                     <div className="pt-4 border-t border-gray-100">
                         <div className="flex items-center gap-3">
@@ -142,8 +142,8 @@ const BusinessProfileForm = ({ initialData }) => {
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
                 <h3 className="text-lg font-semibold text-[#495057] mb-4">Branding & Verification</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <FileUpload name="business_image_url" label="Business Profile Photo" {...{ register, setValue, watch, errors }} accept={{ 'image/*': [] }} />
-                    <FileUpload name="certificate_image_url" label="Business Certificate" {...{ register, setValue, watch, errors }} accept={{ 'application/pdf': [] }} />
+                    <FileUpload name="businessImageUrl" label="Business Profile Photo" {...{ register, setValue, watch, errors }} accept={{ 'image/*': [] }} />
+                    <FileUpload name="certificateImageUrl" label="Business Certificate" {...{ register, setValue, watch, errors }} accept={{ 'application/pdf': [] }} />
                 </div>
             </div>
             

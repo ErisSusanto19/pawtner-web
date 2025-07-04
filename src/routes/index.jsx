@@ -118,14 +118,18 @@ const router = createBrowserRouter([
         path: 'signin',
         element: <LoginPage />,
     },
+    // {
+    //     element: <VerifyEmailGuard />,
+    //     children: [
+    //         {
+    //             path: 'verify-email',
+    //             element: <VerifyEmailPage />,
+    //         },
+    //     ],
+    // },
     {
-        element: <VerifyEmailGuard />,
-        children: [
-            {
-                path: 'verify-email',
-                element: <VerifyEmailPage />,
-            },
-        ],
+        path: 'verify-email',
+        element: <VerifyEmailPage />,
     },
 
     {

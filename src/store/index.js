@@ -3,6 +3,8 @@ import authReducer from './slices/authSlice';
 import businessReducer from './slices/businessSlice';
 import adminAuthReducer from './slices/adminAuthSlice';
 
+import { setupInterceptors } from '../api/axiosInstance'
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -10,5 +12,7 @@ const store = configureStore({
     adminAuth: adminAuthReducer
   },
 })
+
+setupInterceptors(store)
 
 export default store

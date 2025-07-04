@@ -1,13 +1,67 @@
-import { useLocation, Link } from 'react-router-dom';
-import { MailCheck } from 'lucide-react'
+// src/pages/Auth/VerifyEmailPage.jsx
+
+import { useEffect } from 'react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { MailCheck, LoaderCircle } from 'lucide-react';
+
+import { verifyUserEmail, resendVerificationLink } from '../../../store/slices/authSlice';
+import Input from '../../../components/Input';
+import Button from '../../../components/Button';
 
 const VerifyEmailPage = () => {
-    const location = useLocation();
+    const location = useLocation()
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+
+    const { isLoading, error, message, status } = useSelector((state) => state.auth)
+
     const email = location.state?.email || 'your email address'
 
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isValid },
+    } = useForm({
+        mode: 'onChange',
+        defaultValues: {
+            verificationCode: ''
+        }
+    })
+
+    const onSubmit = (formData) => {
+        console.log('submit verifiaction clicked');
+        
+        if (!email || email === 'your email address') {
+            // Handle kasus di mana email tidak tersedia (misal, refresh halaman)
+            alert('Email address not found. Please go back to sign up.');
+            return;
+        }
+        const verificationData = {
+            email: email,
+            verificationCode: formData.verificationCode
+        };
+        dispatch(verifyUserEmail(verificationData))
+    }
+
     const handleResend = () => {
-        alert('Verification email has been resent!');
-    };
+        if (!email || email === 'your email address') {
+            alert('Email address not found. Please try registering again.')
+            return;
+        }
+        dispatch(resendVerificationLink(email))
+    }
+
+    useEffect(() => {
+        if (status === 'verified') {
+            alert(message || 'Verification successful! You can now log in.');
+            setTimeout(() => {
+                navigate('/signin')
+            }, 1000)
+        }
+    }, [status, navigate, message])
+
 
     return (
         <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
@@ -17,19 +71,54 @@ const VerifyEmailPage = () => {
                 <h1 className="text-2xl font-bold text-[#495057]">Please Verify Your Email</h1>
                 
                 <p className="text-gray-600">
-                    Thank you for signing up! We've sent a verification link to:
+                    We've sent a verification code to:
                 </p>
                 
                 <p className="font-semibold text-[#545F71] break-words">{email}</p>
                 
-                <p className="text-gray-600 text-sm">
-                    Please check your inbox (and spam folder) to activate your account.
-                </p>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div>
+                        <Input
+                            id="verificationCode"
+                            label="Verification Code"
+                            type="text"
+                            register={register}
+                            errors={errors}
+                            rules={{
+                                required: 'Verification code is required.',
+                                minLength: {
+                                    value: 6,
+                                    message: 'Code must be at least 6 characters'
+                                }
+                            }}
+                            placeholder="Enter code from your email"
+                        />
+                    </div>
+
+                    {error && status !== 'verified' && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    
+                    {message && status === 'registered' && <p className="text-green-600 text-sm text-center">{message}</p>}
+
+                    <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
+                        {isLoading ? (
+                            <span className="flex items-center justify-center">
+                                <LoaderCircle className="animate-spin mr-2" size={20} />
+                                Verifying...
+                            </span>
+                        ) : (
+                            'Verify Account'
+                        )}
+                    </Button>
+                </form>
 
                 <div className="pt-4 border-t">
                     <p className="text-sm text-gray-500">
                         Didn't receive the email?{' '}
-                        <button onClick={handleResend} className="font-medium text-[#545F71] hover:underline">
+                        <button 
+                            onClick={handleResend} 
+                            disabled={isLoading}
+                            className="font-medium text-[#545F71] hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
+                        >
                             Resend verification link
                         </button>
                     </p>
