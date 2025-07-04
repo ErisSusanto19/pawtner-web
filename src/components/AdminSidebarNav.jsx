@@ -6,7 +6,7 @@ import { logoutAdmin } from '../store/slices/adminAuthSlice';
 const adminMenuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: "/admin/dashboard" },
   { name: 'User Management', icon: Users, path: "/admin/users" },
-  { name: 'Petshops', icon: Building, path: "/admin/businesses" },
+  { name: 'Business Management', icon: Building, path: "/admin/businesses" },
   { name: 'Settings', icon: Settings, path: "/admin/settings" },
 ]
 
