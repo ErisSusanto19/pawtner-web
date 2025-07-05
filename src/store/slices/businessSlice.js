@@ -3,8 +3,18 @@ import { updateUserBusinessStatus } from './authSlice';
 import * as businessApi from '../../api/businessApi'
 import { formatToBackendHours, formatToFrontendHours } from '../../utils/formatter'
 
+const getInitialBusinessDetails = () => {
+  try {
+      const item = localStorage.getItem('businessDetails')
+      return item ? JSON.parse(item) : null
+  } catch (error) {
+      console.error("Failed to parse businessDetails from localStorage", error)
+      return null
+  }
+}
+
 const initialState = {
-  details: null,
+  details: getInitialBusinessDetails(),
   isLoading: false,
   error: null,
   status: 'idle',
@@ -30,6 +40,7 @@ const businessSlice = createSlice({
       state.status = 'failed'
     },
     clearBusinessData: (state) => {
+      localStorage.removeItem('businessDetails')
       Object.assign(state, initialState)
     },
   },
@@ -43,15 +54,11 @@ export const {
 } = businessSlice.actions
 
 export const createBusiness = (formData) => {
-  console.log(formData, '<<< cek form data');
-  
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     dispatch(businessOperationStart())
 
     try {
       const dataToSend = { ...formData }
-      console.log(dataToSend, '<<< cek dataToSend');
-      
 
       if (dataToSend.operationHours) {
         dataToSend.operationHours = formatToBackendHours(dataToSend.operationHours)
@@ -63,14 +70,11 @@ export const createBusiness = (formData) => {
       const businessImageFile = formData.businessImageUrl
       const certificateFile = formData.certificateImageUrl
       
-      // Hapus properti file dari objek JSON agar tidak terkirim dua kali
       delete formData.businessImageUrl;
       delete formData.certificateImageUrl;
 
-      dataToSend.latitude = String(dataToSend.latitude)
-      dataToSend.longitude = String(dataToSend.longitude)
-
-      console.log("Data being sent to API after transformation:", dataToSend)
+      dataToSend.latitude = dataToSend.latitude? parseFloat(dataToSend.latitude.toFixed(6)) : null
+      dataToSend.longitude = dataToSend.longitude? parseFloat(dataToSend.longitude.toFixed(6)) : null
 
       const apiFormData = new FormData()
 
@@ -80,64 +84,58 @@ export const createBusiness = (formData) => {
       )
 
       if (businessImageFile) {
-        apiFormData.append('businessImageFile', businessImageFile)
+        apiFormData.append('businessImage', businessImageFile)
         console.log("Appending business image:", businessImageFile?.name)
       }
 
       if (certificateFile) {
-        apiFormData.append('certificateFile', certificateFile)
+        apiFormData.append('certificateImage', certificateFile)
         console.log("Appending certificate file:", certificateFile?.name)
       }
 
-      const token = localStorage.getItem('token')
-
-      const response = await businessApi.registerBusiness(apiFormData, token)
+      const response = await businessApi.registerBusiness(apiFormData)
 
       const newBusinessDetails = response.data
-
-      console.log(response, '<< cek response create bisnis')
-      
-      console.log("Saving data from response to Redux state:", newBusinessDetails)
 
       localStorage.setItem('businessDetails', JSON.stringify(newBusinessDetails))
       dispatch(businessOperationSuccess({ businessDetails: newBusinessDetails }))
       dispatch(updateUserBusinessStatus(true))
       
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred.';
+      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred.'
       dispatch(businessOperationFail({ error: errorMessage }))
     }
   }
 }
 
-export const fetchBusinessDetails = (id) => {
-    return async (dispatch) => {
-        dispatch(businessOperationStart())
-        try {
-            const response = await businessApi.getBusinessById(id)
+export const fetchMyBusiness = () => {
+  return async (dispatch) => {
+    dispatch(businessOperationStart())
+    try {
+      const response = await businessApi.getMyBusiness()
+      const businesses = response.data
 
-            if (response.data.operationHours) {
-              response.data.operationHours = formatToFrontendHours(
-                response.data.operationHours
-              )
-            }
-            
-            localStorage.setItem('businessDetails', JSON.stringify(response.data))
-            
-            dispatch(businessOperationSuccess({ businessDetails: response.data }))
+      if (businesses && businesses.length > 0) {
+        const myBusiness = businesses[0]
 
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch business details.';
-            
-            if (error.response && error.response.status === 404) {
-                localStorage.removeItem('businessDetails');
-                dispatch(businessOperationSuccess({ businessDetails: null }))
-            } else {
-                dispatch(businessOperationFail({ error: errorMessage }))
-            }
+        if (myBusiness.operation_hours) {
+          myBusiness.operationHours = formatToFrontendHours(myBusiness.operation_hours)
         }
-    };
-};
+
+        localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
+        dispatch(businessOperationSuccess({ businessDetails: myBusiness }))
+        
+      } else {
+        localStorage.removeItem('businessDetails')
+        dispatch(clearBusinessData())
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Gagal memuat data bisnis.'
+      dispatch(businessOperationFail({ error: errorMessage }))
+      localStorage.removeItem('businessDetails')
+    }
+  }
+}
 
 export const updateBusinessDetails = (formData) => {
   return async (dispatch, getState) => {

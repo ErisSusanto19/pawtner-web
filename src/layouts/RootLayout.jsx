@@ -1,33 +1,70 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Outlet, Navigate } from 'react-router-dom';
-import { fetchUserProfile } from '../store/slices/authSlice'; 
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { checkUserSession } from '../store/slices/authSlice';
 
 const FullPageLoader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8f9fa' }}>
-    <p style={{ fontSize: '1.2rem', color: '#495057' }}>Load the application...</p>
-  </div>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8f9fa' }}>
+        <p style={{ fontSize: '1.2rem', color: '#495057' }}>Loading application...</p>
+    </div>
 )
 
 const RootLayout = () => {
-  const dispatch = useDispatch();
-  const { token, user, status, isAuthenticated } = useSelector((state) => state.auth)
+    const dispatch = useDispatch()
+    const location = useLocation()
+    const { token, user, isAuthenticated } = useSelector((state) => state.auth)
+    
+    const [isSessionChecked, setIsSessionChecked] = useState(false)
 
-  useEffect(() => {
-    if (token && !user) {
-      dispatch(fetchUserProfile())
+    useEffect(() => {
+        if (token && !isSessionChecked) {
+            dispatch(checkUserSession()).finally(() => {
+                setIsSessionChecked(true)
+            });
+        } else {
+            if (!isSessionChecked) setIsSessionChecked(true)
+        }
+    }, [dispatch, token, isSessionChecked])
+
+    if (!isSessionChecked) {
+        return <FullPageLoader />
     }
-  }, [dispatch, token, user])
 
-  if (status === 'loading' && token) {
+    const publicPaths = ['/signin', '/signup', '/verify-email', '/forgot-password']
+    const isPublicPath = publicPaths.some(path => location.pathname.startsWith(path))
+
+    if (isAuthenticated) {
+        if (isPublicPath) {
+            return <Navigate to="/" replace />
+        }
+
+        if (user) {
+            if (user.hasBusiness === null) {
+                return <FullPageLoader />
+            }
+
+            const isRegisterPage = location.pathname.includes('/register-business')
+
+            if (user.hasBusiness === false && !isRegisterPage) {
+                return <Navigate to="/register-business" replace />;
+            }
+            if (user.hasBusiness === true && isRegisterPage) {
+                return <Navigate to="/" replace />
+            }
+        }
+
+        return <Outlet />
+    }
+
+    if (!isAuthenticated) {
+        if (isPublicPath) {
+            return <Outlet />
+        }
+        
+        return <Navigate to="/signin" replace />
+    }
+
     return <FullPageLoader />
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/signin" replace />
-  }
-  
-  return <Outlet />
 }
 
 export default RootLayout

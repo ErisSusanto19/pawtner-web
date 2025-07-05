@@ -30,7 +30,12 @@ export const updateProfile = async (formData) => {
   return response.data
 }
 
-export const changePassword = async (passwordData) => {
-    const response = await axiosInstance.put('/user/change-password', passwordData)
+export const resetPassword = async (passwordData) => {
+    const response = await axiosInstance.post('/auth/reset-password', passwordData)
     return response.data
+}
+
+export const requestPasswordReset = async (payload) => {
+  const response = await axiosInstance.post('/auth/forgot-password', payload)
+  return response.data
 }

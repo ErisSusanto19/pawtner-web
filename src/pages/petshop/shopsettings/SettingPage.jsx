@@ -1,29 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
 import { User, Building } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import NoBusinessProfile from './NoBusinessProfile';
+import { useSelector } from 'react-redux';
 import AccountProfileForm from './AccountProfileForm';
-import BusinessProfileForm from './BusinessProfileForm';
-import { fetchBusinessDetails } from '../../../store/slices/businessSlice'
+import AccountProfileTabContent from './AccountProfileTabContent';
+import BusinessProfileTabContent from './BusinessProfileTabContent';
 
 const SettingPage = () => {
-    const user = useSelector((state) => state.auth.user)
-    const { details: business, status } = useSelector((state) => state.business)
-    const dispatch = useDispatch()
+    const { user } = useSelector((state) => state.auth)
     const hasBusiness = user?.hasBusiness || false
-
-    const [activeTab, setActiveTab] = useState(hasBusiness ? 'business' : 'account')
-
-    useEffect(() => {
-        if (hasBusiness && !business && status !== 'loading') {
-            dispatch(fetchBusinessDetails())
-        }
-    }, [hasBusiness, business, status, dispatch])
-    
-    if (hasBusiness && status === 'loading') {
-        return <div className="p-6 text-center">Loading Business Profile...</div>
-    }
+    const [activeTab, setActiveTab] = useState('account')
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -34,22 +19,25 @@ const SettingPage = () => {
                     <button onClick={() => setActiveTab('account')} className={`py-3 px-1 inline-flex items-center gap-2 text-sm font-medium ${activeTab === 'account' ? 'border-b-2 border-[#545F71] text-[#545F71]' : 'border-transparent text-[#5D6D7E]'}`}>
                         <User size={16} /> My Account
                     </button>
-                    <button onClick={() => setActiveTab('business')} className={`py-3 px-1 inline-flex items-center gap-2 text-sm font-medium ${activeTab === 'business' ? 'border-b-2 border-[#545F71] text-[#545F71]' : 'border-transparent text-[#5D6D7E]'}`}>
-                        <Building size={16} /> Business Profile
-                    </button>
+                    {hasBusiness && (
+                        <button 
+                            onClick={() => setActiveTab('business')} 
+                            className={`py-3 px-1 inline-flex items-center gap-2 text-sm font-medium ${
+                                activeTab === 'business' 
+                                    ? 'border-b-2 border-[#545F71] text-[#545F71]' 
+                                    : 'border-transparent text-[#5D6D7E]'
+                            }`}
+                        >
+                            <Building size={16} /> Business Profile
+                        </button>
+                    )}
                 </nav>
             </div>
 
             <div>
-                {activeTab === 'account' && <AccountProfileForm />}
+                {activeTab === 'account' && <AccountProfileTabContent />}
 
-                {activeTab === 'business' && (
-                    hasBusiness && business ? (
-                        <BusinessProfileForm initialData={business}/>
-                    ) : (
-                        <NoBusinessProfile />
-                    )
-                )}
+                {activeTab === 'business' && <BusinessProfileTabContent />}
             </div>
         </div>
     )

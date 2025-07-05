@@ -7,6 +7,7 @@ import FileUpload from '../../../components/FileUploadV2';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateBusinessDetails } from '../../../store/slices/businessSlice';
+import { formatToFrontendHours } from '../../../utils/formatter'
 
 const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 const businessTypeOptions = [
@@ -20,14 +21,22 @@ const businessTypeOptions = [
 const BusinessProfileForm = ({ initialData }) => {
     const dispatch = useDispatch()
 
+    console.log(initialData, 'cek initial data')
+
     const { register, handleSubmit, watch, reset, setValue, formState: { errors, isSubmitting, dirtyFields } } = useForm({
         mode: 'onChange',
         defaultValues: {
-           nameBusiness: '',
-           descriptionBusiness: '', 
-           businessEmail: '', 
-           businessPhone: '',
-           operationHours: {},
+            nameBusiness: '',
+            descriptionBusiness: '',
+            businessType: '',
+            businessEmail: '',
+            businessPhone: '',
+            businessAddress: '',
+            hasEmergencyServices: false,
+            emergencyPhone: '',
+            operationHours: {},
+            businessImageUrl: null,
+            certificateImageUrl: null,
         }
     })
     
@@ -36,22 +45,24 @@ const BusinessProfileForm = ({ initialData }) => {
 
     useEffect(() => {
         if (initialData) {
-            const formData = { ...initialData }
 
-            if (Array.isArray(initialData.operationHours)) {
-                formData.operationHours = initialData.operationHours.reduce((acc, item) => {
-                    const dayKey = item.day?.toLowerCase()
-                    if (dayKey) {
-                        acc[dayKey] = {
-                            isOpen: item.isOpen,
-                            open: item.open,
-                            close: item.close,
-                        }
-                    }
-                    return acc
-                }, {})
+            const mappedData = {
+                nameBusiness: initialData.businessName,
+                descriptionBusiness: initialData.description,
+                businessType: initialData.businessType,
+                businessEmail: initialData.business_email,
+                businessPhone: initialData.business_phone,
+                businessAddress: initialData.businessAddress,
+                hasEmergencyServices: initialData.has_emergency_services,
+                emergencyPhone: initialData.emergency_phone,
+                businessImageUrl: initialData.business_image_url,
+                certificateImageUrl: initialData.certificate_image_url,
+                operationHours: formatToFrontendHours(initialData.operationHours),
             }
-            reset(formData)
+
+            console.log(mappedData, '<<< cek mapped data')
+
+            reset(mappedData)
         }
     }, [initialData, reset])
 

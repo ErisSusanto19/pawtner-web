@@ -2,17 +2,19 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import businessReducer from './slices/businessSlice';
 import adminAuthReducer from './slices/adminAuthSlice';
+import productReducer from './slices/productSlice'
 
-import { setupInterceptors } from '../api/axiosInstance'
+import { injectStore } from '../api/axiosInstance'
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     business: businessReducer,
-    adminAuth: adminAuthReducer
+    adminAuth: adminAuthReducer,
+    products: productReducer
   },
 })
 
-setupInterceptors(store)
+injectStore(store)
 
 export default store

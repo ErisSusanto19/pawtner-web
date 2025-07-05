@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { clearBusinessData } from './businessSlice';
+import { businessOperationStart, businessOperationSuccess, businessOperationFail, clearBusinessData } from './businessSlice';
 import * as authApi from '../../api/authApi'
-import { getBusinessById, getMyBusiness } from '../../api/businessApi'
+import { fetchMyBusiness } from './businessSlice'
+import { formatToFrontendHours } from '../../utils/formatter'
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -76,8 +77,11 @@ const authSlice = createSlice({
 
     updateUserBusinessStatus: (state, action) => {
         if(state.user) {
-            state.user.hasBusiness = action.payload;
+          state.user.hasBusiness = action.payload
+          localStorage.setItem('user', JSON.stringify(state.user))
         }
+
+        state.isLoading = false
     },
 
     verifyEmailSuccess: (state, action) => {
@@ -147,155 +151,267 @@ export const resendVerificationLink = (email) => async (dispatch) => {
 }
 
 export const loginUser = (credentials) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(authOperationStart());
     try {
-      const loginResponse = await authApi.login(credentials);
-      const userId = loginResponse.data.userId
-      const token = loginResponse.data.token
+      const { data } = await authApi.login(credentials)
 
-      if (!token || !userId) {
-        throw new Error("Login response from server is incomplete.");
+      if (!data.token || !data.userId) {
+        throw new Error("Login response from server is incomplete.")
       }
 
-      localStorage.setItem('token', token);
-      dispatch(setToken(token));
+      const userProfile = { 
+        id: data.id, 
+        name: data.name, 
+        email: data.email, 
+        hasBusiness: null 
+      }
 
-      const userWithUndefinedBusiness = { ...loginResponse.data, hasBusiness: null };
-      localStorage.setItem('user', JSON.stringify(userWithUndefinedBusiness));
+      localStorage.setItem('token', data.token)
+      dispatch(setToken(data.token))
+      localStorage.setItem('user', JSON.stringify(userProfile))
       
-      dispatch(loginSuccess({ user: userWithUndefinedBusiness, token: token }));
+      dispatch(loginSuccess({ user: userProfile, token: data.token }))
+
+      await dispatch(fetchMyBusiness())
+      const finalBusinessState = getState().business
+      if (finalBusinessState.details) {
+        dispatch(updateUserBusinessStatus(true))
+      } else {
+        dispatch(updateUserBusinessStatus(false))
+      }
+
+      // dispatch(businessOperationStart())
+      // try {
+      //   const businessResponse = await getMyBusiness()
+      //   console.log(businessResponse, '<<< cek bisnis after login')
+
+      //   const businesses = businessResponse.data
+  
+      //   if (businesses && businesses.length > 0) {
+      //     const myBusiness = businesses[0]
+      //     if (myBusiness.operation_hours) {
+      //       myBusiness.operationHours = formatToFrontendHours(myBusiness.operation_hours)
+      //     }
+  
+      //     localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
+      //     dispatch(businessOperationSuccess({ businessDetails: myBusiness }))
+          
+      //     dispatch(updateUserBusinessStatus(true))
+
+      //   } else {
+
+      //     localStorage.removeItem('businessDetails')
+      //     dispatch(clearBusinessData())
+
+      //     dispatch(updateUserBusinessStatus(false))
+      //   }
+      // } catch (businessError) {
+      //   console.error("Failed to fetch user's business:", businessError)
+      //   dispatch(businessOperationFail({ error: "You dont have any business" }))
+      //   dispatch(updateUserBusinessStatus(false))
+      // }
 
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Login process failed.';
-      dispatch(authOperationFail({ error: errorMessage }));
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      const errorMessage = error.response?.data?.message || error.message || 'Login process failed.'
+      dispatch(authOperationFail({ error: errorMessage }))
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       throw error
     }
   }
 }
 
-export const checkUserBusinessStatus = (userId) => {
-    return async (dispatch) => {
-        try {
-            const response = await getMyBusiness()
-            console.log(response, '<<< cek my business')
-            return true
-        } catch (error) {
-            if (error.response?.status === 404) {
-                return false
-            }
-            throw error
-        }
+export const checkUserSession = () => async (dispatch, getState) => {
+  const { token, user: userInState } = getState().auth
+
+  if (!token) return
+
+  if (userInState && typeof userInState.hasBusiness === 'boolean') {
+    return
+  }
+  
+  dispatch(authOperationStart())
+  try {
+    const profileResponse = await authApi.getProfile() 
+    const userProfile = profileResponse.data
+
+    if (!userProfile || !userProfile.id) {
+        throw new Error("Session invalid or expired.")
     }
+    
+    const baseUser = { ...userProfile, hasBusiness: null }
+    localStorage.setItem('user', JSON.stringify(baseUser))
+    dispatch(loginSuccess({ user: baseUser, token }))
+
+    await dispatch(fetchMyBusiness())
+    const finalBusinessState = getState().business
+    if (finalBusinessState.details) {
+      dispatch(updateUserBusinessStatus(true))
+    } else {
+      dispatch(updateUserBusinessStatus(false))
+    }
+
+    // dispatch(businessOperationStart())
+    // try {
+    //   const businessResponse = await getMyBusiness()
+    //   const businesses = businessResponse.data
+
+    //   if (businesses && businesses.length > 0) {
+    //     const myBusiness = businesses[0]
+    //     localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
+    //     dispatch(businessOperationSuccess({ businessDetails: myBusiness }))
+    //     dispatch(updateUserBusinessStatus(true))
+    //   } else {
+    //     localStorage.removeItem('businessDetails')
+    //     dispatch(clearBusinessData())
+    //     dispatch(updateUserBusinessStatus(false))
+    //   }
+    // } catch (businessError) {
+    //   console.error("Failed to fetch user's business during session check:", businessError)
+    //   dispatch(businessOperationFail({ error: "Gagal memverifikasi status bisnis." }))
+    //   dispatch(updateUserBusinessStatus(false))
+    // }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message || 'Session expired.'
+    dispatch(authOperationFail({ error: errorMessage }))
+    if (error.response?.status === 401 || error.response?.status === 403) {
+        dispatch(logout())
+    }
+  }
 }
 
-export const fetchUserProfile = () => {
-    return async (dispatch, getState) => {
-        const token = getState().auth.token
-        if (!token) return
+// export const fetchUserProfile = () => { // masih salah, belum ada api dari BE
+//     return async (dispatch, getState) => {
+//         const token = getState().auth.token
+//         if (!token) return
 
-        const userFromStorage = getState().auth.user
-        if (!userFromStorage || !userFromStorage.id) {
-            dispatch(logout())
-            return
-        }
+//         const userFromStorage = getState().auth.user
+//         if (!userFromStorage || !userFromStorage.id) {
+//             dispatch(logout())
+//             return
+//         }
 
-        dispatch(authOperationStart())
-        try {
+//         dispatch(authOperationStart())
+//         try {
 
-            const userId = userFromStorage.id;
+//             const userId = userFromStorage.id;
             
-            const profileResponse = await authApi.getProfile(userId)
-            const baseUser = profileResponse.data.user || profileResponse.data
+//             const profileResponse = await authApi.getProfile(userId)
+//             const baseUser = profileResponse.data.user || profileResponse.data
 
-            const hasBusiness = await dispatch(checkUserBusinessStatus(userId))
+//             const finalUserProfile = { ...baseUser, hasBusiness }
 
-            const finalUserProfile = { ...baseUser, hasBusiness }
+//             localStorage.setItem('user', JSON.stringify(finalUserProfile))
+//             dispatch(loginSuccess({ user: finalUserProfile, token: token }))
 
-            localStorage.setItem('user', JSON.stringify(finalUserProfile))
-            dispatch(loginSuccess({ user: finalUserProfile, token: token }))
-
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || 'Session expired or invalid.'
-            dispatch(authOperationFail({ error: errorMessage }))
-            if (error.response?.status === 401) {
-                dispatch(logout())
-            }
-        }
-    }
-}
+//         } catch (error) {
+//             const errorMessage = error.response?.data?.message || error.message || 'Session expired or invalid.'
+//             dispatch(authOperationFail({ error: errorMessage }))
+//             if (error.response?.status === 401) {
+//                 dispatch(logout())
+//             }
+//         }
+//     }
+// }
 
 export const updateUserProfile = (formData) => {
-    return async (dispatch, getState) => {
-        dispatch(authOperationStart())
+  return async (dispatch, getState) => {
+      // 1. Beri sinyal bahwa operasi dimulai
+      dispatch(authOperationStart());
 
-        try {
-            console.log("Updating user profile with form data:", formData)
+      try {
+          console.log("Updating user profile with form data:", formData)
 
-            const dataForApi = {
-                name: formData.name,
-                phone_number: formData.phone_number,
-            }
-            console.log("Simulating API call with data:", dataForApi)
-            await new Promise(res => setTimeout(res, 1000))
-            
-            const updatedUser = {
-                name: formData.name,
-                phone_number: formData.phone_number,
-            }
+          const dataForApi = {
+            name: formData.name,
+            phone: formData.phone,
+            adress: formData.address
+          }
 
-            const savedUserString = localStorage.getItem('user')
-            if (savedUserString) {
-                const savedUser = JSON.parse(savedUserString)
-                const newSavedUser = { ...savedUser, ...updatedUser }
-                localStorage.setItem('user', JSON.stringify(newSavedUser))
-            }
-            
-            dispatch(updateUserProfileSuccess({ user: updatedUser }))
-            
-        } catch (error) {
-            console.error("Failed to update user profile:", error)
-            dispatch(authOperationFail({ error: error.message || 'Failed to update profile' }))
+        const response = await authApi.updateProfile(dataForApi);
+        const updatedUserFields = response.data
+
+        if (!updatedUserFields) {
+            throw new Error("Invalid response from server after update.")
         }
-    }
+
+        const currentUser = getState().auth.user
+        const newUserData = { ...currentUser, ...updatedUserFields }
+
+        localStorage.setItem('user', JSON.stringify(newUserData))
+
+        dispatch(updateUserProfileSuccess({ user: newUserData }))
+
+        return newUserData
+
+      } catch (error) {
+        console.error("Failed to update user profile:", error);
+        const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile.'
+        
+        dispatch(authOperationFail({ error: errorMessage }))
+        throw new Error(errorMessage)
+      }
+  }
 }
 
-export const changeUserPassword = (formData) => {
-    return async (dispatch) => {
-        dispatch(authOperationStart())
+export const requestPasswordReset = (email) => {
+  return async (dispatch) => {
+      dispatch(authOperationStart())
 
-        if (formData.newPassword !== formData.confirmPassword) {
-            const error = { message: "New passwords do not match." }
-            dispatch(authOperationFail({ error: error.message }))
-            throw error
-        }
+      try {
+          if (!email) {
+              throw new Error("Email address is required.")
+          }
 
-        try {
-            const dataForApi = {
-                current_password: formData.currentPassword,
-                new_password: formData.newPassword
-            }
+          const response = await authApi.requestPasswordReset({ email })
+          
+          dispatch(registerSuccess({ message: response.message || "If an account with that email exists, a password reset link has been sent." }))
 
-            console.log("Simulating API call to change password with data:", dataForApi);
-            await new Promise(res => setTimeout(res, 1000))
-            dispatch(updateUserProfileSuccess({ user: {} }))
-            
-        } catch (error) {
-            console.error("Failed to change password:", error)
-            dispatch(authOperationFail({ error: error.message || 'Failed to change password' }))
-            throw error
-        }
-    }
+          return response.message
+
+      } catch (error) {
+          console.error("Failed to request password reset:", error)
+          const errorMessage = error.response?.data?.message || error.message || 'Failed to request password reset.';
+          
+          dispatch(authOperationFail({ error: errorMessage }))
+          throw new Error(errorMessage)
+      }
+  }
 }
 
-export const logout = () => {
-    return (dispatch) => {
-        localStorage.removeItem('token')
-        dispatch(logoutSuccess())
-        dispatch(clearBusinessData())
+export const resetPassword = (resetData) => {
+  return async (dispatch) => {
+    dispatch(authOperationStart())
+
+    try {
+      if (!resetData.email || !resetData.resetToken || !resetData.newPassword) {
+          throw new Error("Email, reset token, and new password are required.")
+      }
+
+      const response = await authApi.resetPassword(resetData)
+
+      dispatch(registerSuccess({ message: response.message || "Password has been reset successfully. Please log in." }))
+
+      return response.message
+
+    } catch (error) {
+      console.error("Failed to reset password:", error)
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to reset password.'
+
+      dispatch(authOperationFail({ error: errorMessage }))
+
+      throw new Error(errorMessage)
     }
+  }
+}
+
+export const logout = () => (dispatch) => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  localStorage.removeItem('businessDetails')
+  dispatch(logoutSuccess())
+  dispatch(clearBusinessData())
 }
 
 export default authSlice.reducer

@@ -3,6 +3,7 @@ import TextArea from '../../../components/TextArea'
 import FileUpload from '../../../components/FileUpload'
 import { UserRound, MapPin } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 
 const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
 
@@ -25,7 +26,7 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 setValue('latitude', latitude, { shouldValidate: true })
                 setValue('longitude', longitude, { shouldValidate: true })
 
-                alert(`Location retrieved successfully: Lat: ${latitude}, Long: ${longitude}`)
+                toast.success(`Location retrieved successfully: Lat: ${latitude}, Long: ${longitude}`)
                 
                 setIsLocating(false)
             },

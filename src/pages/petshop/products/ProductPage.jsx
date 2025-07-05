@@ -4,13 +4,17 @@ import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import ProductModal from './ProductModal'
 import Button from '../../../components/Button';
 import { formatCurrencyIDR } from '../../../utils/formatter'
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewProduct, deleteExistingProduct, fetchProducts, updateExistingProduct } from '../../../store/slices/productSlice';
+import { toast } from 'react-toastify';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
 const categoryOptions = [
-  {value: "food", label: "Food"},
-  {value: "toys", label: "Toys"},
-  {value: "accessories", label: "Accessories"},
-  {value: "health", label: "Health"},
-  {value: "grooming_kit", label: "Grooming Kit"}
+  {value: "FOOD", label: "Food"},
+  {value: "TOYS", label: "Toys"},
+  {value: "ACCESSORIES", label: "Accessories"},
+  {value: "HEALTH", label: "Health"},
+  {value: "GROOMING_KIT", label: "Grooming Kit"}
 ]
 
 export const dummyProducts = [
@@ -68,10 +72,9 @@ const getStatusBadge = (status) => {
 
 const ProductsPage = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const {items: products, status, error} = useSelector(state =>  state.products)
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
@@ -80,26 +83,19 @@ const ProductsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [selectedStatus, setSelectedStatus] = useState('All')
 
-    const fetchProducts = async () => {
-        setLoading(true)
-        try {
-            await new Promise(resolve => setTimeout(resolve, 1500))
-            setProducts(dummyProducts)
-        } catch (err) {
-            setError('Failed to fetch product.')
-        } finally {
-            setLoading(false)
-        }
-    }
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+    const [productToDelete, setProductToDelete] = useState(null)
 
     useEffect(() => {
-        fetchProducts()
-    }, [])
+        if(status == 'idle'){
+            dispatch(fetchProducts())
+        }
+    }, [status, dispatch])
 
     const filteredProducts = useMemo(() => {
         const alarmLowStock = 10
-
-        return products
+        const productList = Array.isArray(products) ? products : []
+        return productList
             .map(p => {
                 let status;
                 if (p.stock_quantity === 0) status = "Out of Stock"
@@ -116,14 +112,22 @@ const ProductsPage = () => {
     }, [products, searchTerm, selectedCategory, selectedStatus])
 
     const handleCreateProduct = async (newData) => {
-        await apiCreateProduct(newData)
-        fetchProducts()
+        try {
+            const response = await dispatch(createNewProduct(newData))
+            toast.success(response.message || "Product created successfully!")
+        } catch (error) {
+            toast.error(error.message || `Failed to create product`)
+        }
     }
 
     const handleUpdateProduct = async (updatedData) => {
         if (!selectedProduct) return
-        await apiUpdateProduct(selectedProduct.id, updatedData)
-        fetchProducts()
+        try {
+            const response = await dispatch(updateExistingProduct({productId: selectedProduct.id, productDate: updatedData}))
+            toast.success(response.message || "Product updated successfully!")
+        } catch (error) {
+            toast.error(error.message || `Failed to update product`)
+        }
     }
 
     const handleAddNew = () => {
@@ -137,16 +141,26 @@ const ProductsPage = () => {
     }
 
     const handleDelete = async (product) => {
-        if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
-            // await apiDeleteProduct(product.id)
-            fetchProducts()
+        setProductToDelete(product)
+        setIsConfirmModalOpen(true)
+    }
 
-            console.log("Deleting product with ID:", product.id)
+    const confirmDelete = async () => {
+        if (!productToDelete) return
+
+        try {
+            const response = await dispatch(deleteExistingProduct(productToDelete.id)).unwrap()
+            toast.success(response.message || `Product "${productToDelete.name}" deleted successfully!`)
+        } catch (err) {
+            toast.error(err.message || `Failed to delete product`)
+        } finally {
+            setIsConfirmModalOpen(false)
+            setProductToDelete(null)
         }
     }
 
-    if (loading) return <div className="p-6 text-center">Loading products...</div>
-    if (error) return <div className="p-6 text-center text-red-600">{error}</div>
+    if (status === 'loading' && products.length === 0) return <div className="p-6 text-center">Loading products...</div>
+    if (status === 'failed') return <div className="p-6 text-center text-red-600">{error}</div>
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -271,6 +285,14 @@ const ProductsPage = () => {
                 product={selectedProduct}
                 onClose={() => setIsModalOpen(false)}
                 onSave={selectedProduct ? handleUpdateProduct : handleCreateProduct}
+            />
+
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Confirm Deletion"
+                message={`Are you sure you want to delete the product "${productToDelete?.name}"? This action cannot be undone.`}
             />
         </div>
     )

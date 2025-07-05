@@ -25,10 +25,10 @@ const ProductModal = ({isOpen, onClose, product, onSave }) => {
           name: '',
           description: '',
           category: '',
-          price: 0,
-          stock_quantity: 0,
-          image_url: null,
-          is_active: true,
+          price: '',
+          stockQuantity: '',
+          imageUrl: null,
+          isActive: true,
         }
   }, [isEditMode, product])
 
@@ -45,7 +45,7 @@ const ProductModal = ({isOpen, onClose, product, onSave }) => {
     const finalData = {
       ...data,
       price: parseFloat(String(data.price).replace(',', '.')),
-      stock_quantity: parseInt(data.stock_quantity, 10),
+      stockQuantity: parseInt(data.stockQuantity, 10),
     }
 
     if (onSave) {
@@ -55,7 +55,7 @@ const ProductModal = ({isOpen, onClose, product, onSave }) => {
     onClose()
   }
 
-  const isActiveValue = watch('is_active')
+  const isActiveValue = watch('isActive')
 
   if(!isOpen) return null
 
@@ -162,7 +162,7 @@ const ProductModal = ({isOpen, onClose, product, onSave }) => {
               </div>
               
               <Input
-                id="stock_quantity"
+                id="stockQuantity"
                 label="Stock Quantity"
                 buttonType="number"
                 register={register}
@@ -172,10 +172,10 @@ const ProductModal = ({isOpen, onClose, product, onSave }) => {
             </div>
 
             <div className="flex flex-col">
-              <label htmlFor="is_active" className="block text-sm text-gray-900 font-medium mb-2">Product Status</label>
+              <label htmlFor="isActive" className="block text-sm text-gray-900 font-medium mb-2">Product Status</label>
               <div className="flex items-center gap-4">
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" id="is_active" {...register('is_active')} className="sr-only peer" />
+                  <input type="checkbox" id="isActive" {...register('isActive')} className="sr-only peer" />
                   <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-[#545F71] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#545F71]"></div>
                 </label>
                 <span className={clsx("font-medium", isActiveValue ? "text-green-600" : "text-red-600")}>
@@ -185,7 +185,7 @@ const ProductModal = ({isOpen, onClose, product, onSave }) => {
             </div>
 
             <FileUpload
-              name="image_url"
+              name="imageUrl"
               label="Profile Picture"
               accept={{ 'image/*': ['.jpeg', '.jpg', '.png'] }}
               register={register}

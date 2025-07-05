@@ -1,42 +1,56 @@
 import axios from 'axios';
 
+let store
+
+export const injectStore = (_store) => {
+  store = _store
+}
+
 const axiosInstance = axios.create({
-  baseURL: 'https://c485-180-248-33-245.ngrok-free.app/api',
+  baseURL: 'https://22da-180-248-33-245.ngrok-free.app/api',
 })
 
-export const setupInterceptors = (store) => {
-  axiosInstance.interceptors.request.use(
-    (config) => {
+axiosInstance.interceptors.request.use(
+  (config) => {
+    
+    if (store) {
       const state = store.getState()
+      console.log('Interceptor: Current Redux State', state)
 
-      console.log(state, '<<< cek state')
-      
-      const token = state.adminAuth.token || state.auth.token
+      const token = state.auth.token || state.adminAuth?.token
 
       if (token) {
-        console.log(token, 'cek token');
-        
+        // console.log('Interceptor: Token found, attaching to headers.', token)
         config.headers['Authorization'] = `Bearer ${token}`
-
+      } else {
+        console.log('Interceptor: No token found in state.')
       }
-      
-      config.headers['ngrok-skip-browser-warning'] = 'true'
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error)
     }
-  )
 
-  axiosInstance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response && error.response.status === 401) {
-        console.error('Unauthorized, consider dispatching logout action')
+    config.headers['ngrok-skip-browser-warning'] = 'true'
+
+    // console.log('AXIOS INTERCEPTOR: Final headers being sent:', config.headers)
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.error('Unauthorized (401). Consider dispatching logout action.');
+      // Anda bisa dispatch logout di sini jika diperlukan, dengan memeriksa store
+      if (store) {
+        // import { logout } from '../features/auth/authSlice'; // Hati-hati circular dependency
+        // store.dispatch(logout()); // Cara yang lebih aman adalah melalui komponen UI
       }
-      return Promise.reject(error)
     }
-  )
-}
+    return Promise.reject(error)
+  }
+)
 
 export default axiosInstance

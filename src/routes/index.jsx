@@ -39,97 +39,75 @@ const router = createBrowserRouter([
         element: <RootLayout/>,
         children: [
             {
-                path: '/',
-                element: (
-                    <AuthGuard>
-                        <PetshopLayout/>
-                    </AuthGuard>
-                ),
+                element: <PetshopLayout/>,
                 children: [
                     {
-                        element: <BusinessSetupGuard />,
-                        children: [
-                            {
-                                index: true,
-                                element: <DashboardPage />,
-                            },
-                            {
-                                path: 'products',
-                                element: <ProductsPage />,
-                            },
-                            {
-                                path: 'products/:productId',
-                                element: <ProductDetailPage />,
-                            },
-                            {
-                                path: 'orders',
-                                element: <OrderPage />,
-                            },
-                            {
-                                path: 'orders/:orderId',
-                                element: <OrderDetailPage />,
-                            },
-                            {
-                                path: 'services',
-                                element: <ServicePage />,
-                            },
-                            {
-                                path: 'services/:serviceId',
-                                element: <ServiceDetailPage />,
-                            },
-                            {
-                                path: 'bookings',
-                                element: <BookingPage />,
-                            },
-                            {
-                                path: 'bookings/:bookingId',
-                                element: <BookingDetailPage />,
-                            },
-                            {
-                                path: 'settings',
-                                element: <SettingPage />,
-                            },
-                            {
-                                path: 'payments',
-                                element: <PaymentPage/>
-                            },
-                            {
-                                path: 'payments/:paymentId',
-                                element: <PaymentDetailPage/>
-                            },
-                            {
-                                path: 'register-business',
-                                element: <RegisterBusinessPage/>
-                            },
-                        ]
-                    }
-                    
-                ],
+                        path: '/',
+                        element: <DashboardPage />,
+                    },
+                    {
+                        path: 'products',
+                        element: <ProductsPage />,
+                    },
+                    {
+                        path: 'products/:productId',
+                        element: <ProductDetailPage />,
+                    },
+                    {
+                        path: 'orders',
+                        element: <OrderPage />,
+                    },
+                    {
+                        path: 'orders/:orderId',
+                        element: <OrderDetailPage />,
+                    },
+                    {
+                        path: 'services',
+                        element: <ServicePage />,
+                    },
+                    {
+                        path: 'services/:serviceId',
+                        element: <ServiceDetailPage />,
+                    },
+                    {
+                        path: 'bookings',
+                        element: <BookingPage />,
+                    },
+                    {
+                        path: 'bookings/:bookingId',
+                        element: <BookingDetailPage />,
+                    },
+                    {
+                        path: 'settings',
+                        element: <SettingPage />,
+                    },
+                    {
+                        path: 'payments',
+                        element: <PaymentPage/>
+                    },
+                    {
+                        path: 'payments/:paymentId',
+                        element: <PaymentDetailPage/>
+                    },
+                    {
+                        path: 'register-business',
+                        element: <RegisterBusinessPage/>
+                    },
+                ]
+            },
+            {
+                path: 'signup',
+                element: <RegisterAccountPage />,
+            },
+            {
+                path: 'signin',
+                element: <LoginPage />,
+            },
+            {
+                path: 'verify-email',
+                element: <VerifyEmailPage />,
             },
         ]
-    },
-
-      
-    {
-        path: 'signup',
-        element: <RegisterAccountPage />,
-    },
-    {
-        path: 'signin',
-        element: <LoginPage />,
-    },
-    // {
-    //     element: <VerifyEmailGuard />,
-    //     children: [
-    //         {
-    //             path: 'verify-email',
-    //             element: <VerifyEmailPage />,
-    //         },
-    //     ],
-    // },
-    {
-        path: 'verify-email',
-        element: <VerifyEmailPage />,
     },
 
     {

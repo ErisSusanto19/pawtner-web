@@ -6,6 +6,7 @@ import RegisterStep1 from './RegisterStep1';
 import { useDispatch, useSelector } from 'react-redux'
 import { registerUser } from '../../../store/slices/authSlice';
 import { useEffect } from 'react';
+import { toast } from 'react-toastify'
 
 const RegisterAccountPage = () => {
     const navigate = useNavigate()
@@ -36,6 +37,10 @@ const RegisterAccountPage = () => {
         if (message && !error) {
             const email = getValues('email')
             navigate('/verify-email', { state: { email: email } })
+        }
+
+        if(error){
+            toast.error(error)
         }
     }, [message, error, navigate, getValues])
 
