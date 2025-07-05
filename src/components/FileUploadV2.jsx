@@ -57,13 +57,15 @@ const FileUpload = ({ name, label, register, setValue, watch, accept, errors, ru
       <label className="block text-sm font-medium text-gray-900 mb-2">{label}</label>
       <div
         {...getRootProps()}
+        //  onClick={() => alert('Dropzone diklik!')}
         className={`relative flex justify-center items-center w-full h-48 px-6 py-4 border-2 border-dashed rounded-md cursor-pointer transition-colors
           ${isDragActive ? 'border-[#545F71] bg-[#E9ECEF]' : 'border-gray-300 hover:border-[#545F71]'}
           ${errorMessage ? 'border-red-500 bg-red-50' : ''}
           ${currentValue ? 'border-solid' : ''}
         `}
       >
-        <input {...getInputProps()} {...register(name, rules)} />
+        {/* <input {...getInputProps()} {...register(name, rules)} /> */}
+        <input {...getInputProps()}/>
         
         {currentValue ? (
           <div className="text-center">

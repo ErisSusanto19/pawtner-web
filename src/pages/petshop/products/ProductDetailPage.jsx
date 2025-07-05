@@ -4,56 +4,55 @@ import { formatCurrencyIDR } from '../../../utils/formatter'
 import { useEffect, useState } from 'react';
 import ProductModal from './ProductModal';
 import Button from '../../../components/Button';
-import { dummyProducts, apiUpdateProduct, apiDeleteProduct } from './ProductPage'
+import { useDispatch, useSelector } from 'react-redux';
+import ConfirmationModal from '../../../components/ConfirmationModal';
+import { deleteExistingProduct, fetchProductById, setCurrentProduct, updateExistingProduct } from '../../../store/slices/productSlice';
+import { toast } from 'react-toastify';
 
 const ProductDetailPage = () => {
     const { productId } = useParams()
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    const [product, setProduct] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const { currentItem: product, status, error } = useSelector(state => state.products)
 
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 
-    useEffect(() => {
-        const fectProductById = async () => {
-            setLoading(true)
-            setError(null)
-            try {
-                await new Promise(resolve => setTimeout(resolve, 1000))
-                const selectedProduct = dummyProducts.find(p => p.id === productId)
-
-                if(selectedProduct){
-                    setProduct(selectedProduct)
-                } else{
-                    throw new Error("Product not found")
-                }
-            } catch (error) {
-                setError(error.message)
-            } finally{
-                setLoading(false)
-            }
+     useEffect(() => {
+        if (!product || product.id !== productId) {
+            dispatch(fetchProductById(productId))
         }
 
-        fectProductById()
-    }, [productId])
+        return () => {
+            dispatch(setCurrentProduct(null))
+        }
+    }, [productId, dispatch])
 
-    const handleDelete = async (product) => {
-        if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
-            // await apiDeleteProduct(product.id)
-            console.log("Deleting product with ID:", product.id);
+    const handleDelete = () => {
+        setIsConfirmModalOpen(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!product) return
+        try {
+            const response = await dispatch(deleteExistingProduct(product.id))
+            toast.success(response.message || `Product "${product.name}" deleted successfully!`)
             navigate('/products')
+        } catch (err) {
+            toast.error(err.message || 'Failed to delete product.')
+        } finally {
+            setIsConfirmModalOpen(false)
         }
     }
 
     const handleUpdateProduct = async (updatedData) => {
-        await apiUpdateProduct(product.id, updatedData)
-        setProduct(prev => ({ ...prev, ...updatedData }))
+        if (!product) return
+        await dispatch(updateExistingProduct({ productId: product.id, productData: updatedData }))
     }
 
-    if (loading) return <div className="p-6 text-center">Loading product details...</div>
-    if (error) return (
+    if (status == 'loading' && !product) return <div className="p-6 text-center">Loading product details...</div>
+    if (status == 'failed' && error) return (
         <div className="p-6 text-center">
             <h2 className="text-xl text-red-600">{error}</h2>
             <Link to="/products" className="text-[#545F71] hover:underline mt-4 inline-block">
@@ -109,7 +108,7 @@ const ProductDetailPage = () => {
                         </div>
                         <div>
                             <h3 className="text-xs text-[#ADB5BD] uppercase font-semibold">Stock</h3>
-                            <p className="text-lg font-bold text-[#545F71] mt-1">{product.stock_quantity}</p>
+                            <p className="text-lg font-bold text-[#545F71] mt-1">{product.stockQuantity}</p>
                         </div>
                          <div>
                             <h3 className="text-xs text-[#ADB5BD] uppercase font-semibold">Category</h3>
@@ -131,6 +130,14 @@ const ProductDetailPage = () => {
                     onSave={handleUpdateProduct}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Confirm Deletion"
+                message={`Are you sure you want to delete the product "${product?.name}"? This action cannot be undone.`}
+            />
         </div>
     )
 }

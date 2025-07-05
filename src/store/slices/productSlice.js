@@ -37,6 +37,11 @@ const productSlice = createSlice({
             state.pagination = page
         },
 
+        fetchProductByIdSuccess: (state, action) => {
+            state.status = 'succeeded';
+            state.currentItem = action.payload;
+        },
+
         createProductSuccess: (state, action) => {
             state.status = 'succeeded'
             state.items.unshift(action.payload.product)
@@ -70,6 +75,7 @@ export const {
     productOperationStart,
     productOperationFail,
     fetchProductsSuccess,
+    fetchProductByIdSuccess,
     createProductSuccess,
     updateProductSuccess,
     deleteProductSuccess,
@@ -89,6 +95,21 @@ export const fetchProducts = (pageNumber = 0) => {
     }
 }
 
+export const fetchProductById = (productId) => {
+    return async (dispatch) => {
+        dispatch(productOperationStart())
+        try {
+            const productData = await productApi.getProductById(productId)
+            dispatch(fetchProductByIdSuccess(productData.data))
+            return productData
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message
+            dispatch(productOperationFail({ error: errorMessage }))
+            throw new Error(errorMessage)
+        }
+    }
+}
+
 export const createNewProduct = (productData) => {
     return async (dispatch, getState) => {
         dispatch(productOperationStart())
@@ -99,21 +120,22 @@ export const createNewProduct = (productData) => {
                 throw new Error("Business ID not found. Please reload.")
             }
 
-            console.log(productData, 'cek product data');
-
-            
-            
             const formData = new FormData()
             const detailsWithBusinessId = { ...productData, businessId: businessId }
-            console.log(detailsWithBusinessId, '<< cek payload create');
-            formData.append('product', new Blob([JSON.stringify(detailsWithBusinessId)], { type: "application/json" }))
+
+            formData.append("businessId", businessId)
+            formData.append("name", productData.name)
+            formData.append("category", productData.category)
+            formData.append("price", productData.price)
+            formData.append("stockQuantity", productData.stockQuantity)
+            formData.append("description", productData.description)
+            formData.append("isActive", productData.isActive)
             
             if (productData.imageUrl) {
                 formData.append('image', productData.imageUrl)
             }
 
             const response = await productApi.createProduct(formData)
-            // const response = await productApi.createProduct(detailsWithBusinessId)
             dispatch(createProductSuccess({ product: response.data }))
             return response
 
@@ -123,23 +145,30 @@ export const createNewProduct = (productData) => {
             throw new Error(errorMessage)
         }
     };
-};
+}
 
 export const updateExistingProduct = ({ productId, productData }) => {
     return async (dispatch, getState) => {
         dispatch(productOperationStart());
         try {
-            const businessId = getState().business.details?.id
+            const businessId = getState().business.details?.businessId
             if (!businessId) {
                 throw new Error("Business ID not found. Please reload.")
             }
-
+            
             const formData = new FormData();
-            // const detailsWithBusinessId = { ...productData.details, business_id: businessId }
-            formData.append('product', new Blob([JSON.stringify(productData.details)], { type: "application/json" }))
+            const detailsWithBusinessId = { ...productData, businessId }
 
-            if (productData.image && typeof productData.image !== 'string') {
-                formData.append('image', productData.image)
+            formData.append("businessId", businessId)
+            formData.append("name", productData.name)
+            formData.append("category", productData.category)
+            formData.append("price", productData.price)
+            formData.append("stockQuantity", productData.stockQuantity)
+            formData.append("description", productData.description)
+            formData.append("isActive", productData.isActive)
+
+            if (productData.imageUrl && typeof productData.imageUrl !== 'string') {
+                formData.append('image', productData.imageUrl)
             }
             
             const response = await productApi.updateProduct(productId, formData)
@@ -159,6 +188,8 @@ export const deleteExistingProduct = (productId) => {
         dispatch(productOperationStart())
         try {
             const response = await productApi.deleteProduct(productId)
+            console.log(response, 'cek response after delete');
+            
             dispatch(deleteProductSuccess({ productId }))
             return response
 

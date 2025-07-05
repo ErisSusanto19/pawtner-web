@@ -13,15 +13,14 @@ export const getProductById = async (productId) => {
 export const createProduct = async (formData) => {
     const response = await axiosInstance.post('/products', formData, {
         headers: {
-            // 'Content-Type': 'multipart/form-data',
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
         },
     })
     return response.data
 }
 
 export const updateProduct = async (productId, formData) => {
-    const response = await axiosInstance.post(`/products/${productId}`, formData, {
+    const response = await axiosInstance.put(`/products/${productId}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
