@@ -2,7 +2,7 @@ import React from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import Button from './Button';
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, isLoading = false  }) => {
     if (!isOpen) return null;
 
     return (
@@ -38,6 +38,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                             buttonType="button"
                             onClick={onClose}
                             secondary={true}
+                            disabled={isLoading} 
                         >
                             Cancel
                         </Button>
@@ -45,6 +46,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                             buttonType="button"
                             onClick={onConfirm}
                             danger={true}
+                            isLoading={isLoading} 
                         >
                             Confirm
                         </Button>

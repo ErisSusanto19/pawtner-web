@@ -33,7 +33,7 @@ const productSlice = createSlice({
         fetchProductsSuccess: (state, action) => {
             state.status = 'succeeded'
             const { content, page } = action.payload
-            state.items = Array.isArray(content) ? content : []
+            state.items = Array.isArray(content) ? content.filter(item => item.isActive) : []
             state.pagination = page
         },
 

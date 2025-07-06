@@ -19,8 +19,8 @@ const categoryOptions = [
   {value: "GROOMING_KIT", label: "Grooming Kit"}
 ]
 
-const formatCategory = (category) => {
-    return category.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+const formatCategory = (category = '') => {
+    return category.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
 
 const getStatusBadge = (status) => {
@@ -46,13 +46,15 @@ const ProductsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [selectedStatus, setSelectedStatus] = useState('All')
 
-    const [filterIsActive, setFilterIsActive] = useState('all')// 'active', 'archived', 'all'
+    // const [filterIsActive, setFilterIsActive] = useState('all')// 'active', 'archived', 'all'
 
     const [currentPage, setCurrentPage] = useState(1)
     const ITEMS_PER_PAGE = 5
 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-    const [productToDelete, setProductToDelete] = useState(null)
+    const [productToAction, setProductToAction] = useState(null)
+    const [confirmAction, setConfirmAction] = useState({ fn: null, title: '', message: '' })
+    const [isConfirmLoading, setIsConfirmLoading] = useState(false)
 
     useEffect(() => {
         dispatch(fetchProducts())
@@ -74,13 +76,13 @@ const ProductsPage = () => {
                 const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory
                 const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus
 
-                let matchesActiveStatus = true
-                if (filterIsActive === 'active') matchesActiveStatus = product.isActive
-                else if (filterIsActive === 'archived') matchesActiveStatus = !product.isActive
+                // let matchesActiveStatus = true
+                // if (filterIsActive === 'active') matchesActiveStatus = product.isActive
+                // else if (filterIsActive === 'archived') matchesActiveStatus = !product.isActive
                 
-                return matchesSearch && matchesCategory && matchesStatus && matchesActiveStatus
+                return matchesSearch && matchesCategory && matchesStatus /**&& matchesActiveStatus*/
             })
-    }, [products, searchTerm, selectedCategory, selectedStatus, filterIsActive])
+    }, [products, searchTerm, selectedCategory, selectedStatus])
 
     const paginatedProducts = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -121,41 +123,31 @@ const ProductsPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleDelete = async (product) => {
-        setProductToDelete(product)
-        setIsConfirmModalOpen(true)
-    }
+    const confirmActionHandler = async (product) => {
+        if (!product) return
 
-    const confirmDelete = async () => {
-        if (!productToDelete) return
-
+        setIsConfirmLoading(true)
         try {
-            const response = await dispatch(deleteExistingProduct(productToDelete.id))
-            toast.success(response.message || `Product "${productToDelete.name}" deleted successfully!`)
-        } catch (err) {
-            toast.error(err.message || `Failed to delete product`)
-        } finally {
+            const response = await dispatch(deleteExistingProduct(product.id))
+            toast.success(response.message || `Product "${product.name}" has been removed.`)
+            
             setIsConfirmModalOpen(false)
-            setProductToDelete(null)
+        } catch (err) {
+            toast.error(err.message || `Failed to remove product.`)
+        } finally {
+            setIsConfirmLoading(false)
+            setProductToAction(null)
         }
     }
 
     const handleArchive = (product) => {
+        setProductToAction(product)
         setConfirmAction({
-            action: async () => {
-                try {
-                    // Gunakan thunk yang ada untuk "soft delete"
-                    await dispatch(deleteExistingProduct(product.id))
-                    toast.success(`Product "${product.name}" has been archived.`)
-                } catch (err) {
-                    toast.error(err.message || 'Failed to archive product.')
-                } finally {
-                    setConfirmAction(null)
-                }
-            },
+            fn: () => confirmActionHandler(product),
             title: "Confirm Archival",
-            message: `Are you sure you want to archive this product? This action cannot be easily undone.`
+            message: `Are you sure you want to archive the product "${product.name}"? This will remove it from the active list.`
         })
+        setIsConfirmModalOpen(true)
     }
 
     if (status === 'loading' && products.length === 0) return <div className="p-6 text-center">Loading products...</div>
@@ -176,7 +168,7 @@ const ProductsPage = () => {
 
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div className="relative">
                         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ADB5BD]" />
                         <input 
@@ -210,7 +202,7 @@ const ProductsPage = () => {
                         <option value="Low Stock">Low Stock</option>
                         <option value="Out of Stock">Out of Stock</option>
                     </select>
-                    <select 
+                    {/* <select 
                         className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white"
                         value={filterIsActive} 
                         onChange={(e) => setFilterIsActive(e.target.value)} 
@@ -218,7 +210,7 @@ const ProductsPage = () => {
                         <option value="active">Active</option>
                         <option value="archived">Archived</option>
                         <option value="all">All</option>
-                    </select>
+                    </select> */}
                 </div>
 
                 <div className="overflow-x-auto">
@@ -265,23 +257,14 @@ const ProductsPage = () => {
                                             >
                                                 <Edit size={16} />
                                             </Button>
-                                            {/* <Button
+                                            <Button
                                                 buttonType="button"
-                                                onClick={(e) => { e.stopPropagation(); handleDelete(product); }}
+                                                onClick={(e) => { e.stopPropagation(); handleArchive(product); }}
                                                 danger={true}
+                                                title="Delete Product"
                                             >
                                                 <Trash2 size={16} />
-                                            </Button> */}
-                                            {product.isActive && (
-                                                <Button
-                                                    buttonType="button"
-                                                    onClick={(e) => { e.stopPropagation(); handleArchive(product); }}
-                                                    danger={true}
-                                                    title="Archive Product"
-                                                >
-                                                    <Archive size={16} />
-                                                </Button>
-                                            )}
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -307,10 +290,11 @@ const ProductsPage = () => {
 
             <ConfirmationModal
                 isOpen={isConfirmModalOpen}
-                onClose={() => setIsConfirmModalOpen(false)}
-                onConfirm={confirmDelete}
-                title="Confirm Deletion"
-                message={`Are you sure you want to delete the product "${productToDelete?.name}"? This action cannot be undone.`}
+                onClose={() => !isConfirmLoading && setIsConfirmModalOpen(false)}
+                onConfirm={confirmAction.fn}
+                title={confirmAction.title}
+                message={confirmAction.message}
+                isLoading={isConfirmLoading}
             />
 
             <div className="mt-6">

@@ -69,13 +69,13 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
     onClose()
   }
 
-  // const isActiveValue = watch('isActive')
-
   useEffect(() => {
     if (!isOpen) {
         setIsSubmitting(false)
     }
   }, [isOpen])
+
+  // const isActiveValue = watch('isActive')
 
   if(!isOpen) return null
 
@@ -211,7 +211,7 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
                   <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-[#545F71] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#545F71]"></div>
                 </label>
                 <span className={clsx("font-medium", isActiveValue ? "text-green-600" : "text-red-600")}>
-                  {isActiveValue ? 'Active' : 'Inactive'}
+                  {isActiveValue ? 'Active' : 'Archived'}
                 </span>
               </div>
             </div> */}

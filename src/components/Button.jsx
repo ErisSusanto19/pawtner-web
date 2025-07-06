@@ -1,6 +1,7 @@
 import clsx from "clsx"
+import Spinner from "./Spinner"
 
-const Button = ({children, buttonType, disabled, onClick, fullWidth, secondary, danger, dangerv2, tertiary, padding = true}) => {
+const Button = ({children, buttonType, disabled, onClick, fullWidth, secondary, danger, dangerv2, tertiary, padding = true, isLoading = false, ...props}) => {
     
     return (
         <button
@@ -18,8 +19,13 @@ const Button = ({children, buttonType, disabled, onClick, fullWidth, secondary, 
                 dangerv2 && "text-[#323f56] hover:text-rose-500",
                 !secondary && !danger && !tertiary && !dangerv2 && "bg-[#545F71] hover:bg-[#323f56] focus:outline-[#353f52]"
             )}
+            {...props}
         >
-            {children}
+            {isLoading ? (
+                <Spinner size="sm" />
+            ) : (
+                children
+            )}
         </button>
     )
 }

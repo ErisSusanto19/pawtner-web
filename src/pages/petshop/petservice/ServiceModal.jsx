@@ -1,102 +1,157 @@
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
+import Input from '../../../components/Input';
+import TextArea from '../../../components/TextArea';
+import FileUpload from '../../../components/FileUploadV2';
+import Spinner from '../../../components/Spinner';
+import Button from '../../../components/Button';
+import clsx from 'clsx';
 
-const serviceCategories = ['boarding', 'daycare', 'grooming', 'veterinary'];
+const serviceCategories = [
+    {value: 'GROOMING', label: 'Grooming'}, 
+    {value: 'BOARDING', label: 'Boarding'}, 
+    {value: 'VETERINARY', label: 'Veterinary'}, 
+    {value: 'DAYCARE', label: 'Daycare'}, 
+]
 
-const ServiceModal = ({ isOpen, onClose, service }) => {
-    const isEditMode = Boolean(service);
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    const [modalContainer, setModalContainer] = useState(null);
+const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
+    const isEditMode = Boolean(service)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const defaultValues = useMemo(() => {
+        return isEditMode 
+            ? service 
+            : {
+                name: '',
+                category: 'GROOMING',
+                description: '',
+                basePrice: '',
+                capacityPerDay: '',
+                // isActive: true,
+                imageUrl: null,
+              };
+    }, [isEditMode, service])
+
+    const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm({
+        mode: 'onChange',
+        defaultValues,
+    })
 
     useEffect(() => {
-        setModalContainer(document.getElementById("modal-root"));
-    }, []);
+        reset(defaultValues);
+    }, [defaultValues, reset])
 
     useEffect(() => {
-        if (isOpen) {
-            if (isEditMode) {
-                reset(service);
-            } else {
-                reset({
-                    name: '',
-                    category: 'grooming',
-                    base_price: '',
-                    capacity_per_day: '',
-                    is_active: true,
-                });
+        register("imageUrl")
+    }, [register])
+    
+    useEffect(() => {
+        if (!isOpen) {
+            setIsSubmitting(false)
+        }
+    }, [isOpen])
+
+    const onSubmit = async (data) => {
+        const finalData = {
+            ...data,
+            basePrice: parseFloat(String(data.basePrice).replace(',', '.')),
+            capacityPerDay: data.capacityPerDay ? parseInt(data.capacityPerDay, 10) : null,
+        }
+
+        if (onSave) {
+            setIsSubmitting(true)
+            try {
+                await onSave(finalData)
+                onClose()
+            } catch (error) {
+                console.error("Failed to save service:", error);
+            } finally {
+                setIsSubmitting(false)
             }
         }
-    }, [isOpen, service, reset, isEditMode])
+    }
 
-    const onSubmit = (data) => {
-        const processedData = {
-            ...data,
-            base_price: parseFloat(data.base_price),
-            capacity_per_day: data.capacity_per_day ? parseInt(data.capacity_per_day, 10) : null,
-        };
-        
-        if (isEditMode) {
-            console.log('Updating service:', { ...service, ...processedData });
-        } else {
-            console.log('Creating new service:', processedData);
-        }
-        onClose();
-    };
-  
-    if (!isOpen || !modalContainer) return null
+    if (!isOpen) return null;
 
-    return ReactDOM.createPortal(
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" onClick={onClose}>
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-6 relative" onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-between items-center border-b border-[#E9ECEF] pb-4">
-                    <h2 className="text-xl font-bold text-[#495057]">{isEditMode ? 'Edit Service' : 'Add New Service'}</h2>
-                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200">
-                        <X size={20} className="text-[#ADB5BD]" />
-                    </button>
+     return (
+        <div className="fixed inset-0 flex justify-center items-center z-50 bg-black/50" onClick={(e) => { if (e.target === e.currentTarget && !isSubmitting) onClose(); }}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg flex flex-col" style={{ maxHeight: "90vh" }}>
+                <div className="flex-shrink-0 p-6 border-b border-[#E9ECEF]">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold text-[#495057]">{isEditMode ? 'Edit Service' : 'Add New Service'}</h2>
+                        <button disabled={isSubmitting} onClick={onClose} className="p-1 rounded-full hover:bg-gray-200"><X size={20} className="text-[#ADB5BD]" /></button>
+                    </div>
                 </div>
                 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-[#5D6D7E] mb-1">Service Name</label>
-                        <input id="name" {...register('name', { required: 'Service name is required.' })} className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]" />
-                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
-                    </div>
+                <fieldset disabled={isSubmitting || isLoading} className="flex-grow contents">
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-y-auto p-6 space-y-4">
+                        
+                        <Input
+                            id="name"
+                            label="Service Name"
+                            register={register}
+                            rules={{ required: 'Service name is required.' }}
+                            errors={errors}
+                        />
 
-                    <div>
-                        <label htmlFor="category" className="block text-sm font-medium text-[#5D6D7E] mb-1">Category</label>
-                        <select id="category" {...register('category', { required: 'Category is required.' })} className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white capitalize">
-                            {serviceCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                        </select>
-                        {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="base_price" className="block text-sm font-medium text-[#5D6D7E] mb-1">Base Price ($)</label>
-                            <input id="base_price" type="number" step="0.01" {...register('base_price', { required: 'Price is required.', valueAsNumber: true })} className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]" />
-                            {errors.base_price && <p className="text-red-500 text-xs mt-1">{errors.base_price.message}</p>}
+                        <TextArea
+                            id="description"
+                            label="Description"
+                            register={register}
+                            errors={errors}
+                            rows={3}
+                        />
+                        
+                        <div className="w-full">
+                            <label htmlFor="category" className="block text-sm text-gray-900 font-medium mb-1">Category</label>
+                            <select 
+                                id="category"
+                                {...register("category", { required: "Category is required" })}
+                                className={clsx(
+                                    "block w-full border rounded-md border-gray-300 focus:outline-none p-2 focus:ring-2 focus:ring-[#545F71] bg-white capitalize",
+                                    errors.category && "ring-1 ring-red-500 border-red-500" // Sedikit penyesuaian gaya error
+                                )}
+                            >
+                                {serviceCategories.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
+                            </select>
+                            {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="capacity_per_day" className="block text-sm font-medium text-[#5D6D7E] mb-1">Capacity / Day</label>
-                            <input id="capacity_per_day" type="number" placeholder="Optional" {...register('capacity_per_day', { valueAsNumber: true })} className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]" />
-                        </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 pt-2">
-                        <input type="checkbox" id="is_active" {...register('is_active')} className="h-4 w-4 rounded border-gray-300 text-[#545F71] focus:ring-[#545F71]" />
-                        <label htmlFor="is_active" className="text-sm font-medium text-[#5D6D7E]">Set service as active</label>
-                    </div>
 
-                    <div className="flex justify-end gap-4 pt-4 border-t border-[#E9ECEF]">
-                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-[#495057] bg-[#E9ECEF] rounded-md hover:bg-[#C3D3E0]">Cancel</button>
-                        <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">{isEditMode ? 'Save Changes' : 'Create Service'}</button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="basePrice" className="block text-sm font-medium text-gray-900 mb-1">Base Price</label>
+                                <input id="basePrice" type="number" step="any" {...register('basePrice', { required: 'Price is required.', valueAsNumber: true, min: { value: 0, message: "Price can't be negative" } })} className="w-full border rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]" />
+                                {errors.basePrice && <p className="text-red-500 text-xs mt-1">{errors.basePrice.message}</p>}
+                            </div>
+                            <div>
+                                <label htmlFor="capacityPerDay" className="block text-sm font-medium text-gray-900 mb-1">Capacity / Day</label>
+                                <input id="capacityPerDay" type="number" placeholder="Optional" {...register('capacityPerDay', { valueAsNumber: true, min: { value: 0, message: "Capacity can't be negative" } })} className="w-full border rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]" />
+                                {errors.capacityPerDay && <p className="text-red-500 text-xs mt-1">{errors.capacityPerDay.message}</p>}
+                            </div>
+                        </div>
+                        
+                        <FileUpload
+                          name="imageUrl"
+                          label="Service Image"
+                          accept={{ 'image/*': ['.jpeg', '.jpg', '.png'] }}
+                          setValue={setValue}
+                          watch={watch}
+                          errors={errors}
+                        />
+                    </form>
+                </fieldset>
+
+                <div className="flex-shrink-0 p-6 border-t border-[#E9ECEF]">
+                    <div className="flex justify-end gap-4">
+                        <Button buttonType="button" onClick={onClose} secondary={true} disabled={isSubmitting || isLoading}>Cancel</Button>
+                        <Button buttonType="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting || isLoading}>
+                            {isSubmitting ? <><Spinner /> Saving...</> : (isEditMode ? 'Save Changes' : 'Create Service')}
+                        </Button>
                     </div>
-                </form>
+                </div>
             </div>
-        </div>,
-        modalContainer
+        </div>
     )
 }
 
