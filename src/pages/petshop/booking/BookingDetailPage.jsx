@@ -6,9 +6,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Edit, Stethoscope, FileText } from 'lucide-react';
 import BookingModal from './BookingModal';
-// import CreatePrescriptionModal from './CreatePrescriptionModal';
+import CreatePrescriptionModal from './CreatePrescriptionModal';
 
 import { fetchBookingById, changeBookingStatus, clearCurrentBooking } from '../../../store/slices/bookingSlice';
+import { createNewPrescription } from '../../../store/slices/prescriptionSlice';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -28,9 +29,11 @@ const BookingDetailPage = () => {
     const navigate = useNavigate()
 
     const { currentBooking: booking, status, error } = useSelector((state) => state.bookings)
+    const { status: prescriptionStatus } = useSelector(state => state.prescriptions)
 
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
     const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false)
+    
 
     useEffect(() => {
         if (bookingId) {
@@ -52,9 +55,25 @@ const BookingDetailPage = () => {
         }
     }
     
-    const handlePrescriptionCreate = (prescriptionData) => {
-        console.log("Fungsi ini akan diimplementasikan nanti:", prescriptionData)
-        setIsPrescriptionModalOpen(false);
+    const handlePrescriptionCreate = async (formData) => {
+        if (!booking || !booking.pet || !booking.businessId) {
+            alert("Booking data is incomplete.")
+            return
+        }
+
+        const payload = {
+            ...formData,
+            petId: booking.pet.id,
+            issuingBusinessId: booking.businessId,
+            issueDate: new Date().toISOString().split('T')[0],
+        }
+        
+        try {
+            await dispatch(createNewPrescription(payload)).unwrap()
+            setIsPrescriptionModalOpen(false);
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     if (status === 'loading' && !booking) {
@@ -77,7 +96,7 @@ const BookingDetailPage = () => {
     }
     
     const formatStatusText = (status) => (status || '').replace(/_/g, ' ').toLowerCase()
-    const isVeterinaryService = booking.service?.category === 'veterinary'
+    const isVeterinaryService = booking.service?.category.toLowerCase() == 'veterinary'
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -149,12 +168,14 @@ const BookingDetailPage = () => {
                 currentStatus={booking.status}
                 onUpdate={handleStatusUpdate}
             />
-            {/* <CreatePrescriptionModal
+
+             <CreatePrescriptionModal
                 isOpen={isPrescriptionModalOpen}
                 onClose={() => setIsPrescriptionModalOpen(false)}
-                onSubmit={handlePrescriptionCreate}
-                petName={booking.pet.name}
-            /> */}
+                onSave={handlePrescriptionCreate}
+                petName={booking.pet?.name}
+                isLoading={prescriptionStatus === 'loading'}
+            />
         </div>
     )
 }

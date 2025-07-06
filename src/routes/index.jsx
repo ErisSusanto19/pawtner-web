@@ -32,6 +32,7 @@ import UserDetailPage from '../pages/admin/user-management/UserDetailPage';
 import BusinessManagementPage from '../pages/admin/business-management/BusinessManagementPage';
 import BusinessDetailPage from '../pages/admin/business-management/BusinessDetailPage';
 import AdminSettingsPage from '../pages/admin/settings/AdminSettingsPage';
+import ResetPasswordPage from '../pages/petshop/auth/ResetPasswordPage';
 
 
 const router = createBrowserRouter([
@@ -109,7 +110,12 @@ const router = createBrowserRouter([
             },
         ]
     },
-
+    
+    {
+        path: 'reset-password',
+        element: <ResetPasswordPage/>
+    },
+    
     {
         path: '/admin',
         element: <AdminRootLayout/>,

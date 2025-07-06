@@ -6,6 +6,7 @@ import productReducer from './slices/productSlice'
 import orderReducer from './slices/orderSlice'
 import serviceReducer from './slices/serviceSlice'
 import bookingReducer from './slices/bookingSlice'
+import prescriptionReducer from './slices/prescriptionSlice'
 
 import { injectStore } from '../api/axiosInstance'
 
@@ -17,7 +18,8 @@ const store = configureStore({
     products: productReducer,
     orders: orderReducer,
     services: serviceReducer,
-    bookings: bookingReducer
+    bookings: bookingReducer,
+    prescriptions: prescriptionReducer
   },
 })
 

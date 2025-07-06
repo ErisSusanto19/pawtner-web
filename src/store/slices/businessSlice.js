@@ -139,67 +139,66 @@ export const fetchMyBusiness = () => {
 
 export const updateBusinessDetails = (formData) => {
   return async (dispatch, getState) => {
-    dispatch(businessOperationStart())
+    dispatch(businessOperationStart());
+
+    const businessId = getState().business.details?.businessId
+    if (!businessId) {
+        const errorMsg = "Business ID not found. Cannot update."
+        dispatch(businessOperationFail({ error: errorMsg }))
+        throw new Error(errorMsg)
+    }
 
     try {
-      console.log("Updating business with (camelCase from form):", formData)
+      console.log("Updating business with form data:", formData);
 
-      const dataForApi = {
-        name: formData.name,
-        description: formData.description,
-        business_type: formData.businessType,
-        business_email: formData.businessEmail,
-        business_phone: formData.businessPhone,
-        address: formData.address,
-        has_emergency_services: formData.hasEmergencyServices,
-        emergency_phone: formData.emergencyPhone,
+      const dataToSend = { ...formData }
 
-        business_image_url: typeof formData.businessImageUrl === 'string' 
-            ? formData.businessImageUrl 
-            : formData.businessImageUrl?.name,
-        certificate_image_url: typeof formData.certificateImageUrl === 'string' 
-            ? formData.certificateImageUrl 
-            : formData.certificateImageUrl?.name,
+      const businessImageFile = dataToSend.businessImageUrl
+      const certificateFile = dataToSend.certificateImageUrl
 
-        operation_hours: Object.keys(formData.operationHours).map(day => {
-            const dayData = formData.operationHours[day] || {};
-            return {
-                day: day.charAt(0).toUpperCase() + day.slice(1),
-                isOpen: dayData.isOpen || false,
-                open: dayData.open || '00:00',
-                close: dayData.close || '00:00',
-            }
-        }),
-      }
+      dataToSend.operationHours = formatToBackendHours(dataToSend.operationHours)
       
-      console.log("Simulating API PUT/PATCH with (snake_case data):", dataForApi)
+      delete dataToSend.businessImageUrl
+      delete dataToSend.certificateImageUrl
+      delete dataToSend.id
 
-      await new Promise(res => setTimeout(res, 1000))
-      
-      const currentBusinessState = getState().business.details
-      const updatedBusinessDetails = {
-        ...currentBusinessState,
-        name: formData.name,
-        description: formData.description,
-        businessType: formData.businessType,
-        businessEmail: formData.businessEmail,
-        businessPhone: formData.businessPhone,
-        hasEmergencyServices: formData.hasEmergencyServices,
-        emergencyPhone: formData.emergencyPhone,
-        address: formData.address,
-        businessImageUrl: dataForApi.business_image_url,
-        certificateImageUrl: dataForApi.certificate_image_url,
-        operationHours: dataForApi.operation_hours,
+      const apiPayload = new FormData()
+
+      apiPayload.append(
+        'business',
+        new Blob([JSON.stringify(dataToSend)], { type: "application/json" })
+      )
+
+      if (businessImageFile && businessImageFile[0] instanceof File) {
+        apiPayload.append('businessImage', businessImageFile[0])
       }
 
-      console.log("Saving updated (camelCase) data to Redux & localStorage:", updatedBusinessDetails)
+      if (certificateFile && certificateFile[0] instanceof File) {
+        apiPayload.append('certificateImage', certificateFile[0])
+      }
 
-      localStorage.setItem('businessDetails', JSON.stringify(updatedBusinessDetails))
-      dispatch(businessOperationSuccess({ businessDetails: updatedBusinessDetails }))
+      const response = await businessApi.updateBusiness(businessId, apiPayload)
+
+      const updatedBusinessFromApi = response.data
+
+      if (!updatedBusinessFromApi) {
+          throw new Error("Invalid response from server after update.");
+      }
+
+      const currentBusinessState = getState().business.details;
+      const newBusinessDetails = { ...currentBusinessState, ...updatedBusinessFromApi };
+
+      console.log("Saving updated data from API directly to Redux & localStorage:", newBusinessDetails)
+      localStorage.setItem('businessDetails', JSON.stringify(newBusinessDetails))
+      dispatch(businessOperationSuccess({ businessDetails: newBusinessDetails }))
       
+      return newBusinessDetails
+
     } catch (error) {
       console.error("Failed to update business details:", error)
-      dispatch(businessOperationFail({ error: error.message || 'Failed to update business' }))
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update business'
+      dispatch(businessOperationFail({ error: errorMessage }))
+      throw error
     }
   }
 }

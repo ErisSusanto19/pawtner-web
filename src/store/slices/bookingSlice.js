@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import * as bookingApi from '../../api/bookingApi';
+import { fetchServiceById } from './serviceSlice';
 
 const initialState = {
     items: [],
@@ -36,6 +37,10 @@ const bookingSlice = createSlice({
             state.status = 'succeeded'
             state.currentBooking = action.payload
         },
+        fetchBookingWithDetailsServiceSuccess: (state, action) => {
+            state.status = 'succeeded';
+            state.currentBooking = action.payload;
+        },
         updateBookingStatusSuccess: (state, action) => {
             state.status = 'succeeded'
             const updatedBooking = action.payload
@@ -60,6 +65,7 @@ export const {
     bookingOperationFail,
     fetchBookingsSuccess,
     fetchBookingByIdSuccess,
+    fetchBookingWithDetailsServiceSuccess,
     updateBookingStatusSuccess,
     clearCurrentBooking,
 } = bookingSlice.actions
@@ -68,7 +74,7 @@ export const fetchBusinessBookings = (params = { page: 0, size: 10 }) => {
     return async (dispatch) => {
         dispatch(bookingOperationStart())
         try {
-            const response = await bookingApi.getBusinessBookings(params)
+            const response = await bookingApi.getBusinessBookings()
             console.log(response, '<<< cek response fetch data');
             
             dispatch(fetchBookingsSuccess(response.data))
@@ -79,12 +85,38 @@ export const fetchBusinessBookings = (params = { page: 0, size: 10 }) => {
     }
 }
 
+// export const fetchBookingById = (bookingId) => {
+//     return async (dispatch) => {
+//         dispatch(bookingOperationStart())
+//         try {
+//             const response = await bookingApi.getBookingById(bookingId)
+//             dispatch(fetchBookingByIdSuccess(response.data))
+//         } catch (error) {
+//             const errorMessage = error.response?.data?.message || error.message
+//             dispatch(bookingOperationFail({ error: errorMessage }))
+//         }
+//     }
+// }
+
 export const fetchBookingById = (bookingId) => {
     return async (dispatch) => {
         dispatch(bookingOperationStart())
         try {
-            const response = await bookingApi.getBookingById(bookingId)
-            dispatch(fetchBookingByIdSuccess(response.data))
+            const bookingResponse = await bookingApi.getBookingById(bookingId)
+            const basicBookingData = bookingResponse.data
+
+            const { serviceId } = basicBookingData
+
+            const serviceAction = await dispatch(fetchServiceById(serviceId))
+            const serviceDetails = serviceAction.data
+
+            const hydratedBooking = {
+                ...basicBookingData,
+                service: serviceDetails,
+            }
+            
+            dispatch(fetchBookingWithDetailsServiceSuccess(hydratedBooking))
+
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(bookingOperationFail({ error: errorMessage }))

@@ -48,15 +48,15 @@ const BusinessProfileForm = ({ initialData }) => {
 
             const mappedData = {
                 nameBusiness: initialData.businessName,
-                descriptionBusiness: initialData.description,
+                descriptionBusiness: initialData.descriptionBusiness,
                 businessType: initialData.businessType,
-                businessEmail: initialData.business_email,
-                businessPhone: initialData.business_phone,
+                businessEmail: initialData.businessEmail,
+                businessPhone: initialData.businessPhone,
                 businessAddress: initialData.businessAddress,
-                hasEmergencyServices: initialData.has_emergency_services,
-                emergencyPhone: initialData.emergency_phone,
-                businessImageUrl: initialData.business_image_url,
-                certificateImageUrl: initialData.certificate_image_url,
+                hasEmergencyServices: initialData.hasEmergencyServices,
+                emergencyPhone: initialData.emergencyPhone,
+                businessImageUrl: initialData.businessImageUrl,
+                certificateImageUrl: initialData.certificateImageUrl,
                 operationHours: formatToFrontendHours(initialData.operationHours),
             }
 
@@ -98,7 +98,7 @@ const BusinessProfileForm = ({ initialData }) => {
                     />
                     <div>
                         <label className="block text-sm text-gray-900 font-medium mb-2">Business Type</label>
-                        <select {...register('business_type')} className="block w-full border rounded-md border-[#545F71] focus:outline-none p-1.5 focus:ring focus:ring-[#545F71] focus:border-none shadow-md">
+                        <select {...register('businessType')} className="block w-full border rounded-md border-[#545F71] focus:outline-none p-1.5 focus:ring focus:ring-[#545F71] focus:border-none shadow-md">
                             {businessTypeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                         </select>
                     </div>

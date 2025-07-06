@@ -5,12 +5,22 @@ export const registerBusiness = async (data) => {
     return response.data
 }
 
+
+export const getMyBusiness = async () => {
+    const response = await axiosInstance.get('/business/my-business')
+    return response.data
+}
+
 export const getBusinessById = async (id) => {
     const response = await axiosInstance.get(`/business/${id}`)
     return response.data
 }
 
-export const getMyBusiness = async () => {
-    const response = await axiosInstance.get('/business/my-business')
+export const updateBusiness = async (id, businessData) => {
+    const response = await axiosInstance.put(`/business/${id}/update`, businessData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
     return response.data
 }

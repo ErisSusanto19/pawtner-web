@@ -70,10 +70,14 @@ export const {
 } = orderSlice.actions
 
 export const fetchBusinessOrders = (params = { page: 0, size: 10 }) => {
-    return async (dispatch) => {
+    return async (dispatch,getState) => {
         dispatch(orderOperationStart())
+
         try {
-            const response = await orderApi.getBusinessOrders(params)
+            const businessId = getState().business.details?.businessId
+            const response = await orderApi.getBusinessOrders(businessId)
+            console.log(response, '<<< cek order response');
+            
             dispatch(fetchOrdersSuccess(response.data))
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
@@ -87,6 +91,9 @@ export const fetchOrderById = (orderId) => {
         dispatch(orderOperationStart());
         try {
             const response = await orderApi.getOrderById(orderId)
+
+            console.log(response, '<<< cek response oder by id');
+            
 
             dispatch(fetchOrderByIdSuccess(response.data))
         } catch (error) {

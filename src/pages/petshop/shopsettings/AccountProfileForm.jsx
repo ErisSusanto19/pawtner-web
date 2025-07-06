@@ -1,19 +1,27 @@
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { Save, Mail, Lock } from 'lucide-react';
-import Input from '../../../components/Input';
-import { requestPasswordReset, updateUserProfile } from '../../../store/slices/authSlice';
+import { Mail, Save } from 'lucide-react';
 import { toast } from 'react-toastify';
+
+import Input from '../../../components/Input';
+import Button from '../../../components/Button';
 import FileUpload from '../../../components/FileUploadV2';
-import TextArea from '../../../components/TextArea'
+import TextArea from '../../../components/TextArea';
+
+import { requestPasswordReset, updateUserProfile } from '../../../store/slices/authSlice';
 
 const AccountProfileForm = ({ initialData }) => {
     const dispatch = useDispatch()
-    const user = useSelector((state) => state.auth.user)
-    const { isLoading: isAuthLoading, error: authError } = useSelector((state) => state.auth)
+    const { isLoading: isAuthLoading } = useSelector((state) => state.auth)
 
-    const { register: registerUser, handleSubmit: handleUserSubmit, formState: { errors: userErrors, isSubmitting: isUserSubmitting }, setValue, watch } = useForm({
-        defaultValues: user || {}
+    const { 
+        register: registerUser, 
+        handleSubmit: handleUserSubmit, 
+        formState: { errors: userErrors, isSubmitting: isUserSubmitting }, 
+        setValue, 
+        watch 
+    } = useForm({
+        defaultValues: initialData || {}
     })
     
     const onUserSubmit = async (data) => {
@@ -28,13 +36,13 @@ const AccountProfileForm = ({ initialData }) => {
     const handleResetRequest = async () => {
         if (!initialData?.email) {
             toast.error("User email is not available.")
-            return;
+            return
         }
 
         if (window.confirm("Are you sure you want to send a password reset link to your email?")) {
             try {
                 const message = await dispatch(requestPasswordReset(initialData.email))
-                toast.success(message || "Password reset link sent!");
+                toast.success(message || "Password reset link sent!")
             } catch (error) {
                 toast.error(error.message || "Failed to send reset link.")
             }
@@ -44,10 +52,11 @@ const AccountProfileForm = ({ initialData }) => {
     if (!initialData) {
         return <div className="p-6 text-center">Loading account details...</div>
     }
+    
+    const isProcessing = isUserSubmitting || isAuthLoading
 
     return (
         <div className="space-y-6">
-            {/* Personal Info Card */}
             <form onSubmit={handleUserSubmit(onUserSubmit)} className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
                 <h3 className="text-lg font-semibold text-[#495057] mb-4">Personal Information</h3>
                 
@@ -61,7 +70,7 @@ const AccountProfileForm = ({ initialData }) => {
                             setValue={setValue}
                             watch={watch}
                             errors={userErrors}
-                            // rules={{ required: 'Profile picture is required.' }}
+                            disabled={isProcessing}
                         />
                     </div>
                     <div className="md:col-span-2 space-y-6">
@@ -71,53 +80,54 @@ const AccountProfileForm = ({ initialData }) => {
                             type="text" 
                             register={registerUser} 
                             errors={userErrors}
-                            rules={{
-                                required: {value: true, message: "Name is required"}, 
-                            }}
+                            rules={{ required: {value: true, message: "Name is required"} }}
+                            disabled={isProcessing}
                         />
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input 
                                 id="email" 
-                                label="Email" type="email" 
+                                label="Email" 
+                                type="email" 
                                 register={registerUser} 
                                 errors={userErrors} 
-                                disabled 
+                                disabled
                             />
-
                             <Input 
                                 id="phone" 
                                 label="Phone" 
                                 type="tel" 
                                 register={registerUser} 
                                 errors={userErrors}
+                                disabled={isProcessing}
                             />
                         </div>
                     </div>
+                </div>
 
-                    {/* <TextArea 
+                <div className="mt-6">
+                     <TextArea 
                         id="address" 
                         label="Address" 
                         rows={3} 
                         register={registerUser} 
                         errors={userErrors}
-                    /> */}
+                        disabled={isProcessing}
+                    />
                 </div>
                 
-
                 <div className="flex justify-end pt-4 mt-4 border-t border-[#E9ECEF]">
-                    <button 
-                        type="submit"
-                        disabled={isUserSubmitting || isAuthLoading}
-                        className="flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]"
+                    <Button
+                        buttonType="submit"
+                        disabled={isProcessing}
+                        isLoading={isProcessing}
                     >
-                        <Save size={16} /> 
-                        {isUserSubmitting ? 'Saving...' : 'Save Personal Info'}
-                    </button>
+                        <Save size={16} className={isProcessing ? "hidden" : "inline-block mr-2"} />
+                        {isProcessing ? 'Saving...' : 'Save Personal Info'}
+                    </Button>
                 </div>
             </form>
 
-            {/* Reset Password Card */}
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
                 <h3 className="text-lg font-semibold text-[#495057] mb-4">Password Security</h3>
                 <div className="space-y-4">
@@ -126,15 +136,15 @@ const AccountProfileForm = ({ initialData }) => {
                     </p>
                 </div>
                 <div className="flex justify-end pt-4 mt-4 border-t border-[#E9ECEF]">
-                    <button 
-                        type="button" // Penting: type="button" agar tidak men-submit form lain
+                    <Button
                         onClick={handleResetRequest}
                         disabled={isAuthLoading}
-                        className="flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 disabled:bg-gray-400"
+                        isLoading={isAuthLoading}
+                        danger
                     >
-                        <Mail size={16} /> 
+                        <Mail size={16} className={isAuthLoading ? "hidden" : "inline-block mr-2"} />
                         {isAuthLoading ? 'Sending...' : 'Send Reset Link'}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

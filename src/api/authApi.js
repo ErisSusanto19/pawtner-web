@@ -26,16 +26,20 @@ export const getProfile = async (id) => {
 }
 
 export const updateProfile = async (formData) => {
-  const response = await axiosInstance.put('/users', formData)
+  const response = await axiosInstance.put('/users', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
   return response.data
 }
 
-export const resetPassword = async (passwordData) => {
-    const response = await axiosInstance.post('/auth/reset-password', passwordData)
-    return response.data
+export const requestPasswordReset = async (emailPayload) => {
+  const response = await axiosInstance.post('/auth/forgot-password', emailPayload)
+  return response.data
 }
 
-export const requestPasswordReset = async (payload) => {
-  const response = await axiosInstance.post('/auth/forgot-password', payload)
+export const resetPassword = async (resetPayload) => {
+  const response = await axiosInstance.post('/auth/reset-password', resetPayload)
   return response.data
 }
