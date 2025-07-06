@@ -5,6 +5,7 @@ import adminAuthReducer from './slices/adminAuthSlice';
 import productReducer from './slices/productSlice'
 import orderReducer from './slices/orderSlice'
 import serviceReducer from './slices/serviceSlice'
+import bookingReducer from './slices/bookingSlice'
 
 import { injectStore } from '../api/axiosInstance'
 
@@ -15,7 +16,8 @@ const store = configureStore({
     adminAuth: adminAuthReducer,
     products: productReducer,
     orders: orderReducer,
-    services: serviceReducer
+    services: serviceReducer,
+    bookings: bookingReducer
   },
 })
 
