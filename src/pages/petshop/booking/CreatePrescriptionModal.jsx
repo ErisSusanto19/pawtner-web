@@ -115,7 +115,7 @@ const CreatePrescriptionModal = ({ isOpen, onClose, onSave, petName, isLoading }
                 <div className="flex-shrink-0 p-6 border-t border-[#E9ECEF]">
                     <div className="flex justify-end gap-4">
                         <button type="button" onClick={onClose} disabled={isLoading} className="px-4 py-2 text-sm font-semibold text-[#495057] bg-[#E9ECEF] rounded-md hover:bg-[#C3D3E0] disabled:opacity-50">Cancel</button>
-                        <button type="button" onClick={handleSubmit(processSubmit)} disabled={isLoading} className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300">
+                        <button type="button" onClick={handleSubmit(processSubmit)} disabled={isLoading} className="px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057] disabled:bg-blue-300">
                             {isLoading ? "Saving..." : "Create Prescription"}
                         </button>
                     </div>

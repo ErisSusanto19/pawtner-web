@@ -5,11 +5,9 @@ import { Search, Eye, MoreVertical, Edit, Printer, XCircle, Undo2 } from 'lucide
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 import Button from '../../../components/Button';
 import OrderModal from './OrderModal';
-import { fetchBusinessOrders, changeOrderStatus } from '../../../store/slices/orderSlice'; // Pastikan path ini benar
+import { fetchBusinessOrders, changeOrderStatus } from '../../../store/slices/orderSlice';
 import { toast } from 'react-toastify';
-import ConfirmationModal from '../../../components/ConfirmationModal'; // Asumsi komponen ini ada
-
-// Helper & Konstanta
+import ConfirmationModal from '../../../components/ConfirmationModal';
 const formatStatus = (status = '') => {
     if (!status) return '';
     return status.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
@@ -52,10 +50,9 @@ const OrderPage = () => {
     const [confirmAction, setConfirmAction] = useState({ fn: null, title: '', message: '' })
 
     useEffect(() => {
-        dispatch(fetchBusinessOrders({ page: 0, size: 100 })); // Ambil semua untuk kemudahan filter
+        dispatch(fetchBusinessOrders({ page: 0, size: 100 }));
     }, [dispatch]);
 
-    // Menutup dropdown menu saat klik di luar
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -66,7 +63,6 @@ const OrderPage = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, []);
 
-    // Memoized filtering
     const filteredOrders = useMemo(() => {
         if (!Array.isArray(orders)) return []
         return orders.filter(order => {
@@ -77,7 +73,6 @@ const OrderPage = () => {
         });
     }, [searchTerm, selectedStatus, orders])
     
-    // UI Handlers
     const handleMenuOpen = (e, orderId) => {
         e.stopPropagation()
         const rect = e.currentTarget.getBoundingClientRect()

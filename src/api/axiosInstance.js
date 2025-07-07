@@ -6,8 +6,10 @@ export const injectStore = (_store) => {
   store = _store
 }
 
+const baseURL = import.meta.env.VITE_BASE_URL_API
+
 const axiosInstance = axios.create({
-  baseURL: 'https://22da-180-248-33-245.ngrok-free.app/api',
+  baseURL
 })
 
 axiosInstance.interceptors.request.use(

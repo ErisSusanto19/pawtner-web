@@ -10,6 +10,12 @@ export const getPrescriptions = async (params) => {
     return response.data
 }
 
+//Pakai yang ini
+export const getPrescriptionsByBookingId = async (bookingId) => {
+    const response = await axiosInstance.get(`/prescriptions/booking/${bookingId}`)
+    return response.data
+}
+
 export const getPrescriptionById = async (prescriptionId) => {
     const response = await axiosInstance.get(`/prescriptions/${prescriptionId}`)
     return response.data

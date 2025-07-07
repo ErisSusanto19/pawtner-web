@@ -1,13 +1,13 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, Edit, Printer } from 'lucide-react';
+import { ArrowLeft, Edit, ImageOff, Printer } from 'lucide-react';
 import OrderModal from './OrderModal';
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 import { fetchOrderById, clearCurrentOrder, changeOrderStatus } from '../../../store/slices/orderSlice'; // Pastikan path benar
 import { toast } from 'react-toastify';
+import { useReactToPrint } from 'react-to-print';
 
-// Helper & Konstanta
 const formatStatus = (status = '') => {
     if (!status) return '';
     return status.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
@@ -52,18 +52,21 @@ const OrderDetailPage = () => {
     }, [orderId, dispatch]);
 
     const financials = useMemo(() => {
-        if (!order) return { subtotal: 0, shipping: 0, tax: 0, total: 0 };
-        const subtotal = order.items?.reduce((acc, item) => acc + (item.quantity * parseFloat(item.priceAtPurchase)), 0) || 0;
-        const shipping = parseFloat(order.shippingCost || 0);
-        const total = parseFloat(order.totalAmount || 0);
-        const tax = total - subtotal - shipping;
-        return { subtotal, shipping, tax, total };
-    }, [order]);
+        if (!order || !order.items) return { subtotal: 0, shipping: 0, tax: 0, total: 0 };
+        
+        const subtotal = order.items.reduce((acc, item) => acc + (item.quantity * parseFloat(item.pricePerUnit)), 0)
+        
+        const total = parseFloat(order.totalAmount || 0)
+        
+        const otherCosts = total - subtotal
+        
+        return { subtotal, otherCosts, total }
+    }, [order])
 
     const handleStatusUpdate = async (newStatus) => {
         setIsUpdatingStatus(true);
         try {
-            await dispatch(changeOrderStatus({ orderId: order.id, payload: { status: newStatus } })).unwrap();
+            await dispatch(changeOrderStatus({ orderId: order.id, payload: { status: newStatus } }))
             toast.success("Order status updated successfully!");
             setIsModalOpen(false);
         } catch (err) {
@@ -71,7 +74,16 @@ const OrderDetailPage = () => {
         } finally {
             setIsUpdatingStatus(false);
         }
-    };
+    }
+
+    const invoicePrintRef = useRef(null)
+
+    const handlePrint = useReactToPrint({
+        content: () => invoicePrintRef.current,
+        documentTitle: `Invoice-${order?.orderNumber || 'details'}`,
+    })
+
+    const isDataReady = status === 'succeeded' && !!order
 
     if (status === 'loading' && !order) return <div className="p-6 text-center">Loading order details...</div>;
     if (status === 'failed' && !order) return <div className="p-6 text-center text-red-600"><h2>{error}</h2><Link to="/orders" className="text-[#545F71] hover:underline mt-4 inline-block">Back to all orders</Link></div>;
@@ -85,7 +97,13 @@ const OrderDetailPage = () => {
                     <h1 className="text-2xl font-bold text-[#495057]">Order Details <span className="text-[#ADB5BD]">#{order.orderNumber}</span></h1>
                     <div className="flex gap-2">
                         <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]"><Edit size={16} /> Update Status</button>
-                        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#495057] bg-white border border-[#E9ECEF] rounded-md hover:bg-[#F8F9FA]"><Printer size={16} /> Print Invoice</button>
+                        <button
+                            onClick={handlePrint}
+                            disabled={!isDataReady}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#495057] bg-white border border-[#E9ECEF] rounded-md hover:bg-[#F8F9FA] disabled:opacity-50"
+                        >
+                            <Printer size={16} /> Print Invoice
+                        </button>
                     </div>
                 </div>
             </div>
@@ -99,10 +117,17 @@ const OrderDetailPage = () => {
                             <tbody>
                                 {order.items?.map((item, index) => (
                                     <tr key={item.id || index} className="border-b border-[#E9ECEF]">
-                                        <td className="py-3 px-2"><div className="flex items-center gap-3"><img src={item.product?.imageUrl} alt={item.product?.name} className="w-12 h-12 rounded-md object-cover" /><span className="font-medium text-[#545F71]">{item.product?.name}</span></div></td>
+                                        <td className="py-3 px-2">
+                                            <div className="flex items-center gap-3">
+                                                {/* <div className="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center">
+                                                    <ImageOff size={24} className="text-gray-400" />
+                                                </div> */}
+                                                <span className="font-medium text-[#545F71]">{item.productName}</span>
+                                            </div>
+                                        </td>
                                         <td className="py-3 px-2 text-center text-[#495057]">{item.quantity}</td>
-                                        <td className="py-3 px-2 text-right text-[#495057]">{formatCurrencyIDR(item.priceAtPurchase)}</td>
-                                        <td className="py-3 px-2 text-right font-medium text-[#545F71]">{formatCurrencyIDR(item.priceAtPurchase * item.quantity)}</td>
+                                        <td className="py-3 px-2 text-right text-[#495057]">{formatCurrencyIDR(item.pricePerUnit)}</td>
+                                        <td className="py-3 px-2 text-right font-medium text-[#545F71]">{formatCurrencyIDR(item.pricePerUnit * item.quantity)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -113,14 +138,21 @@ const OrderDetailPage = () => {
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">
                         <h3 className="text-lg font-semibold text-[#495057]">Order Summary</h3>
-                        <div className="flex justify-between text-sm"><span className="text-[#5D6D7E]">Order Date:</span><span className="text-[#495057] font-medium">{formatDate(order.createdAt)}</span></div>
-                        <div className="flex justify-between text-sm items-center"><span className="text-[#5D6D7E]">Order Status:</span><span className={`px-2 py-1 text-xs font-medium rounded-full ${getOrderStatusBadge(order.status)}`}>{formatStatus(order.status)}</span></div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-[#5D6D7E]">Order Date:</span>
+                            <span className="text-[#495057] font-medium">{formatDate(order.createdAt)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm items-center">
+                            <span className="text-[#5D6D7E]">Order Status:</span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getOrderStatusBadge(order.status)}`}>{formatStatus(order.status)}</span>
+                        </div>
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">
-                        <h3 className="text-lg font-semibold text-[#495057]">Customer & Shipping</h3>
-                        <p className="font-medium text-[#495057]">{order.customer?.name}</p>
-                        <p className="text-sm text-[#5D6D7E]">{order.customer?.email}</p>
-                        <p className="text-sm text-[#5D6D7E] pt-2 border-t border-[#E9ECEF]">{order.shippingAddress?.fullAddress}</p>
+                        {/* <h3 className="text-lg font-semibold text-[#495057]">Customer & Shipping</h3> */}
+                        <h3 className="text-lg font-semibold text-[#495057]">Customer</h3>
+                        <p className="font-medium text-[#495057]">{order.customerName}</p>
+                        {/* <p className="text-sm text-[#5D6D7E]">{order.customer?.email}</p> */}
+                        {/* <p className="text-sm text-[#5D6D7E] pt-2 border-t border-[#E9ECEF]">{order.shippingAddress?.fullAddress}</p> */}
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">
                         <h3 className="text-lg font-semibold text-[#495057]">Payment Details</h3>
@@ -132,7 +164,66 @@ const OrderDetailPage = () => {
                 </div>
             </div>
             
-            <OrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} currentStatus={order.status} onUpdate={handleStatusUpdate} isUpdating={isUpdatingStatus} statusOptions={workflowStatuses} />
+            <OrderModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                currentStatus={order.status} onUpdate={handleStatusUpdate} 
+                isUpdating={isUpdatingStatus} 
+                statusOptions={workflowStatuses} 
+            />
+
+            <div style={{ display: 'none' }}>
+                <div ref={invoicePrintRef} className="p-8 font-sans text-gray-800">
+                    {/* Header Invoice */}
+                    <div className="flex justify-between items-start pb-4 border-b">
+                        <div>
+                            <h1 className="text-3xl font-bold">{order.businessName || 'Your Business Name'}</h1>
+                            <p className="text-sm">Invoice</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-lg font-semibold">Order #{order.orderNumber}</p>
+                            <p className="text-sm">Date: {formatDate(order.createdAt)}</p>
+                        </div>
+                    </div>
+                    {/* Info Pelanggan */}
+                    <div className="mt-8">
+                        <h2 className="text-lg font-semibold">Billed To:</h2>
+                        <p>{order.customerName}</p>
+                    </div>
+                    {/* Tabel Item */}
+                    <div className="mt-8">
+                        <table className="w-full text-left">
+                           <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="p-2 font-semibold">Item</th>
+                                    <th className="p-2 font-semibold text-center">Qty</th>
+                                    <th className="p-2 font-semibold text-right">Price</th>
+                                    <th className="p-2 font-semibold text-right">Total</th>
+                                </tr>
+                            </thead>
+                           <tbody>
+                                {order.items.map(item => (
+                                    <tr key={item.id} className="border-b">
+                                        <td className="p-2">{item.productName}</td>
+                                        <td className="p-2 text-center">{item.quantity}</td>
+                                        <td className="p-2 text-right">{formatCurrencyIDR(item.pricePerUnit)}</td>
+                                        <td className="p-2 text-right">{formatCurrencyIDR(item.pricePerUnit * item.quantity)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* Total */}
+                    <div className="flex justify-end mt-8">
+                        <div className="w-full max-w-xs space-y-2">
+                            <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrencyIDR(financials.subtotal)}</span></div>
+                            <div className="flex justify-between"><span>Shipping & Others</span><span>{formatCurrencyIDR(financials.otherCosts)}</span></div>
+                            <div className="flex justify-between text-xl font-bold pt-2 border-t"><span>Total</span><span>{formatCurrencyIDR(financials.total)}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     )
 }

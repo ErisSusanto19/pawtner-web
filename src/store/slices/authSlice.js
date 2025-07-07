@@ -208,8 +208,6 @@ export const checkUserSession = () => async (dispatch, getState) => {
     if (!fullUserProfile || !fullUserProfile.id) {
         throw new Error("Session invalid or expired. Could not fetch profile.");
     }
-    
-    // const baseUser = { ...fullUserProfile, hasBusiness: null }
 
     localStorage.setItem('user', JSON.stringify(fullUserProfile))
     dispatch(loginSuccess({ user: fullUserProfile, token }))
@@ -230,40 +228,6 @@ export const checkUserSession = () => async (dispatch, getState) => {
     }
   }
 }
-
-// export const fetchUserProfile = () => { // masih salah, belum ada api dari BE
-//     return async (dispatch, getState) => {
-//         const token = getState().auth.token
-//         if (!token) return
-
-//         const userFromStorage = getState().auth.user
-//         if (!userFromStorage || !userFromStorage.id) {
-//             dispatch(logout())
-//             return
-//         }
-
-//         dispatch(authOperationStart())
-//         try {
-
-//             const userId = userFromStorage.id;
-            
-//             const profileResponse = await authApi.getProfile(userId)
-//             const baseUser = profileResponse.data.user || profileResponse.data
-
-//             const finalUserProfile = { ...baseUser, hasBusiness }
-
-//             localStorage.setItem('user', JSON.stringify(finalUserProfile))
-//             dispatch(loginSuccess({ user: finalUserProfile, token: token }))
-
-//         } catch (error) {
-//             const errorMessage = error.response?.data?.message || error.message || 'Session expired or invalid.'
-//             dispatch(authOperationFail({ error: errorMessage }))
-//             if (error.response?.status === 401) {
-//                 dispatch(logout())
-//             }
-//         }
-//     }
-// }
 
 export const updateUserProfile = (formData) => {
   return async (dispatch, getState) => {

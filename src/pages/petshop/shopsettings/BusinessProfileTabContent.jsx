@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchMyBusiness } from '../../../store/slices/businessSlice';
+import { fetchBusinessById, fetchMyBusiness } from '../../../store/slices/businessSlice';
 import BusinessProfileForm from './BusinessProfileForm';
 import NoBusinessProfile from './NoBusinessProfile';
 
@@ -15,13 +15,17 @@ const BusinessProfileTabContent = () => {
     const { user } = useSelector((state) => state.auth)
     const { details: business, status, error } = useSelector((state) => state.business)
 
+    const businessId = useSelector((state) => state.business.details?.businessId)
     const hasBusiness = user?.hasBusiness
 
     useEffect(() => {
-        if (hasBusiness && !business && status !== 'loading') {
-            dispatch(fetchMyBusiness())
+        // if (hasBusiness && !business && status !== 'loading') {
+        //     dispatch(fetchMyBusiness())
+        // }
+        if (hasBusiness && businessId) {
+            dispatch(fetchBusinessById(businessId));
         }
-    }, [dispatch, hasBusiness, business, status])
+    }, [dispatch, hasBusiness, businessId])
 
     if (!hasBusiness) {
         return <NoBusinessProfile />

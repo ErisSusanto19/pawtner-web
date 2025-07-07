@@ -1,9 +1,10 @@
 import Input from '../../../components/Input'
 import TextArea from '../../../components/TextArea'
-import FileUpload from '../../../components/FileUpload'
+import FileUpload from '../../../components/FileUploadV2'
 import { UserRound, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
+import MapPicker from '../../../components/MapPicker'
 
 const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
 
@@ -48,6 +49,36 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 setIsLocating(false);
             }
         )
+    }
+
+    const handleLocationSelect = async (lat, lng) => {
+        setIsLocating(true)
+        setLocationError('')
+
+        try {
+            setValue('latitude', lat, { shouldValidate: true });
+            setValue('longitude', lng, { shouldValidate: true });
+
+            const apiKey = import.meta.env.VITE_LOCATIONIQ_API_KEY;
+            const url = `https://us1.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${lat}&lon=${lng}&format=json`;
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch address.')
+
+            const data = await response.json()
+
+            if (data && data.display_name) {
+                setValue('address', data.display_name, { shouldValidate: true })
+                toast.success('Address updated from map!')
+            } else {
+                setValue('address', 'Address not found for this location.', { shouldValidate: true })
+            }
+        } catch (error) {
+            setLocationError(error.message)
+            toast.error(error.message)
+        } finally {
+            setIsLocating(false)
+        }
     }
 
     return (
@@ -117,7 +148,7 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
             <input type="hidden" {...register('latitude')} />
             <input type="hidden" {...register('longitude')} />
 
-            <div className="mt-2">
+            {/* <div className="mt-2">
                 <button
                     type="button"
                     onClick={handleGetLocation}
@@ -128,7 +159,13 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                     {isLocating ? 'Searching for location...' : 'Use Current Location'}
                 </button>
                 {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
-            </div>
+            </div> */}
+
+            <p className="text-sm text-gray-600">Click on the map to select your precise location.</p>
+            {isLocating && <p className="text-sm text-blue-600">Updating address...</p>}
+            {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
+
+            <MapPicker onLocationSelect={handleLocationSelect} />
 
             <div className='flex space-x-4'>
                 <Input 

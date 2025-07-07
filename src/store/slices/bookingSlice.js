@@ -71,11 +71,12 @@ export const {
 } = bookingSlice.actions
 
 export const fetchBusinessBookings = (params = { page: 0, size: 10 }) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         dispatch(bookingOperationStart())
         try {
-            const response = await bookingApi.getBusinessBookings()
-            console.log(response, '<<< cek response fetch data');
+            const businessId = getState().business.details?.businessId
+            const response = await bookingApi.getBusinessBookings(businessId)
+            console.log(response, '<<< cek response booking');
             
             dispatch(fetchBookingsSuccess(response.data))
         } catch (error) {

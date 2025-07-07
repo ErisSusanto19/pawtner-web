@@ -4,13 +4,18 @@ import Input from '../../../components/Input';
 import Button from '../../../components/Button';
 import logoPawtner from '@/assets/pawtner2.png'
 import { useDispatch, useSelector } from 'react-redux'
-import { loginUser, registerUser } from '../../../store/slices/authSlice';
-import { useEffect } from 'react';
+import { loginUser, requestPasswordReset } from '../../../store/slices/authSlice';
+import { useEffect, useState } from 'react';
+import ForgotPasswordModal from './ForgotPasswordModal';
+import { toast } from 'react-toastify';
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { isLoading, error, isAuthenticated } = useSelector((state) => state.auth)
+  const { isLoading: isLoginLoading, error, isAuthenticated } = useSelector((state) => state.auth)
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isResetLoading, setIsResetLoading] = useState(false)
 
   const { register, handleSubmit, formState: { errors, isValid } } = useForm({
     mode: 'onChange',
@@ -24,6 +29,19 @@ const LoginPage = () => {
     dispatch(loginUser(data))
   }
 
+  const handleRequestReset = async (data) => {
+    setIsResetLoading(true)
+    try {
+      const message = await dispatch(requestPasswordReset(data.resetEmail))
+      toast.success(message || "Password reset link sent! Please check your email.")
+      setIsModalOpen(false)
+    } catch (err) {
+      toast.error(err.message || "Failed to send reset link. Please try again.")
+    } finally {
+      setIsResetLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/')
@@ -31,68 +49,87 @@ const LoginPage = () => {
   }, [isAuthenticated, navigate])
 
   return (
-    <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl space-y-8">
+    <>
+      <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
+        <div className="bg-white w-full max-w-md p-8 rounded-xl shadow-2xl space-y-8">
 
-        <div className="text-center">
-          <img 
-            src={logoPawtner} 
-            alt="Logo Pawtner" 
-            className="w-40 h-auto object-contain mx-auto mb-6" 
-          />
-          <h2 className="text-2xl font-bold text-[#495057]">Welcome Back!</h2>
-          <p className="text-gray-500">Sign in to your business account</p>
-        </div>
+          <div className="text-center">
+            <img 
+              src={logoPawtner} 
+              alt="Logo Pawtner" 
+              className="w-40 h-auto object-contain mx-auto mb-6" 
+            />
+            <h2 className="text-2xl font-bold text-[#495057]">Welcome Back!</h2>
+            <p className="text-gray-500">Sign in to your business account</p>
+          </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Input
-            id="email"
-            label="Email"
-            type="email"
-            register={register}
-            errors={errors}
-            rules={{
-              required: 'Email is required.',
-              pattern: {
-                value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
-                message: 'Please enter a valid email address.',
-              },
-            }}
-          />
-
-          <div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <Input
-              id="password"
-              label="Password"
-              type="password"
+              id="email"
+              label="Email"
+              type="email"
               register={register}
               errors={errors}
               rules={{
-                required: 'Password is required.',
+                required: 'Email is required.',
+                pattern: {
+                  value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                  message: 'Please enter a valid email address.',
+                },
               }}
             />
+
+            {/* <div> */}
+              <Input
+                id="password"
+                label="Password"
+                type="password"
+                register={register}
+                errors={errors}
+                rules={{
+                  required: 'Password is required.',
+                }}
+              />
+            {/* </div> */}
+
+            <div className="text-right mt-2">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="text-sm font-medium text-[#545F71] hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+            <Button buttonType="submit" fullWidth disabled={!isValid || isLoginLoading}>
+              {isLoginLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
+          </form>
+
+          <div className="flex flex-col justify-center items-center mt-12">
+              <p className="text-center text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/signup" className="font-medium text-[#545F71] hover:underline">
+                  Sign up
+              </Link>
+              </p>
+              <p className="text-center text-sm text-gray-600">
+                  By signing in, you agree to our Terms of Service and Privacy Policy
+              </p>
           </div>
-
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-          <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </Button>
-        </form>
-
-        <div className="flex flex-col justify-center items-center mt-12">
-            <p className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-medium text-[#545F71] hover:underline">
-                Sign up
-            </Link>
-            </p>
-            <p className="text-center text-sm text-gray-600">
-                By signing in, you agree to our Terms of Service and Privacy Policy
-            </p>
         </div>
       </div>
-    </div>
+
+      <ForgotPasswordModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleRequestReset}
+        isLoading={isResetLoading}
+      />
+    </>
   )
 }
 

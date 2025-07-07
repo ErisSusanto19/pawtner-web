@@ -74,10 +74,11 @@ export const {
     setCurrentService,
 } = serviceSlice.actions
 
-export const fetchServices = (params = {}) => async (dispatch) => {
+export const fetchServices = (params = {}) => async (dispatch, getState) => {
     dispatch(serviceOperationStart())
     try {
-        const response = await serviceApi.getMyServices(params)
+        const businessId = getState().business.details?.businessId
+        const response = await serviceApi.getMyServices(businessId, params)
         dispatch(fetchServicesSuccess(response.data));
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message

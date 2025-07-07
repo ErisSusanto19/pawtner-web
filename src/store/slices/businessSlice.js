@@ -30,9 +30,10 @@ const businessSlice = createSlice({
       state.status = 'loading'
     },
     businessOperationSuccess: (state, action) => {
-      state.isLoading = false;
+      state.isLoading = false
       state.details = action.payload.businessDetails
       state.status = 'succeeded'
+      localStorage.setItem('businessDetails', JSON.stringify(action.payload.businessDetails))
     },
     businessOperationFail: (state, action) => {
       state.isLoading = false
@@ -114,16 +115,20 @@ export const fetchMyBusiness = () => {
     try {
       const response = await businessApi.getMyBusiness()
       const businesses = response.data
+      console.log(businesses, 'cek hasil api business');
+      
 
       if (businesses && businesses.length > 0) {
         const myBusiness = businesses[0]
-
-        if (myBusiness.operation_hours) {
-          myBusiness.operationHours = formatToFrontendHours(myBusiness.operation_hours)
+        console.log(myBusiness, '<<< cek my business');
+        
+        if (myBusiness.operationHours) {
+          myBusiness.operationHours = formatToFrontendHours(myBusiness.operationHours)
         }
 
-        localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
+        // localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
         dispatch(businessOperationSuccess({ businessDetails: myBusiness }))
+        // dispatch(updateUserBusinessStatus(true))
         
       } else {
         localStorage.removeItem('businessDetails')
@@ -134,6 +139,34 @@ export const fetchMyBusiness = () => {
       dispatch(businessOperationFail({ error: errorMessage }))
       localStorage.removeItem('businessDetails')
     }
+  }
+}
+
+export const fetchBusinessById = (businessId) => async (dispatch) => {
+  if (!businessId) {
+      console.error("fetchBusinessById dipanggil tanpa businessId.");
+      return;
+  }
+
+  dispatch(businessOperationStart())
+  try {
+    const response = await businessApi.getBusinessById(businessId)
+    const fullBusinessDetails = response.data
+    console.log(fullBusinessDetails, '<<< cek business by id');
+    
+
+    if (fullBusinessDetails.operationHours) {
+        fullBusinessDetails.operationHours = formatToFrontendHours(fullBusinessDetails.operationHours)
+    }
+
+    dispatch(businessOperationSuccess({ businessDetails: fullBusinessDetails }))
+    
+    return fullBusinessDetails
+
+  } catch (error) {
+    console.error("Failed to fetch business by ID:", error)
+    const errorMessage = error.response?.data?.message || error.message || 'Gagal mengambil detail bisnis.'
+    dispatch(businessOperationFail({ error: errorMessage }))
   }
 }
 

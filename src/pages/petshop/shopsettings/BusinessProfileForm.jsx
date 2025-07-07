@@ -57,7 +57,8 @@ const BusinessProfileForm = ({ initialData }) => {
                 emergencyPhone: initialData.emergencyPhone,
                 businessImageUrl: initialData.businessImageUrl,
                 certificateImageUrl: initialData.certificateImageUrl,
-                operationHours: formatToFrontendHours(initialData.operationHours),
+                // operationHours: formatToFrontendHours(initialData.operationHours),
+                operationHours: initialData.operationHours,
             }
 
             console.log(mappedData, '<<< cek mapped data')

@@ -9,6 +9,7 @@ import { MailCheck, LoaderCircle } from 'lucide-react';
 import { verifyUserEmail, resendVerificationLink } from '../../../store/slices/authSlice';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
+import { toast } from 'react-toastify';
 
 const VerifyEmailPage = () => {
     const location = useLocation()
@@ -35,7 +36,7 @@ const VerifyEmailPage = () => {
         
         if (!email || email === 'your email address') {
             // Handle kasus di mana email tidak tersedia (misal, refresh halaman)
-            alert('Email address not found. Please go back to sign up.');
+            toast.error('Email address not found. Please go back to sign up.')
             return;
         }
         const verificationData = {
@@ -47,7 +48,7 @@ const VerifyEmailPage = () => {
 
     const handleResend = () => {
         if (!email || email === 'your email address') {
-            alert('Email address not found. Please try registering again.')
+            toast.error('Email address not found. Please try registering again.')
             return;
         }
         dispatch(resendVerificationLink(email))
@@ -55,7 +56,7 @@ const VerifyEmailPage = () => {
 
     useEffect(() => {
         if (status === 'verified') {
-            alert(message || 'Verification successful! You can now log in.');
+            toast.success(message || 'Verification successful! You can now log in.');
             setTimeout(() => {
                 navigate('/signin')
             }, 1000)

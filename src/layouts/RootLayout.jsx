@@ -30,7 +30,8 @@ const RootLayout = () => {
         return <FullPageLoader />
     }
 
-    const publicPaths = ['/signin', '/signup', '/verify-email', '/forgot-password']
+    // Ditambahkan '/reset-password' untuk menangani kasus di luar children RootLayout
+    const publicPaths = ['/signin', '/signup', '/verify-email', '/forgot-password', '/reset-password'] 
     const isPublicPath = publicPaths.some(path => location.pathname.startsWith(path))
 
     if (isAuthenticated) {
@@ -39,18 +40,25 @@ const RootLayout = () => {
         }
 
         if (user) {
-            if (user.hasBusiness === null) {
+            // Loader untuk menunggu status 'hasBusiness' selesai dihitung
+            // user.hasBusiness === null adalah asumsi dari kode Anda, undefined lebih aman
+            if (typeof user.hasBusiness === 'undefined' || user.hasBusiness === null) {
                 return <FullPageLoader />
             }
 
             const isRegisterPage = location.pathname.includes('/register-business')
 
-            if (user.hasBusiness === false && !isRegisterPage) {
-                return <Navigate to="/register-business" replace />;
-            }
+            // Logika ini DIPERTAHANKAN: mencegah user yang SUDAH punya bisnis mengakses halaman registrasi.
             if (user.hasBusiness === true && isRegisterPage) {
                 return <Navigate to="/" replace />
             }
+            
+            // Logika ini DIHAPUS karena inilah yang menyebabkan paksaan.
+            /*
+            if (user.hasBusiness === false && !isRegisterPage) {
+                return <Navigate to="/register-business" replace />;
+            }
+            */
         }
 
         return <Outlet />
@@ -61,10 +69,11 @@ const RootLayout = () => {
             return <Outlet />
         }
         
-        return <Navigate to="/signin" replace />
+        // Ditambahkan state `from` untuk pengalaman pengguna yang lebih baik setelah login.
+        return <Navigate to="/signin" state={{ from: location }} replace />
     }
 
     return <FullPageLoader />
 }
 
-export default RootLayout
+export default RootLayout;

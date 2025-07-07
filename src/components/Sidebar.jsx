@@ -4,6 +4,8 @@ import logoPawtner from '../assets/pawtner2.png'
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { clearBusinessData } from '../store/slices/businessSlice';
+import ConfirmationModal from './ConfirmationModal';
+import { useState } from 'react';
 
 const getLinkClass = ({ isActive }, isDisabled) => {
   let baseClass = 'flex items-center px-6 py-3 text-sm font-medium transition-colors'
@@ -39,60 +41,70 @@ const alwaysEnabledPaths = ['/', '/settings']
 const Sidebar = ({ menuDisabled }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [isLogoutModalOpen, setLogoutModalOpen] = useState(false)
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to sign out?")) {
-      dispatch(logout())
-      dispatch(clearBusinessData())
-      navigate('/signin')
-    }
+  const handleConfirmLogout = () => {
+    dispatch(logout())
+    dispatch(clearBusinessData())
+    setLogoutModalOpen(false)
+    navigate('/signin')
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
-      
-      <div className="flex items-center p-4 space-x-3 border-b shadow-sm border-[#E9ECEF]">
-        <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
-        <div>
-          <h2 className="text-xl font-bold text-[#545F71]">Pawtner</h2>
-          <p className="text-xs text-[#ADB5BD]">Business Panel</p>
-        </div>
-      </div>
-
-      <nav className="flex-grow pt-6">
-        {menuItems.map((item) => {
-          const isItemDisabled = menuDisabled && !alwaysEnabledPaths.includes(item.path);
-          return (
-            <DisabledAwareNavLink
-              key={item.name}
-              to={item.path}
-              isDisabled={isItemDisabled}
-            >
-              <item.icon className="h-5 w-5 mr-4" />
-              <span>{item.name}</span>
-            </DisabledAwareNavLink>
-          )
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-[#E9ECEF]">
-        <NavLink
-          to={settingsMenuItem.path}
-          className={({ isActive }) => getLinkClass({ isActive }, false)}
-        >
-          <settingsMenuItem.icon className="h-5 w-5 mr-4" />
-          <span>{settingsMenuItem.name}</span>
-        </NavLink>
+    <>
+      <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
         
-        <button
-          onClick={handleLogout}
-          className={`${getLinkClass({ isActive: false}, false)} w-full mt-1 hover:text-red-600`}
-        >
-          <LogOut className="h-5 w-5 mr-4" />
-          <span>Sign out</span>
-        </button>
-      </div>
-    </aside>
+        <div className="flex items-center p-4 space-x-3 border-b shadow-sm border-[#E9ECEF]">
+          <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
+          <div>
+            <h2 className="text-xl font-bold text-[#545F71]">Pawtner</h2>
+            <p className="text-xs text-[#ADB5BD]">Business Panel</p>
+          </div>
+        </div>
+
+        <nav className="flex-grow pt-6">
+          {menuItems.map((item) => {
+            const isItemDisabled = menuDisabled && !alwaysEnabledPaths.includes(item.path);
+            return (
+              <DisabledAwareNavLink
+                key={item.name}
+                to={item.path}
+                isDisabled={isItemDisabled}
+              >
+                <item.icon className="h-5 w-5 mr-4" />
+                <span>{item.name}</span>
+              </DisabledAwareNavLink>
+            )
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-[#E9ECEF]">
+          <NavLink
+            to={settingsMenuItem.path}
+            className={({ isActive }) => getLinkClass({ isActive }, false)}
+          >
+            <settingsMenuItem.icon className="h-5 w-5 mr-4" />
+            <span>{settingsMenuItem.name}</span>
+          </NavLink>
+          
+          <button
+            onClick={() => setLogoutModalOpen(true)}
+            className={`${getLinkClass({ isActive: false}, false)} w-full mt-1 hover:text-red-600`}
+          >
+            <LogOut className="h-5 w-5 mr-4" />
+            <span>Sign out</span>
+          </button>
+        </div>
+      </aside>
+
+      <ConfirmationModal
+          isOpen={isLogoutModalOpen}
+          onClose={() => setLogoutModalOpen(false)}
+          onConfirm={handleConfirmLogout}
+          title="Confirm Sign Out"
+          message="Are you sure you want to sign out from your account?"
+      />
+    </>
   )
 }
 

@@ -1,7 +1,7 @@
 import axiosInstance from './axiosInstance';
 
-export const getBusinessBookings = async (params) => {
-    const response = await axiosInstance.get('/bookings', { params })
+export const getBusinessBookings = async (businessId,params) => {
+    const response = await axiosInstance.get(`/bookings/my-bookings/${businessId}`, { params })
     return response.data
 }
 

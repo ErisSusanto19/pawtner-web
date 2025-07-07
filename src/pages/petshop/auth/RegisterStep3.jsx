@@ -1,6 +1,6 @@
 import Input from '../../../components/Input'
 import DayRow from '../../../components/DayRow'
-import FileUpload from '../../../components/FileUpload'
+import FileUpload from '../../../components/FileUploadV2'
 import clsx from 'clsx'
 import { ShieldCheck } from 'lucide-react'
 import AgreementCheckbox from '../../../components/AgreementCheckbox'

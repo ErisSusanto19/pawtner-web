@@ -11,6 +11,10 @@ export const getOrderById = async (orderId) => {
 }
 
 export const updateOrderStatus = async (orderId, payload) => {
-    const response = await axiosInstance.patch(`/orders/${orderId}/status`, payload)
+    console.log(payload);
+    
+    const response = await axiosInstance.put(`/orders/${orderId}/status`, null, {
+        params: { status: payload.status }
+    })
     return response.data
 }

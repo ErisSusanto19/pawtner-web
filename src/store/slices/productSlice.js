@@ -83,10 +83,11 @@ export const {
 } = productSlice.actions
 
 export const fetchProducts = (pageNumber = 0) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         dispatch(productOperationStart())
         try {
-            const response = await productApi.getMyProducts(pageNumber)
+            const businessId = getState().business.details?.businessId
+            const response = await productApi.getMyProducts(businessId)
             dispatch(fetchProductsSuccess(response.data))
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message

@@ -19,7 +19,7 @@ const store = configureStore({
     orders: orderReducer,
     services: serviceReducer,
     bookings: bookingReducer,
-    prescriptions: prescriptionReducer
+    prescriptions: prescriptionReducer,
   },
 })
 
