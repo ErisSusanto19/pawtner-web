@@ -3,17 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import logoPawtner from '@/assets/pawtner2.png'; 
-
 import Button from '../../../components/Button';
 import Input from '../../../components/Input';
-import { loginAdmin } from '../../../store/slices/adminAuthSlice';
+import { loginAdmin, clearAdminError } from '../../../store/slices/adminAuthSlice';
+import { toast } from 'react-toastify';
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  
   const { isLoading, error, isAdminAuthenticated } = useSelector((state) => state.adminAuth)
 
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm({
+  const { 
+    register, 
+    handleSubmit, 
+    setError,
+    formState: { errors, isValid } 
+  } = useForm({
     mode: 'onChange',
     defaultValues: {
       email: '',
@@ -21,15 +27,33 @@ const LoginPage = () => {
     },
   })
 
-  const onSubmit = (data) => {
-    dispatch(loginAdmin(data))
-  }
+  useEffect(() => {
+    dispatch(clearAdminError())
+    
+    return () => {
+      dispatch(clearAdminError())
+    };
+  }, [dispatch])
 
   useEffect(() => {
     if (isAdminAuthenticated) {
-      navigate('/admin/dashboard')
+      navigate('/admin/dashboard', { replace: true })
     }
   }, [isAdminAuthenticated, navigate])
+
+  const onSubmit = async (data) => {
+    try {
+      const response = await dispatch(loginAdmin(data))
+      toast.success(response.message)
+    } catch (rejectedValueOrSerializedError) {
+      const errorMessage = rejectedValueOrSerializedError.message || 'An unknown error occurred.'
+      toast.error(errorMessage)
+      setError('root.serverError', { 
+        type: 'manual', 
+        message: errorMessage 
+      })
+    }
+  }
 
   return (
     <div className="flex h-screen">
@@ -80,8 +104,12 @@ const LoginPage = () => {
               }}
             />
 
-            <div className="mt-4">
-              {error && <p className="text-red-500 text-sm text-center -my-2">{error}</p>}
+            <div className="mt-4 h-5 text-center"> 
+              {(error || errors.root?.serverError) && (
+                <p className="text-red-500 text-sm -my-2">
+                  {errors.root?.serverError?.message || error}
+                </p>
+              )}
             </div>
 
             <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>

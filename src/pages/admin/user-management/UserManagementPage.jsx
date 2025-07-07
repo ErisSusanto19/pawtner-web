@@ -1,106 +1,146 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useDebounce } from 'use-debounce';
+import { toast } from 'react-toastify';
+
 import UserFilters from './UserFilters';
 import UsersTable from './UsersTable';
+import Pagination from '../../../components/Pagination';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
-export const mockUsers = [
-    {
-      id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
-      name: 'Eris Susanto',
-      email: 'erissusanto997@gmail.com',
-      phone_number: '081234567890',
-      image_url: 'https://i.pravatar.cc/150?u=a1b2c3d4',
-      is_verified: true,
-      role: 'business_owner',
-      auth_provider: 'local',
-      created_at: '2023-10-26T10:00:00Z',
-    },
-    {
-      id: 'b2c3d4e5-f6a7-8901-2345-67890abcdef1',
-      name: 'Budi Doremi',
-      email: 'budi.do@example.com',
-      phone_number: '082345678901',
-      image_url: 'https://i.pravatar.cc/150?u=b2c3d4e5',
-      is_verified: false,
-      role: 'customer',
-      auth_provider: 'google',
-      created_at: '2023-10-25T11:30:00Z',
-    },
-    {
-      id: 'c3d4e5f6-a7b8-9012-3456-7890abcdef2',
-      name: 'Citra Kirana',
-      email: 'citra.ki@example.com',
-      phone_number: null,
-      image_url: 'https://i.pravatar.cc/150?u=c3d4e5f6',
-      is_verified: true,
-      role: 'customer',
-      auth_provider: 'local',
-      created_at: '2023-10-24T09:00:00Z',
-    },
-      {
-      id: 'd4e5f6a7-b8c9-0123-4567-890abcdef3',
-      name: 'David Guetta',
-      email: 'dave.g@example.com',
-      phone_number: '085678901234',
-      image_url: null,
-      is_verified: false,
-      role: 'business_owner',
-      auth_provider: 'local',
-      created_at: '2023-10-22T14:00:00Z',
-    },
-]
+import { fetchAllUsers, toggleUserStatusAction } from '../../../store/slices/userManagementSlice';
+
+const ITEMS_PER_PAGE = 5;
 
 const UserManagementPage = () => {
-  const [users, setUsers] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [filters, setFilters] = useState({
-    search: '',
-    role: 'all',
-    is_verified: 'all',
-  })
+    const dispatch = useDispatch();
 
-  useEffect(() => {
-    setTimeout(() => {
-      setUsers(mockUsers)
-      setIsLoading(false)
-    }, 1000)
-  }, [])
+    const {
+        items: allUsers,
+        isLoading,
+        error,
+    } = useSelector((state) => state.userManagement);
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }))
-  }
-  
-  const handleAction = (action, userId) => {
-      console.log(`Action: ${action} on user ID: ${userId}`)
-  }
+    const [filters, setFilters] = useState({
+        search: '',
+        role: 'all',
+        isEnable: 'all',
+        isNoLocked: 'all',
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [debouncedSearchTerm] = useDebounce(filters.search, 300);
 
-  const filteredUsers = useMemo(() => {
-    return users.filter(user => {
-      const searchLower = filters.search.toLowerCase()
-      
-      const matchesSearch = user.name.toLowerCase().includes(searchLower) || user.email.toLowerCase().includes(searchLower);
-      const matchesRole = filters.role === 'all' || user.role === filters.role;
-      const matchesVerification = filters.is_verified === 'all' || String(user.is_verified) === filters.is_verified;
-      
-      return matchesSearch && matchesRole && matchesVerification;
-    })
-  }, [users, filters])
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [confirmationData, setConfirmationData] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (isLoading) {
-    return <p>Loading users...</p>
-  }
+    useEffect(() => {
+        dispatch(fetchAllUsers());
+    }, [dispatch]);
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">User Management</h1>
-      
-      <UserFilters filters={filters} onFilterChange={handleFilterChange} />
+    const filteredUsers = useMemo(() => {
+        return allUsers.filter(user => {
+            const searchLower = debouncedSearchTerm.toLowerCase();
+            
+            const matchesSearch = !searchLower || 
+                user.name?.toLowerCase().includes(searchLower) ||
+                user.email?.toLowerCase().includes(searchLower);
 
-      <UsersTable users={filteredUsers} onAction={handleAction}/>
-      
-      {/* Komponen Pagination */}
-    </div>
-  )
+            const matchesRole = filters.role === 'all' || user.role === filters.role;
+
+            const matchesEnabled = filters.isEnable === 'all' || String(user.isEnable) === filters.isEnable;
+            
+            const matchesLocked = filters.isNoLocked === 'all' || String(user.isNoLocked) === filters.isNoLocked;
+
+            return matchesSearch && matchesRole && matchesEnabled && matchesLocked;
+        });
+    }, [allUsers, debouncedSearchTerm, filters]);
+
+    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+
+    const paginatedUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filteredUsers.slice(startIndex, endIndex);
+    }, [filteredUsers, currentPage]);
+
+    useEffect(() => {
+        if (currentPage !== 1) {
+            setCurrentPage(1);
+        }
+    }, [filters, debouncedSearchTerm]);
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAction = (action, userId, value) => {
+        const user = allUsers.find(u => u.id === userId);
+        if (!user) return;
+        const verb = action === 'ban' ? (value ? 'unban' : 'ban') : (value ? 'unsuspend' : 'suspend');
+        setConfirmationData({
+            title: `Confirm ${verb.charAt(0).toUpperCase() + verb.slice(1)}`,
+            message: `Are you sure you want to ${verb} the user "${user.name}"?`,
+            onConfirm: () => handleConfirmAction({ userId, action, value }),
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleConfirmAction = async ({ userId, action, value }) => {
+        setIsSubmitting(true);
+        const verb = action === 'ban' ? (value ? 'unbanned' : 'banned') : (value ? 'unsuspended' : 'suspended');
+        try {
+            await dispatch(toggleUserStatusAction(userId, action, value))
+            toast.success(`User has been successfully ${verb}.`);
+        } catch (err) {
+            toast.error(err.message || `Failed to update user status.`);
+        } finally {
+            setIsSubmitting(false);
+            setIsModalOpen(false);
+            setConfirmationData(null);
+        }
+    };
+    
+    const handleCloseModal = () => {
+        if (isSubmitting) return;
+        setIsModalOpen(false);
+        setConfirmationData(null);
+    };
+
+    return (
+        <div className="p-4 md:p-6">
+            <h1 className="text-2xl font-bold mb-6 text-gray-800">User Management</h1>
+            
+            <UserFilters filters={filters} onFilterChange={handleFilterChange} />
+            
+            {isLoading && allUsers.length === 0 && <p className="text-center py-8">Loading users...</p>}
+            {error && <p className="text-center py-8 text-red-500">Error: {error}</p>}
+            
+            {!isLoading && !error && (
+                <>
+                    <UsersTable users={paginatedUsers} onAction={handleAction} />
+                    
+                    <div className="mt-6">
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                </>
+            )}
+
+            <ConfirmationModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onConfirm={confirmationData?.onConfirm}
+                title={confirmationData?.title}
+                message={confirmationData?.message}
+                isLoading={isSubmitting}
+            />
+        </div>
+    );
 }
 
 export default UserManagementPage
