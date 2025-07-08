@@ -8,7 +8,7 @@ const getInitialState = () => {
 
     return {
       admin: adminData ? JSON.parse(adminData) : null,
-      token: adminToken,
+      adminToken: adminToken,
       isAdminAuthenticated: !!adminToken,
     };
   } catch (error) {
@@ -17,7 +17,7 @@ const getInitialState = () => {
     localStorage.removeItem('admin')
     return {
       admin: null,
-      token: null,
+      adminToken: null,
       isAdminAuthenticated: false,
     };
   }

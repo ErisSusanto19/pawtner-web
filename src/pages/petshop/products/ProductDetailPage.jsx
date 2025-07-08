@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { deleteExistingProduct, fetchProductById, setCurrentProduct, updateExistingProduct } from '../../../store/slices/productSlice';
 import { toast } from 'react-toastify';
+import defImg from '@/assets/undraw_images_of1m.svg'
 
 const ProductDetailPage = () => {
     const { productId } = useParams()
@@ -93,7 +94,15 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] grid grid-cols-1 md:grid-cols-3 gap-8 p-6">
 
                 <div className="md:col-span-1">
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-auto rounded-lg object-cover" />
+                    <img 
+                        src={product.imageUrl} 
+                        alt={product.name} 
+                        className="w-full h-auto rounded-lg object-cover"
+                        onError={(e) => {
+                            e.target.onerror = null
+                            e.target.src = defImg
+                        }}
+                    />
                 </div>
 
                 <div className="md:col-span-2 space-y-4">

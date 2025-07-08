@@ -19,10 +19,15 @@ const PetshopLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
   const { user } = useSelector((state) => state.auth)
+  const { details } = useSelector((state) => state.business);
+  console.log(details, 'cek businnes from layout');
+  
 
   const title = getTitleFromPath(location.pathname)
 
-  const menuDisabled = user && !user.hasBusiness
+  const isBusinessApproved = details && details.statusApproved == 'Approved';
+  const menuDisabled = !user.hasBusiness || !isBusinessApproved;
+  /**const menuDisabled = user && !user.hasBusiness*/
 
   const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/' && location.pathname !== '/register-business'
 

@@ -56,6 +56,7 @@ export const {
 
 export const createBusiness = (formData) => {
   return async (dispatch) => {
+    // const { updateUserBusinessStatus } = require('./authSlice');
     dispatch(businessOperationStart())
 
     try {
@@ -95,12 +96,22 @@ export const createBusiness = (formData) => {
       }
 
       const response = await businessApi.registerBusiness(apiFormData)
-
+      console.log(response, '<<< cek response create business');
+      
       const newBusinessDetails = response.data
 
-      localStorage.setItem('businessDetails', JSON.stringify(newBusinessDetails))
-      dispatch(businessOperationSuccess({ businessDetails: newBusinessDetails }))
-      dispatch(updateUserBusinessStatus(true))
+      if (newBusinessDetails) {
+        if (newBusinessDetails.operationHours) {
+          newBusinessDetails.operationHours = formatToFrontendHours(newBusinessDetails.operationHours)
+        }
+
+        localStorage.setItem('businessDetails', JSON.stringify(newBusinessDetails))
+        dispatch(businessOperationSuccess({ businessDetails: newBusinessDetails }))
+
+        dispatch(updateUserBusinessStatus(true))
+      } else {
+        throw new Error("Business created, but no data was returned from the server.")
+      }
       
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred.'
@@ -111,6 +122,7 @@ export const createBusiness = (formData) => {
 
 export const fetchMyBusiness = () => {
   return async (dispatch) => {
+    // const { updateUserBusinessStatus } = require('./authSlice');
     dispatch(businessOperationStart())
     try {
       const response = await businessApi.getMyBusiness()
@@ -208,6 +220,14 @@ export const updateBusinessDetails = (formData) => {
 
       if (certificateFile && certificateFile[0] instanceof File) {
         apiPayload.append('certificateImage', certificateFile[0])
+      }
+
+      if (businessImageFile) {
+        apiPayload.append('businessImage', businessImageFile)
+      }
+
+      if (certificateFile) {
+        apiPayload.append('certificateImage', certificateFile)
       }
 
       const response = await businessApi.updateBusiness(businessId, apiPayload)

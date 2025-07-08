@@ -10,6 +10,7 @@ import Button from '../../../components/Button';
 import Pagination from '../../../components/Pagination';
 import { formatCurrencyIDR } from '../../../utils/formatter';
 import { fetchServices, deleteExistingService, updateExistingService, createNewService } from '../../../store/slices/serviceSlice';
+import defImg from '@/assets/undraw_images_of1m.svg'
 
 const getStatusBadge = (isActive) => {
     return isActive
@@ -187,10 +188,18 @@ const ServicePage = () => {
                                 <tr key={service.id} onClick={() => navigate(`/services/${service.id}`)} className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA] cursor-pointer">
                                     <td className="py-3 px-4">
                                         <div className="flex items-center">
-                                            {service.imageUrl ? 
+                                            {/* {service.imageUrl ? 
                                                 <img src={service.imageUrl} alt={service.name} className="w-10 h-10 rounded-md object-cover mr-4" /> :
                                                 <div className="w-10 h-10 rounded-md bg-gray-200 mr-4 flex-shrink-0"></div>
-                                            }
+                                            } */}
+                                            <img src={service.imageUrl || defImg} 
+                                                alt={service.name} 
+                                                className="w-10 h-10 rounded-md object-cover mr-4"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = defImg;
+                                                }}
+                                            />
                                             <div>
                                                 <p className="font-medium text-[#545F71]">{service.name}</p>
                                                 <p className="text-xs text-[#ADB5BD]">{service.id}</p>

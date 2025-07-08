@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import {
     ArrowLeft, CheckCircle, XCircle, Clock, ShieldCheck,
-    Briefcase, Mail, Phone, MapPin, Globe, AlertTriangle
+    Briefcase, Mail, Phone, MapPin, Globe, AlertTriangle, AlertCircle
 } from 'lucide-react';
 import defImg from '@/assets/undraw_images_of1m.svg'
 
@@ -16,8 +16,10 @@ import {
 } from '../../../store/slices/businessManagementSlice';
 
 const StatusBadge = ({ status }) => {
-    if (status === 'Approved') {
+    if (status == 'Approved') {
         return <span className="flex items-center gap-1.5 text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full"><ShieldCheck size={16}/> Approved</span>;
+    } else if(status == 'Rejected'){
+        return <span className="flex items-center gap-1.5 text-sm bg-red-100 text-red-800 px-3 py-1 rounded-full"><AlertCircle size={16}/> Rejected</span>;
     }
     return <span className="flex items-center gap-1.5 text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full"><Clock size={16}/> Pending</span>;
 };
@@ -29,6 +31,10 @@ const BusinessProfileCard = ({ business }) => (
                 src={business.businessImageUrl || defImg}
                 alt={business.businessName} 
                 className="w-28 h-28 rounded-lg object-cover ring-4 ring-gray-200 flex-shrink-0" 
+                onError={(e) => {
+                    e.target.onerror = null,
+                    e.target.src = defImg
+                }}
             />
             <div className="text-center sm:text-left flex-grow">
                 <StatusBadge status={business.statusApproved} />
@@ -105,13 +111,28 @@ const AdminActionsCard = ({ business, onAction }) => (
             <div className="space-y-4">
                  <p className="text-sm font-semibold text-gray-700">This business is currently approved.</p>
                 <button 
-                    onClick={() => onAction(business.businessId, false, 'revoke')}
+                    onClick={() => onAction(business.businessId, null, 'revoke')}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600 transition-colors"
                 >
                     <AlertTriangle size={16} /> Revoke Approval
                 </button>
                 <p className="text-xs text-gray-500 mt-2">
                     Revoking approval will set the business back to 'Pending' and hide it from the public.
+                </p>
+            </div>
+        )}
+
+        {business.statusApproved === 'Rejected' && (
+            <div className="space-y-4">
+                 <p className="text-sm font-semibold text-gray-700">This business is currently rejected.</p>
+                <button 
+                    onClick={() => onAction(business.businessId, null, 'revoke')}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600 transition-colors"
+                >
+                    <AlertTriangle size={16} /> Revoke Rejection
+                </button>
+                <p className="text-xs text-gray-500 mt-2">
+                    Revoking rejection will set the business back to 'Pending' and hide it from the public.
                 </p>
             </div>
         )}

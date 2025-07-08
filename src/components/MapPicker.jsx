@@ -1,7 +1,5 @@
-// src/components/MapPicker.js
-
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -15,10 +13,22 @@ L.Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 })
 
-function LocationMarker({ onPositionChange }) {
-    const [position, setPosition] = useState(null);
+function LocationMarker({ onPositionChange, initialLat, initialLng }) {
+    const [position, setPosition] = useState(
+        initialLat && initialLng ? L.latLng(initialLat, initialLng) : null
+    )
 
-    const map = useMapEvents({
+    const map = useMap()
+
+    useEffect(() => {
+        if (initialLat && initialLng) {
+            const newPos = L.latLng(initialLat, initialLng);
+            setPosition(newPos);
+            map.flyTo(newPos, 15);
+        }
+    }, [initialLat, initialLng, map]);
+
+    useMapEvents({
         click(e) {
 
             const newPos = e.latlng;
@@ -38,21 +48,29 @@ function LocationMarker({ onPositionChange }) {
 }
 
 
-const MapPicker = ({ onLocationSelect }) => {
+const MapPicker = ({ onLocationSelect, initialLat, initialLng }) => {
     const defaultPosition = [-2.5489, 118.0149]
 
     const handlePositionChange = (latlng) => {
         onLocationSelect(latlng.lat, latlng.lng)
     }
 
+    const mapCenter = initialLat && initialLng ? [initialLat, initialLng] : defaultPosition
+
+    const initialZoom = initialLat && initialLng ? 15 : 5;
+
     return (
         <div className="h-64 w-full rounded-md overflow-hidden border">
-            <MapContainer center={defaultPosition} zoom={5} style={{ height: '100%', width: '100%' }}>
+            <MapContainer center={mapCenter} zoom={initialZoom} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                     attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <LocationMarker onPositionChange={handlePositionChange} />
+                <LocationMarker
+                    onPositionChange={handlePositionChange}
+                    initialLat={initialLat} 
+                    initialLng={initialLng}
+                />
             </MapContainer>
         </div>
     );

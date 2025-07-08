@@ -5,18 +5,28 @@ import { ArrowLeft, User as UserIcon, CheckCircle, XCircle, ShieldCheck, ShieldO
 import { fetchUserById, toggleUserStatusAction, clearSelectedUser } from '../../../store/slices/userManagementSlice';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { toast } from 'react-toastify';
+import defAvatar from '@/assets/undraw_male-avatar_zkzx.svg'
 
 const UserProfileCard = ({ user }) => (
     <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
             <div className="flex-shrink-0">
-                {user.imageUrl ? (
-                    <img src={user.imageUrl} alt={user.name} className="w-24 h-24 rounded-full object-cover ring-4 ring-gray-200" />
+                {/* {user.imageUrl ? (
+                    <img src={user.imageUrl} alt={user.name} className="w-24 h-24 rounded-full object-cover ring-4 ring-gray-200"/>
                 ) : (
                     <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center ring-4 ring-gray-200">
                         <UserIcon className="w-12 h-12 text-gray-400" />
                     </div>
-                )}
+                )} */}
+                <img 
+                    src={user.imageUrl || defAvatar} 
+                    alt={user.name} 
+                    className="w-24 h-24 rounded-full object-cover ring-4 ring-gray-200"
+                    onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = defAvatar
+                    }}
+                />
             </div>
             <div className="text-center sm:text-left">
                 <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
@@ -65,7 +75,6 @@ const AdminActionsCard = ({ user, onAction }) => (
         <div className="space-y-6">
             {/* Ban/Unban Action */}
             <div>
-                <p className="text-sm font-semibold mb-2 text-gray-700">Ban Status</p>
                 {user.isEnable ? (
                     <button onClick={() => onAction('ban', user.id, false)} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-800 bg-red-100 rounded-md hover:bg-red-200 transition-colors">
                         <XCircle size={16} /> Ban User
@@ -81,21 +90,22 @@ const AdminActionsCard = ({ user, onAction }) => (
             </div>
             
             {/* Suspend/Unsuspend Action */}
-            <div>
-                <p className="text-sm font-semibold mb-2 text-gray-700">Suspend Status</p>
-                {user.isNoLocked ? (
-                    <button onClick={() => onAction('suspend', user.id, false)} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-md hover:bg-yellow-200 transition-colors">
-                        <AlertTriangle size={16} /> Suspend User
-                    </button>
-                ) : (
-                    <button onClick={() => onAction('suspend', user.id, true)} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-green-800 bg-green-100 rounded-md hover:bg-green-200 transition-colors">
-                        <ShieldCheck size={16} /> Unsuspend User
-                    </button>
-                )}
-                <p className="text-xs text-gray-500 mt-2">
-                    {user.isNoLocked ? 'Suspending a user is a temporary measure, often used for warnings.' : 'Unsuspending restores account access if not banned.'}
-                </p>
-            </div>
+            {user.isEnable && (
+                <div>
+                    {user.isNoLocked ? (
+                        <button onClick={() => onAction('suspend', user.id, false)} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-md hover:bg-yellow-200 transition-colors">
+                            <AlertTriangle size={16} /> Suspend User
+                        </button>
+                    ) : (
+                        <button onClick={() => onAction('suspend', user.id, true)} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-green-800 bg-green-100 rounded-md hover:bg-green-200 transition-colors">
+                            <ShieldCheck size={16} /> Unsuspend User
+                        </button>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                        {user.isNoLocked ? 'Suspending a user is a temporary measure, often used for warnings.' : 'Unsuspending restores account access if not banned.'}
+                    </p>
+                </div>
+            )}
         </div>
     </div>
 );

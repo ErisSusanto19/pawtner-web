@@ -12,7 +12,7 @@ import { createBusiness } from '../../../store/slices/businessSlice'
 const TOTAL_STEPS = 2
 
 const stepFields = {
-    1: ["nameBusiness", "businessType", "businessEmail", "businessPhone", "businessaddress"],
+    1: ["nameBusiness", "businessType", "businessEmail", "businessPhone", "businessAddress"],
     2: ["termsAccepted", "privacyAccepted"]
 }
 
@@ -68,19 +68,19 @@ const RegisterBusinessPage = () => {
     const hasErrorsInStep = fieldsForCurrentStep.some(field => errors[field])
     const canProceed = allRequiredFieldsDirty && !hasErrorsInStep
 
-    const isStepValid = () => {
-        const hasErrors = fieldsForCurrentStep.some(field => errors[field])
-        if (hasErrors) {
-            return false
-        }
+    // const isStepValid = () => {
+    //     const hasErrors = fieldsForCurrentStep.some(field => errors[field])
+    //     if (hasErrors) {
+    //         return false
+    //     }
 
-        const areAllFieldsFilled = fieldsForCurrentStep.every(field => {
-            const value = getValues(field)
-            return value !== '' && value !== null && value !== undefined && value !== false
-        })
+    //     const areAllFieldsFilled = fieldsForCurrentStep.every(field => {
+    //         const value = getValues(field)
+    //         return value !== '' && value !== null && value !== undefined && value !== false
+    //     })
 
-        return areAllFieldsFilled
-    }
+    //     return areAllFieldsFilled
+    // }
 
     useEffect(() => {
         if (businessStatus === 'succeeded' && user?.hasBusiness) {

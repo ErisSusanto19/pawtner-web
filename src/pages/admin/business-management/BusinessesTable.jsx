@@ -77,6 +77,10 @@ const BusinessesTable = ({ businesses }) => {
                                         className="h-10 w-10 rounded-md object-cover" 
                                         src={biz.businessImageUrl || defImg} 
                                         alt={biz.businessName}
+                                        onError={(e) => {
+                                            e.target.onerror = null,
+                                            e.target.src = defImg
+                                        }}
                                     />
                                     <div className="ml-4">
                                         <div className="text-sm font-medium text-gray-900">{biz.businessName}</div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Input from '../../../components/Input'
 import TextArea from '../../../components/TextArea'
 import clsx from 'clsx'
-import { Building2, MapPin } from 'lucide-react'
+import { Building2, MapPin, Info } from 'lucide-react'
 import { toast } from 'react-toastify'
 import MapPicker from '../../../components/MapPicker'
 
@@ -174,16 +174,14 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
                 />
             </div>
 
-            <TextArea 
-                id="businessAddress"
-                label="Business Address" 
-                rows={3}
-                register={register} 
-                errors={errors}
+            <input 
+                type="hidden" 
+                {...register('latitude', { required: 'Please select a location on the map.' })}
             />
-
-            <input type="hidden" {...register('latitude')} />
-            <input type="hidden" {...register('longitude')} />
+            <input 
+                type="hidden" 
+                {...register('longitude', { required: 'Please select a location on the map.' })}
+            />
 
             {/* <div className="mt-2">
                 <button
@@ -198,11 +196,34 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
                 {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
             </div> */}
 
-            <p className="text-sm text-gray-600">Click on the map to select your precise location.</p>
+            <p className="text-sm text-gray-600">Click on the map to select your precise location.
+                <span className="text-red-500 font-semibold"> This is required.</span>
+            </p>
             {isLocating && <p className="text-sm text-blue-600">Updating address...</p>}
             {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
 
             <MapPicker onLocationSelect={handleLocationSelect} />
+
+            {/* <div className="flex items-center space-x-2">
+                <label htmlFor="businessAddress" className="...">Business Address</label>
+                <div className="group relative">
+                    <Info size={14} className="text-gray-400 cursor-pointer" />
+                    <span className="absolute bottom-full mb-2 hidden group-hover:block w-64 bg-black text-white text-xs rounded py-1 px-2 text-center z-10">
+                    This address is auto-filled from the map. Feel free to edit it for more detail (like adding a floor or unit number).
+                    </span>
+                </div>
+            </div> */}
+
+            <TextArea 
+                id="businessAddress"
+                label="Business Address" 
+                rows={3}
+                register={register} 
+                errors={errors}
+            />
+            <p className="text-xs text-gray-500 -mt-5 mb-4 ml-1">
+                This address is automatically filled from the map. You can edit it for more detail (e.g., add floor number or block).
+            </p>
 
         </div>
     )

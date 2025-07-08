@@ -88,6 +88,8 @@ export const fetchProducts = (pageNumber = 0) => {
         try {
             const businessId = getState().business.details?.businessId
             const response = await productApi.getMyProducts(businessId)
+            console.log(response, '<<< response fetch all products');
+            
             dispatch(fetchProductsSuccess(response.data))
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message

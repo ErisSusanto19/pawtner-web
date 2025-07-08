@@ -92,6 +92,9 @@ const UserManagementPage = () => {
         const verb = action === 'ban' ? (value ? 'unbanned' : 'banned') : (value ? 'unsuspended' : 'suspended');
         try {
             await dispatch(toggleUserStatusAction(userId, action, value))
+            if(action === 'ban' && value === true){
+                await dispatch(toggleUserStatusAction(userId, 'suspend', true))
+            }
             toast.success(`User has been successfully ${verb}.`);
         } catch (err) {
             toast.error(err.message || `Failed to update user status.`);

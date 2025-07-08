@@ -88,8 +88,8 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 <p className="text-[#545F71] font-medium ml-2">Personal Information</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-                <div className="md:col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-x-8 gap-y-6">
+                {/* <div className="md:col-span-1">
                     <FileUpload
                         name="imageUrl"
                         label="Profile Picture"
@@ -100,7 +100,7 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                         errors={errors}
                         // rules={{ required: 'Profile picture is required.' }}
                     />
-                </div>
+                </div> */}
                 <div className="md:col-span-2 space-y-6">
                     <Input 
                         id="name" 
@@ -127,7 +127,7 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                         />
 
                         <Input 
-                            id="phone" 
+                            id="phoneNumber" 
                             label="Phone" 
                             type="tel" 
                             register={register} 
@@ -137,16 +137,8 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 </div>
             </div>
 
-            <TextArea 
-                id="address" 
-                label="Address" 
-                rows={3} 
-                register={register} 
-                errors={errors}
-            />
-
-            <input type="hidden" {...register('latitude')} />
-            <input type="hidden" {...register('longitude')} />
+            {/* <input type="hidden" {...register('latitude')} />
+            <input type="hidden" {...register('longitude')} /> */}
 
             {/* <div className="mt-2">
                 <button
@@ -161,11 +153,22 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                 {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
             </div> */}
 
-            <p className="text-sm text-gray-600">Click on the map to select your precise location.</p>
+            {/* <p className="text-sm text-gray-600">Click on the map to select your precise location.</p>
             {isLocating && <p className="text-sm text-blue-600">Updating address...</p>}
-            {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>}
+            {locationError && <p className="mt-1 text-sm text-red-500">{locationError}</p>} */}
 
-            <MapPicker onLocationSelect={handleLocationSelect} />
+            {/* <MapPicker onLocationSelect={handleLocationSelect} /> */}
+
+            <TextArea 
+                id="address" 
+                label="Address" 
+                rows={3} 
+                register={register} 
+                errors={errors}
+            />
+            {/* <p className="text-xs text-gray-500 -mt-5 mb-4 ml-1">
+                This address is automatically filled from the map. You can edit it for more detail (e.g., add floor number or block).
+            </p> */}
 
             <div className='flex space-x-4'>
                 <Input 

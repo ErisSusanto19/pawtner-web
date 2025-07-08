@@ -9,9 +9,9 @@ import { useState } from 'react';
 
 const getLinkClass = ({ isActive }, isDisabled) => {
   let baseClass = 'flex items-center px-6 py-3 text-sm font-medium transition-colors'
-  if (isDisabled) {
-      return `${baseClass} text-gray-400 cursor-not-allowed`
-  }
+  // if (isDisabled) {
+  //     return `${baseClass} text-gray-400 cursor-not-allowed`
+  // }
   if (isActive) {
       return `${baseClass} bg-gray-200 text-[#495057]`
   }
@@ -29,12 +29,12 @@ const menuItems = [
 
 const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" }
 
-const DisabledAwareNavLink = ({ to, children, isDisabled }) => {
-  if (isDisabled) {
-    return <div className={getLinkClass({ isActive: false }, true)}>{children}</div>
-  }
-  return <NavLink to={to} end className={({ isActive }) => getLinkClass({ isActive }, false)}>{children}</NavLink>
-}
+// const DisabledAwareNavLink = ({ to, children, isDisabled }) => {
+//   if (isDisabled) {
+//     return <div className={getLinkClass({ isActive: false }, true)}>{children}</div>
+//   }
+//   return <NavLink to={to} end className={({ isActive }) => getLinkClass({ isActive }, false)}>{children}</NavLink>
+// }
 
 const alwaysEnabledPaths = ['/', '/settings']
 
@@ -50,6 +50,10 @@ const Sidebar = ({ menuDisabled }) => {
     navigate('/signin')
   }
 
+  const visibleMenuItems = menuItems.filter(item => {
+    return !menuDisabled || alwaysEnabledPaths.includes(item.path)
+  })
+
   return (
     <>
       <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
@@ -63,7 +67,7 @@ const Sidebar = ({ menuDisabled }) => {
         </div>
 
         <nav className="flex-grow pt-6">
-          {menuItems.map((item) => {
+          {/* {menuItems.map((item) => {
             const isItemDisabled = menuDisabled && !alwaysEnabledPaths.includes(item.path);
             return (
               <DisabledAwareNavLink
@@ -75,7 +79,19 @@ const Sidebar = ({ menuDisabled }) => {
                 <span>{item.name}</span>
               </DisabledAwareNavLink>
             )
-          })}
+          })} */}
+          {visibleMenuItems.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                end
+                className={({ isActive }) => getLinkClass({ isActive })}
+              >
+                <item.icon className="h-5 w-5 mr-4" />
+                <span>{item.name}</span>
+              </NavLink>
+            )
+          )}
         </nav>
 
         <div className="p-4 border-t border-[#E9ECEF]">
@@ -89,7 +105,7 @@ const Sidebar = ({ menuDisabled }) => {
           
           <button
             onClick={() => setLogoutModalOpen(true)}
-            className={`${getLinkClass({ isActive: false}, false)} w-full mt-1 hover:text-red-600`}
+            className={`${getLinkClass({ isActive: false})} w-full mt-1 hover:text-red-600`}
           >
             <LogOut className="h-5 w-5 mr-4" />
             <span>Sign out</span>

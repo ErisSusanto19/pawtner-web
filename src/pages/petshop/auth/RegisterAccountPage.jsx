@@ -18,8 +18,8 @@ const RegisterAccountPage = () => {
         defaultValues: {
             name: "",
             email: "",
-            phone: "",
-            image_url: null,
+            phoneNumber: "",
+            imageUrl: null,
             address: "",
             password: "",
             confirmPassword: "",
@@ -46,7 +46,7 @@ const RegisterAccountPage = () => {
 
     return (
         <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-8">
-            <div className="bg-white w-11/12 md:max-w-2xl p-6 md:p-8 rounded-xl shadow-lg">
+            <div className="bg-white w-11/12 md:max-w-lg p-6 md:p-8 rounded-xl shadow-lg">
                 <div className="flex flex-col justify-center items-center mb-10">
                     <img src={logoPawtner} alt="Logo Pawtner" className="w-48 h-auto" />
                     <p className="text-[#545F71] text-lg font-bold">Create Your Account</p>

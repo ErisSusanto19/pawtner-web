@@ -13,6 +13,7 @@ const RootLayout = () => {
     const dispatch = useDispatch()
     const location = useLocation()
     const { token, user, isAuthenticated } = useSelector((state) => state.auth)
+     const { business } = useSelector((state) => state.business)
     
     const [isSessionChecked, setIsSessionChecked] = useState(false)
 
@@ -30,7 +31,6 @@ const RootLayout = () => {
         return <FullPageLoader />
     }
 
-    // Ditambahkan '/reset-password' untuk menangani kasus di luar children RootLayout
     const publicPaths = ['/signin', '/signup', '/verify-email', '/forgot-password', '/reset-password'] 
     const isPublicPath = publicPaths.some(path => location.pathname.startsWith(path))
 
@@ -40,25 +40,25 @@ const RootLayout = () => {
         }
 
         if (user) {
-            // Loader untuk menunggu status 'hasBusiness' selesai dihitung
-            // user.hasBusiness === null adalah asumsi dari kode Anda, undefined lebih aman
             if (typeof user.hasBusiness === 'undefined' || user.hasBusiness === null) {
                 return <FullPageLoader />
             }
 
             const isRegisterPage = location.pathname.includes('/register-business')
 
-            // Logika ini DIPERTAHANKAN: mencegah user yang SUDAH punya bisnis mengakses halaman registrasi.
             if (user.hasBusiness === true && isRegisterPage) {
                 return <Navigate to="/" replace />
             }
-            
-            // Logika ini DIHAPUS karena inilah yang menyebabkan paksaan.
-            /*
-            if (user.hasBusiness === false && !isRegisterPage) {
-                return <Navigate to="/register-business" replace />;
+
+            if (user.hasBusiness && business) {
+                const isApproved = business.statusApproved === 'Approved';
+                const alwaysEnabledPaths = ['/', '/settings', '/register-business'];
+                const isTryingToAccessRestricted = !alwaysEnabledPaths.some(p => location.pathname.startsWith(p));
+
+                if (!isApproved && isTryingToAccessRestricted) {
+                    return <Navigate to="/" replace />;
+                }
             }
-            */
         }
 
         return <Outlet />
@@ -69,7 +69,6 @@ const RootLayout = () => {
             return <Outlet />
         }
         
-        // Ditambahkan state `from` untuk pengalaman pengguna yang lebih baik setelah login.
         return <Navigate to="/signin" state={{ from: location }} replace />
     }
 

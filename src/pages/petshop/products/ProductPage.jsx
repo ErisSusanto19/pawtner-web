@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import clsx from 'clsx';
 import Pagination from '../../../components/Pagination';
+import defImg from '@/assets/undraw_images_of1m.svg'
 
 const categoryOptions = [
   {value: "FOOD", label: "Food"},
@@ -234,7 +235,15 @@ const ProductsPage = () => {
                                 >
                                     <td className="py-3 px-4">
                                         <div className="flex items-center">
-                                            <img src={product.imageUrl} alt={product.name} className="w-10 h-10 rounded-md object-cover mr-4" />
+                                            <img 
+                                                src={product.imageUrl || defImg} 
+                                                alt={product.name} 
+                                                className="w-10 h-10 rounded-md object-cover mr-4"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = defImg;
+                                                }}
+                                            />
                                             <div>
                                                 <p className="font-medium text-[#545F71]">{product.name}</p>
                                                 <p className="text-xs text-[#ADB5BD]">{product.id}</p>

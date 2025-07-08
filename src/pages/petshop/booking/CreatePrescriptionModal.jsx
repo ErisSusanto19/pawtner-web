@@ -39,7 +39,7 @@ const CreatePrescriptionModal = ({ isOpen, onClose, onSave, petName, isLoading }
     
     return (
         <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-10 pb-10 z-50 overflow-y-auto" 
+            className="fixed inset-0 bg-black/50 flex justify-center items-start pt-10 pb-10 z-50 overflow-y-auto" 
             onClick={() => !isLoading && onClose()}
         >
             <div 

@@ -9,6 +9,8 @@ import WelcomePage from './WelcomePage';
 import { fetchBusinessBookings } from '../../../store/slices/bookingSlice';
 import { fetchBusinessOrders } from '../../../store/slices/orderSlice';
 import { formatCurrencyIDR } from '../../../utils/formatter';
+import BusinessNotApprovedPage from './BusinessNotApprovedPage';
+import BusinessRejectedPage from './BusinessRejectedPage'
 
 const DashboardPage = () => {
     const navigate = useNavigate();
@@ -70,6 +72,14 @@ const DashboardPage = () => {
 
     if (user.hasBusiness === false) {
         return <WelcomePage userName={user?.name || 'there'} />;
+    }
+
+    if (user.hasBusiness === true && business.statusApproved == 'Pending') {
+        return <BusinessNotApprovedPage />;
+    }
+
+    if (user.hasBusiness === true && business.statusApproved == 'Rejected') {
+        return <BusinessRejectedPage />;
     }
 
     if (bookingStatus === 'loading' || orderStatus === 'loading') {

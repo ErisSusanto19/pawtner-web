@@ -36,7 +36,7 @@ const BookingItem = ({ booking, showDate = false }) => {
                     <p className="text-xs text-[#ADB5BD]">~{format(parseISO(booking.endTime), 'HH:mm')}</p>
                 </div>
                 <div className="border-l border-[#E9ECEF] pl-4">
-                    <p className="font-semibold text-[#5D6D7E]">{booking.service?.name || 'Service Name'}</p>
+                    <p className="font-semibold text-[#5D6D7E]">{booking.serviceName || 'Service Name'}</p>
                     <p className="text-sm text-[#495057]">{booking.customer?.name || 'Customer Name'}</p>
                     <p className="text-xs text-[#ADB5BD]">Pet: {booking.pet?.name || 'Pet'} ({booking.pet?.breed || 'Type'})</p>
                 </div>

@@ -10,6 +10,7 @@ import { fetchServiceById, setCurrentService, deleteExistingService, updateExist
 import Button from '../../../components/Button';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import ServiceModal from './ServiceModal';
+import defImg from '@/assets/undraw_images_of1m.svg'
 
 const formatCategory = (category = '') => {
     return category.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
@@ -94,7 +95,15 @@ const ServiceDetailPage = () => {
 
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-1">
-                    <img src={service.imageUrl || 'https://via.placeholder.com/400'} alt={service.name} className="w-full h-auto rounded-lg object-cover" />
+                    <img 
+                        src={service.imageUrl || defImg} 
+                        alt={service.name} 
+                        className="w-full h-auto rounded-lg object-cover"
+                        onError={(e) => {
+                            e.target.onerror = null
+                            e.target.src = defImg
+                        }}
+                    />
                 </div>
                 <div className="md:col-span-2 space-y-4">
                     <div>

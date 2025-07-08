@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User as UserIcon, CheckCircle, XCircle, ShieldOff } from 'lucide-react';
+import defAvatar from '@/assets/undraw_male-avatar_zkzx.svg'
 
 const StatusBadge = ({ isEnable, isNoLocked }) => {
     if (isEnable && isNoLocked) {
@@ -20,7 +21,7 @@ const StatusBadge = ({ isEnable, isNoLocked }) => {
                     Banned
                 </span>
             )}
-            {!isNoLocked && (
+            {!isNoLocked && isEnable && (
                 <span className="px-2 py-1 text-xs font-medium rounded-full inline-flex items-center gap-1 bg-yellow-100 text-yellow-800">
                     <ShieldOff size={12} />
                     Suspended
@@ -62,13 +63,22 @@ const UsersTable = ({ users, onAction }) => {
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-10 w-10">
-                                        {user.imageUrl ? (
+                                        {/* {user.imageUrl ? (
                                             <img className="h-10 w-10 rounded-full object-cover" src={user.imageUrl} alt={user.name} />
                                         ) : (
                                             <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                                                 <UserIcon className="h-6 w-6 text-gray-400"/>
                                             </div>
-                                        )}
+                                        )} */}
+                                        <img 
+                                            className="h-10 w-10 rounded-full object-cover" 
+                                            src={user.imageUrl || defAvatar} 
+                                            alt={user.name}
+                                            onError={(e) => {
+                                                e.target.onerror = null
+                                                e.target.src = defAvatar
+                                            }}
+                                        />
                                     </div>
                                     <div className="ml-4">
                                         <div className="text-sm font-medium text-gray-900">{user.name}</div>
@@ -86,12 +96,14 @@ const UsersTable = ({ users, onAction }) => {
                                 {new Date(user.createdAt).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div className="flex items-center justify-center space-x-2 md:space-x-4">
+                                <div className="flex items-center space-x-2 md:space-x-4">
                                     <Link to={`/admin/users/${user.id}`} className="text-indigo-600 hover:text-indigo-900">
                                         View
                                     </Link>
                                     <button 
-                                        onClick={() => onAction('ban', user.id, !user.isEnable)}
+                                        onClick={() => {
+                                            onAction('ban', user.id, !user.isEnable)
+                                        }}
                                         className={`font-semibold ${
                                             user.isEnable 
                                             ? 'text-green-600 hover:text-green-900'
@@ -101,17 +113,19 @@ const UsersTable = ({ users, onAction }) => {
                                     >
                                         {user.isEnable ? 'Ban' : 'Unban'}
                                     </button>
-                                    <button 
-                                        onClick={() => onAction('suspend', user.id, !user.isNoLocked)}
-                                        className={`font-semibold ${
-                                            user.isNoLocked 
-                                            ? 'text-green-600 hover:text-green-900'
-                                            : 'text-yellow-600 hover:text-yellow-900' 
-                                        }`}
-                                        aria-label={user.isNoLocked ? `Suspend ${user.name}` : `Unsuspend ${user.name}`}
-                                    >
-                                        {user.isNoLocked ? 'Suspend' : 'Unsuspend'}
-                                    </button>
+                                    {user.isEnable && (
+                                        <button 
+                                            onClick={() => onAction('suspend', user.id, !user.isNoLocked)}
+                                            className={`font-semibold ${
+                                                user.isNoLocked 
+                                                ? 'text-green-600 hover:text-green-900'
+                                                : 'text-yellow-600 hover:text-yellow-900' 
+                                            }`}
+                                            aria-label={user.isNoLocked ? `Suspend ${user.name}` : `Unsuspend ${user.name}`}
+                                        >
+                                            {user.isNoLocked ? 'Suspend' : 'Unsuspend'}
+                                        </button>
+                                    )}
                                 </div>
                             </td>
                         </tr>

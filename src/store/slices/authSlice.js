@@ -199,10 +199,12 @@ export const checkUserSession = () => async (dispatch, getState) => {
   if (userInState && typeof userInState.hasBusiness === 'boolean') {
     return
   }
+
+  const userId = userInState.userId || userInState.id
   
   dispatch(authOperationStart())
   try {
-    const profileResponse = await authApi.getProfile(userInState.userId); 
+    const profileResponse = await authApi.getProfile(userId); 
     const fullUserProfile = profileResponse.data
 
     if (!fullUserProfile || !fullUserProfile.id) {
@@ -228,6 +230,34 @@ export const checkUserSession = () => async (dispatch, getState) => {
     }
   }
 }
+
+export const fetchUserProfile = () => async (dispatch, getState) => {
+    const { user } = getState().auth;
+    const userId = user?.userId || user?.id;
+
+    if (!userId) {
+        console.error("fetchUserProfile: Cannot fetch profile, userId is missing from state.");
+        return;
+    }
+
+    dispatch(authOperationStart());
+    try {
+        const response = await authApi.getProfile(userId); 
+        const fullUserProfile = response.data;
+
+        if (!fullUserProfile || !fullUserProfile.id) {
+            throw new Error("Failed to fetch user profile. The user data is incomplete.");
+        }
+
+        localStorage.setItem('user', JSON.stringify(fullUserProfile));
+        dispatch(fetchProfileSuccess({ user: fullUserProfile }));
+
+    } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+        const errorMessage = error.response?.data?.message || error.message || 'Failed to load profile data.';
+        dispatch(authOperationFail({ error: errorMessage }));
+    }
+};
 
 export const updateUserProfile = (formData) => {
   return async (dispatch, getState) => {
@@ -341,6 +371,8 @@ export const resetPassword = (resetData) => {
 }
 
 export const logout = () => (dispatch) => {
+  // const { clearBusinessData } = require('./businessSlice');
+
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   localStorage.removeItem('businessDetails')

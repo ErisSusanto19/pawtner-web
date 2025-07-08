@@ -12,6 +12,7 @@ import userManagementReducer from './slices/userManagementSlice'
 import businessManagementReducer from './slices/businessManagementSlice'
 
 import { injectStore } from '../api/axiosInstance'
+import { injectAdminStore } from '../api/axiosAdminInstance'
 
 const store = configureStore({
   reducer: {
@@ -29,5 +30,6 @@ const store = configureStore({
 })
 
 injectStore(store)
+injectAdminStore(store)
 
 export default store

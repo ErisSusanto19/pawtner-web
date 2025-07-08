@@ -79,6 +79,8 @@ export const fetchServices = (params = {}) => async (dispatch, getState) => {
     try {
         const businessId = getState().business.details?.businessId
         const response = await serviceApi.getMyServices(businessId, params)
+        console.log(response, '<<< cek response fetch all services');
+        
         dispatch(fetchServicesSuccess(response.data));
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message
@@ -90,6 +92,8 @@ export const fetchServiceById = (serviceId) => async (dispatch) => {
     dispatch(serviceOperationStart())
     try {
         const response = await serviceApi.getServiceById(serviceId)
+        console.log(response, '<<< cek response service by id');
+        
         dispatch(fetchServiceByIdSuccess(response.data))
         return response
     } catch (error) {

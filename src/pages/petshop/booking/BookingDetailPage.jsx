@@ -186,7 +186,7 @@ const BookingDetailPage = () => {
                             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">
                             <Edit size={16} /> Update Status
                         </button>
-                        {isVeterinaryService && booking.status === 'COMPLETED' && prescriptions.length === 0 && (
+                        {isVeterinaryService /**&& booking.status === 'COMPLETED'*/ && prescriptions.length === 0 && (
                             <button
                                 onClick={() => setIsPrescriptionModalOpen(true)}
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">
