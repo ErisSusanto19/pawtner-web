@@ -9,6 +9,7 @@ import ConfirmationModal from '../../../components/ConfirmationModal';
 import { deleteExistingProduct, fetchProductById, setCurrentProduct, updateExistingProduct } from '../../../store/slices/productSlice';
 import { toast } from 'react-toastify';
 import defImg from '@/assets/undraw_images_of1m.svg'
+import ProductReviews from './ProductReviews';
 
 const ProductDetailPage = () => {
     const { productId } = useParams()
@@ -16,6 +17,8 @@ const ProductDetailPage = () => {
     const dispatch = useDispatch()
 
     const { currentItem: product, status, error } = useSelector(state => state.products)
+    console.log(product, '>>> cek detail product in component');
+    
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
@@ -95,7 +98,7 @@ const ProductDetailPage = () => {
 
                 <div className="md:col-span-1">
                     <img 
-                        src={product.imageUrl} 
+                        src={product.imageUrl || defImg} 
                         alt={product.name} 
                         className="w-full h-auto rounded-lg object-cover"
                         onError={(e) => {
@@ -129,7 +132,15 @@ const ProductDetailPage = () => {
                         </div>
                     </div>
                 </div>
+
             </div>
+            
+            <ProductReviews 
+                reviews={product.reviews}
+                averageRating={product.averageRating}
+                reviewCount={product.reviewCount}
+            />
+
 
             {isModalOpen && (
                 <ProductModal 

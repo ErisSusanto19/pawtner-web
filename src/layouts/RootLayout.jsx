@@ -13,7 +13,8 @@ const RootLayout = () => {
     const dispatch = useDispatch()
     const location = useLocation()
     const { token, user, isAuthenticated } = useSelector((state) => state.auth)
-     const { business } = useSelector((state) => state.business)
+    const { details } = useSelector((state) => state.business)
+    // console.log(details, 'cek business from root')
     
     const [isSessionChecked, setIsSessionChecked] = useState(false)
 
@@ -50,8 +51,8 @@ const RootLayout = () => {
                 return <Navigate to="/" replace />
             }
 
-            if (user.hasBusiness && business) {
-                const isApproved = business.statusApproved === 'Approved';
+            if (user.hasBusiness && details) {
+                const isApproved = details.statusApproved === 'Approved';
                 const alwaysEnabledPaths = ['/', '/settings', '/register-business'];
                 const isTryingToAccessRestricted = !alwaysEnabledPaths.some(p => location.pathname.startsWith(p));
 

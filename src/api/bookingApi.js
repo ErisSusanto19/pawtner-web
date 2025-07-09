@@ -5,7 +5,9 @@ import axiosInstance from './axiosInstance';
 //     return response.data
 // }
 export const getBusinessBookings = async (businessId, params) => {
-    const response = await axiosInstance.get(`/bookings`, { params })
+    const response = await axiosInstance.get(`/bookings`, { 
+        params: { page:0, size: 50 }
+     })
     return response.data
 }
 

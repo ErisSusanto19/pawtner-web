@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PlusCircle, Edit, Trash2, Archive, Search } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Archive, Search, ChevronsUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import ProductModal from './ProductModal'
 import Button from '../../../components/Button';
 import { formatCurrencyIDR } from '../../../utils/formatter'
@@ -11,6 +11,7 @@ import ConfirmationModal from '../../../components/ConfirmationModal';
 import clsx from 'clsx';
 import Pagination from '../../../components/Pagination';
 import defImg from '@/assets/undraw_images_of1m.svg'
+import StarRating from '../../../components/StarRating';
 
 const categoryOptions = [
   {value: "FOOD", label: "Food"},
@@ -48,6 +49,7 @@ const ProductsPage = () => {
     const [selectedStatus, setSelectedStatus] = useState('All')
 
     // const [filterIsActive, setFilterIsActive] = useState('all')// 'active', 'archived', 'all'
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
     const [currentPage, setCurrentPage] = useState(1)
     const ITEMS_PER_PAGE = 5
@@ -61,10 +63,10 @@ const ProductsPage = () => {
         dispatch(fetchProducts())
     }, [dispatch, location])
 
-    const filteredProducts = useMemo(() => {
+    const filteredProductsAndSortedProducts = useMemo(() => {
         const alarmLowStock = 10
-        const productList = Array.isArray(products) ? products : []
-        return productList
+        let productList = Array.isArray(products) ? products : []
+        productList = productList
             .map(p => {
                 let status;
                 if (p.stockQuantity === 0) status = "Out of Stock"
@@ -83,17 +85,53 @@ const ProductsPage = () => {
                 
                 return matchesSearch && matchesCategory && matchesStatus /**&& matchesActiveStatus*/
             })
-    }, [products, searchTerm, selectedCategory, selectedStatus])
+        
+        if (sortConfig.key !== null) {
+            productList.sort((a, b) => {
+
+                const valA = a[sortConfig.key] ?? 0;
+                const valB = b[sortConfig.key] ?? 0;
+                
+                if (valA < valB) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (valA > valB) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+
+        return productList
+    }, [products, searchTerm, selectedCategory, selectedStatus, sortConfig])
 
     const paginatedProducts = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
         const endIndex = startIndex + ITEMS_PER_PAGE
-        return filteredProducts.slice(startIndex, endIndex)
-    }, [filteredProducts, currentPage])
+        return filteredProductsAndSortedProducts.slice(startIndex, endIndex)
+    }, [filteredProductsAndSortedProducts, currentPage])
 
     const handlePageChange = (page) => {
         setCurrentPage(page)
     }
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+        setCurrentPage(1);
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) {
+            return <ChevronsUpDown size={14} className="ml-2 text-gray-400" />;
+        }
+        return sortConfig.direction === 'ascending' ? 
+            <ArrowUp size={14} className="ml-2 text-blue-600" /> : 
+            <ArrowDown size={14} className="ml-2 text-blue-600" />;
+    };
 
     const handleCreateProduct = async (newData) => {
         try {
@@ -220,9 +258,16 @@ const ProductsPage = () => {
                             <tr>
                                 <th className="py-3 px-4 font-semibold">Product</th>
                                 <th className="py-3 px-4 font-semibold">Category</th>
-                                <th className="py-3 px-4 font-semibold">Price</th>
-                                <th className="py-3 px-4 font-semibold">Stock</th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('price')}>
+                                    <div className="flex items-center">Price {getSortIcon('price')}</div>
+                                </th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('stockQuantity')}>
+                                    <div className="flex items-center">Stock {getSortIcon('stockQuantity')}</div>
+                                </th>
                                 <th className="py-3 px-4 font-semibold">Status</th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('averageRating')}>
+                                    <div className="flex items-center">Rating {getSortIcon('averageRating')}</div>
+                                </th>
                                 <th className="py-3 px-4 font-semibold">Actions</th>
                             </tr>
                         </thead>
@@ -246,7 +291,7 @@ const ProductsPage = () => {
                                             />
                                             <div>
                                                 <p className="font-medium text-[#545F71]">{product.name}</p>
-                                                <p className="text-xs text-[#ADB5BD]">{product.id}</p>
+                                                <p className="text-xs text-[#ADB5BD] truncate max-w-50">{product.description}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -257,6 +302,16 @@ const ProductsPage = () => {
                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(product.status)}`}>
                                             {product.status}
                                         </span>
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {product.reviewCount > 0 ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <StarRating rating={product.averageRating} size={16} />
+                                                <span className="text-xs text-gray-500 mt-0.5">({product.reviewCount})</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-gray-400">-</span>
+                                        )}
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex items-center gap-2">
@@ -281,7 +336,7 @@ const ProductsPage = () => {
                         </tbody>
                     </table>
                     
-                    {filteredProducts.length === 0 && (
+                    {filteredProductsAndSortedProducts.length === 0 && (
                         <div className="text-center py-10 text-[#495057]">
                             <p>No products found matching your criteria.</p>
                         </div>
@@ -309,7 +364,7 @@ const ProductsPage = () => {
             <div className="mt-6">
                 <Pagination
                     currentPage={currentPage}
-                    totalPages={Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)}
+                    totalPages={Math.ceil(filteredProductsAndSortedProducts.length / ITEMS_PER_PAGE)}
                     onPageChange={handlePageChange}
                 />
             </div>

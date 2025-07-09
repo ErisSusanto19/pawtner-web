@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { clearBusinessData } from '../store/slices/businessSlice'
 import ConfirmationModal from './ConfirmationModal';
+import defAvatar from '@/assets/undraw_male-avatar_zkzx.svg'
 
 const Header = ({ title, setSidebarOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -80,11 +81,21 @@ const Header = ({ title, setSidebarOpen }) => {
                 className="flex items-center space-x-2 text-left p-1 rounded-md hover:bg-[#E9ECEF] transition-colors w-full"
               >
                 <div className="w-8 h-8 bg-[#C3D3E0] rounded-full flex items-center justify-center overflow-hidden">
-                  {currentUser.imageUrl ? (
+                  {/* {currentUser.imageUrl ? (
                     <img src={currentUser.imageUrl} alt="User" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="h-5 w-5 text-[#545F71]" />
-                  )}
+                    ) : (
+                      <User className="h-5 w-5 text-[#545F71]" />
+                    )} */}
+
+                    <img 
+                      src={currentUser.imageUrl || defAvatar} 
+                      alt="User" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = defAvatar
+                      }}
+                    />
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-[#495057]">{currentUser.name}</p>

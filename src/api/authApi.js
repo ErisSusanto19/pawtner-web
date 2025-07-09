@@ -43,3 +43,8 @@ export const resetPassword = async (resetPayload) => {
   const response = await axiosInstance.post('/auth/reset-password', resetPayload)
   return response.data
 }
+
+export const setRole = async (email) => {
+  const response  = await axiosInstance.patch('/auth/user/set-role', {role: 'BUSINESS_OWNER', email})
+  return response.data
+}

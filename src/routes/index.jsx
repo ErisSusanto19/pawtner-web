@@ -33,7 +33,8 @@ import BusinessManagementPage from '../pages/admin/business-management/BusinessM
 import BusinessDetailPage from '../pages/admin/business-management/BusinessDetailPage';
 import AdminSettingsPage from '../pages/admin/settings/AdminSettingsPage';
 import ResetPasswordPage from '../pages/petshop/auth/ResetPasswordPage';
-
+import OAuthCallbackPage from '../pages/petshop/auth/OauthCallbackPage';
+import NotFoundPage from '../pages/NotFoundPage';
 
 const router = createBrowserRouter([
     {
@@ -115,6 +116,11 @@ const router = createBrowserRouter([
         path: 'reset-password',
         element: <ResetPasswordPage/>
     },
+
+    {
+        path: '/oauth-redirect',
+        element: <OAuthCallbackPage />
+    },
     
     {
         path: '/admin',
@@ -146,15 +152,20 @@ const router = createBrowserRouter([
                     {
                         path: '/admin/settings',
                         element: <AdminSettingsPage/>
-                    }
+                    },
                 ]
-            }
+            },
         ]
     },
 
     {
         path: '/admin/login',
         element: <AdminLoginPage/>
+    },
+
+    {
+        path: '*',
+        element: <NotFoundPage/>
     }
   
 ])

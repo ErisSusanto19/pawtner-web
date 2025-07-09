@@ -1,6 +1,6 @@
 // src/pages/Auth/VerifyEmailPage.jsx
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,6 +17,9 @@ const VerifyEmailPage = () => {
     const dispatch = useDispatch()
 
     const { isLoading, error, message, status } = useSelector((state) => state.auth)
+
+    const [resendTimer, setResendTimer] = useState(0)
+    const [isRedirecting, setIsRedirecting] = useState(false)
 
     const email = location.state?.email || 'your email address'
 
@@ -35,7 +38,6 @@ const VerifyEmailPage = () => {
         console.log('submit verifiaction clicked');
         
         if (!email || email === 'your email address') {
-            // Handle kasus di mana email tidak tersedia (misal, refresh halaman)
             toast.error('Email address not found. Please go back to sign up.')
             return;
         }
@@ -52,17 +54,50 @@ const VerifyEmailPage = () => {
             return;
         }
         dispatch(resendVerificationLink(email))
+
+        setResendTimer(10)
     }
 
     useEffect(() => {
         if (status === 'verified') {
-            toast.success(message || 'Verification successful! You can now log in.');
-            setTimeout(() => {
+            toast.success(message || 'Verification successful! You can now sign in.');
+
+            setIsRedirecting(true)
+
+            const timeout = setTimeout(() => {
                 navigate('/signin')
-            }, 1000)
+            }, 2000)
+
+            return () => clearTimeout(timeout)
         }
     }, [status, navigate, message])
 
+    useEffect(() => {
+        if (resendTimer === 0) return;
+
+        const interval = setInterval(() => {
+            setResendTimer(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [resendTimer])
+
+    if (isRedirecting) {
+        return (
+            <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
+            <div className="text-center space-y-4">
+                <LoaderCircle className="animate-spin text-[#495057] mx-auto" size={40} />
+                <p className="text-[#495057] text-lg font-medium">Redirecting to sign in...</p>
+            </div>
+            </div>
+        )
+    }
 
     return (
         <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
@@ -117,10 +152,10 @@ const VerifyEmailPage = () => {
                         Didn't receive the email?{' '}
                         <button 
                             onClick={handleResend} 
-                            disabled={isLoading}
+                            disabled={isLoading || resendTimer > 0}
                             className="font-medium text-[#545F71] hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
-                            Resend verification link
+                            {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend verification link'}
                         </button>
                     </p>
                     <p className="text-sm text-gray-500 mt-4">

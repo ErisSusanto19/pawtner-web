@@ -97,7 +97,7 @@ const OrderPage = () => {
             fn: async () => {
                 setIsUpdating(true)
                 try {
-                    await dispatch(changeOrderStatus({ orderId: order.id, payload: { status: newStatus } })).unwrap();
+                    await dispatch(changeOrderStatus({ orderId: order.id, payload: { status: newStatus } }))
                     toast.success(`Order marked as ${formatStatus(newStatus)}.`);
                 } catch (err) {
                     toast.error(err.message || "Failed to update status.");
@@ -117,7 +117,7 @@ const OrderPage = () => {
         if (!selectedOrder) return
         setIsUpdating(true)
         try {
-            await dispatch(changeOrderStatus({ orderId: selectedOrder.id, payload: { status: newStatus } })).unwrap();
+            await dispatch(changeOrderStatus({ orderId: selectedOrder.id, payload: { status: newStatus } }))
             toast.success("Order status updated successfully!")
             setIsModalOpen(false);
         } catch (err) {
@@ -164,7 +164,7 @@ const OrderPage = () => {
                                     <td className="py-3 px-4 font-medium text-[#545F71]">{order.orderNumber}</td>
                                     <td className="py-3 px-4">
                                         <div>
-                                            <p className="font-medium text-[#5D6D7E]">{order.customer?.name}</p>
+                                            <p className="font-medium text-[#5D6D7E]">{order.customerName}</p>
                                             <p className="text-xs text-[#ADB5BD]">{order.customer?.email}</p>
                                         </div>
                                     </td>

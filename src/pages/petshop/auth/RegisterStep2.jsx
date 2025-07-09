@@ -168,8 +168,8 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
                     register={register} 
                     errors={errors}
                     rules={{
-                        required: {value: true, message: "Business email is required"},
-                        pattern: {value: /^(\+62|62|0)8[0-9]{8,15}$/, message: "Please use a valid phone number"}
+                        required: {value: true, message: "Business phone is required"},
+                        pattern: {value: /^((\+62|62|0)(8[1-9][0-9]{6,13}|2[1-9][0-9]{6,10}))$/, message: "Please use a valid phone number"}
                     }}
                 />
             </div>

@@ -6,12 +6,13 @@ import { useSelector } from 'react-redux';
 import CompleteProfileBanner from '../components/CompleteProfileBanner';
 
 const getTitleFromPath = (path) => {
-  if (path === '/') return 'Dashboard'
-  const title = path
-    .replace('/', '')
+  if (path === '/' || path === '') return 'Dashboard'
+  const mainSegment = path.split('/')[1] || ''
+  const title = mainSegment
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ') 
+    .join(' ')
+
   return title
 }
 
@@ -20,7 +21,7 @@ const PetshopLayout = ({ children }) => {
   const location = useLocation()
   const { user } = useSelector((state) => state.auth)
   const { details } = useSelector((state) => state.business);
-  console.log(details, 'cek businnes from layout');
+  // console.log(details, 'cek businnes from petshop layout');
   
 
   const title = getTitleFromPath(location.pathname)

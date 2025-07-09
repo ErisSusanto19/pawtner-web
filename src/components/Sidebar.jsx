@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingCart, Wrench, Calendar, Settings, LogOut, Banknote } from 'lucide-react';
-import logoPawtner from '../assets/pawtner2.png'
+import logoPawtner from '../assets/W.png'
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { clearBusinessData } from '../store/slices/businessSlice';
@@ -59,7 +59,9 @@ const Sidebar = ({ menuDisabled }) => {
       <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
         
         <div className="flex items-center p-4 space-x-3 border-b shadow-sm border-[#E9ECEF]">
-          <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
+          <NavLink to={'/'}>
+            <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
+          </NavLink>
           <div>
             <h2 className="text-xl font-bold text-[#545F71]">Pawtner</h2>
             <p className="text-xs text-[#ADB5BD]">Business Panel</p>

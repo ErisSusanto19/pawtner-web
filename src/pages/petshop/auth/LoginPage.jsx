@@ -109,6 +109,18 @@ const LoginPage = () => {
             </Button>
           </form>
 
+          <div className="mt-6">
+              <p className="text-center text-gray-500 text-sm mb-2">Or sign up with</p>
+              <button
+                  type="button"
+                  onClick={() => window.location.href = `${import.meta.env.VITE_BASE_URL_API_V2}/oauth2/authorization/google`}
+                  className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md shadow-sm hover:bg-gray-100 transition"
+              >
+                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                  Continue with Google
+              </button>
+          </div>
+
           <div className="flex flex-col justify-center items-center mt-12">
               <p className="text-center text-sm text-gray-600">
               Don't have an account?{' '}

@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PlusCircle, Edit, Archive, Search, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Archive, Search, Trash2,  ChevronsUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-
 import ServiceModal from './ServiceModal';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import Button from '../../../components/Button';
@@ -11,6 +10,7 @@ import Pagination from '../../../components/Pagination';
 import { formatCurrencyIDR } from '../../../utils/formatter';
 import { fetchServices, deleteExistingService, updateExistingService, createNewService } from '../../../store/slices/serviceSlice';
 import defImg from '@/assets/undraw_images_of1m.svg'
+import StarRating from '../../../components/StarRating';
 
 const getStatusBadge = (isActive) => {
     return isActive
@@ -42,6 +42,8 @@ const ServicePage = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
 
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+
     // const [filterIsActive, setFilterIsActive] = useState('active')
     const [currentPage, setCurrentPage] = useState(1)
     const ITEMS_PER_PAGE = 5
@@ -54,7 +56,7 @@ const ServicePage = () => {
         dispatch(fetchServices())
     }, [dispatch, location])
 
-    const filteredServices = useMemo(() => {
+    const filteredAndSortedServices = useMemo(() => {
         const serviceList = Array.isArray(services) ? services : []
         return serviceList.filter(service => {
             const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -66,12 +68,12 @@ const ServicePage = () => {
 
             return matchesSearch && matchesCategory /**&& matchesActiveStatus*/
         })
-    }, [services, searchTerm, selectedCategory])
+    }, [services, searchTerm, selectedCategory, sortConfig])
 
     const paginatedServices = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-        return filteredServices.slice(startIndex, startIndex + ITEMS_PER_PAGE)
-    }, [filteredServices, currentPage])
+        return filteredAndSortedServices.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+    }, [filteredAndSortedServices, currentPage])
 
     const handlePageChange = (page) => {
         setCurrentPage(page)
@@ -202,7 +204,7 @@ const ServicePage = () => {
                                             />
                                             <div>
                                                 <p className="font-medium text-[#545F71]">{service.name}</p>
-                                                <p className="text-xs text-[#ADB5BD]">{service.id}</p>
+                                                <p className="text-xs text-[#ADB5BD] truncate max-w-50">{service.description}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -234,7 +236,7 @@ const ServicePage = () => {
                         </tbody>
                     </table>
                     
-                    {filteredServices.length === 0 && (
+                    {filteredAndSortedServices.length === 0 && (
                         <div className="text-center py-10 text-[#495057]"><p>No services found matching your criteria.</p></div>
                     )}
                 </div>
@@ -243,7 +245,7 @@ const ServicePage = () => {
             <div className="mt-6">
                 <Pagination
                     currentPage={currentPage}
-                    totalPages={Math.ceil(filteredServices.length / ITEMS_PER_PAGE)}
+                    totalPages={Math.ceil(filteredAndSortedServices.length / ITEMS_PER_PAGE)}
                     onPageChange={handlePageChange}
                 />
             </div>

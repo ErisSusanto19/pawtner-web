@@ -33,8 +33,11 @@ const StatusBadge = ({ isEnable, isNoLocked }) => {
 
 const RoleBadge = ({ role }) => {
     const baseClasses = "px-2 py-1 text-xs font-semibold rounded-md";
-    if (role === 'business_owner') {
+    if (role === 'BUSINESS_OWNER') {
         return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>Business</span>;
+    }
+    if (role === 'ADMIN') {
+        return <span className={`${baseClasses} bg-orange-100 text-orange-800`}>Admin</span>;
     }
     return <span className={`${baseClasses} bg-purple-100 text-purple-800`}>Customer</span>;
 };

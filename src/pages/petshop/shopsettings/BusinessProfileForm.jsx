@@ -4,7 +4,7 @@ import Input from '../../../components/Input';
 import TextArea from '../../../components/TextArea';
 import DayRow from '../../../components/DayRow';
 import FileUpload from '../../../components/FileUploadV2';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateBusinessDetails } from '../../../store/slices/businessSlice';
 import { formatToFrontendHours } from '../../../utils/formatter'
@@ -22,6 +22,8 @@ const businessTypeOptions = [
 
 const BusinessProfileForm = ({ initialData }) => {
     const dispatch = useDispatch()
+    const [isLocating, setIsLocating] = useState(false);
+    const [locationError, setLocationError] = useState('');
 
     console.log(initialData, 'cek initial data')
 
@@ -54,12 +56,12 @@ const BusinessProfileForm = ({ initialData }) => {
                 businessEmail: initialData.businessEmail,
                 businessPhone: initialData.businessPhone,
                 businessAddress: initialData.businessAddress,
-                hasEmergencyServices: initialData.hasEmergencyServices,
+                hasEmergencyServices: Boolean(initialData.hasEmergencyServices),
                 emergencyPhone: initialData.emergencyPhone,
                 businessImageUrl: initialData.businessImageUrl,
                 certificateImageUrl: initialData.certificateImageUrl,
-                // operationHours: formatToFrontendHours(initialData.operationHours),
-                operationHours: initialData.operationHours,
+                operationHours: formatToFrontendHours(initialData.operationHours),
+                // operationHours: initialData.operationHours,
                 latitude: initialData.latitude,
                 longitude: initialData.longitude,
                 statusApproved: initialData.statusApproved
@@ -101,6 +103,7 @@ const BusinessProfileForm = ({ initialData }) => {
             if (!response.ok) throw new Error('Failed to fetch address.')
 
             const data = await response.json()
+            console.log(data, 'cek hasil geo location')
 
             if (data && data.display_name) {
                 setValue('businessAddress', data.display_name, { shouldValidate: true })
@@ -195,12 +198,14 @@ const BusinessProfileForm = ({ initialData }) => {
                         type="hidden" 
                         {...register('longitude', { required: 'Please select a location on the map.' })}
                     />
-
-                    <MapPicker 
-                        onLocationSelect={handleLocationSelect}
-                        initialLat={watchedLat}
-                        initialLng={watchedLng}
-                    />
+                    
+                    <div className='-z-50'>
+                        <MapPicker 
+                            onLocationSelect={handleLocationSelect}
+                            initialLat={watchedLat}
+                            initialLng={watchedLng}
+                        />
+                    </div>
 
                     <TextArea 
                         id="businessAddress" 
@@ -216,7 +221,12 @@ const BusinessProfileForm = ({ initialData }) => {
                     
                     <div className="pt-4 border-t border-gray-100">
                         <div className="flex items-center gap-3">
-                            <input type="checkbox" id="hasEmergencyServices" {...register('hasEmergencyServices')} className="h-4 w-4 rounded border-gray-300" />
+                            <input 
+                                type="checkbox" 
+                                id="hasEmergencyServices" 
+                                {...register('hasEmergencyServices')}
+                                className="h-4 w-4 rounded border-gray-300 text-[#545F71] focus:ring-[#545F71]" 
+                            />
                             <label htmlFor="hasEmergencyServices" className="text-sm font-medium text-gray-900">Offers Emergency Services</label>
                         </div>
                     </div>
@@ -229,7 +239,7 @@ const BusinessProfileForm = ({ initialData }) => {
                             errors={errors}
                             rules={{
                                 required: hasEmergency ? "Emergency phone is required" : false,
-                                pattern: { value: /^(\+62|62|0)8[0-9]{8,15}$/, message: "Please use a valid phone number" }
+                                pattern: { value: /^((\+62|62|0)(8[1-9][0-9]{6,13}|2[1-9][0-9]{6,10}))$/, message: "Please use a valid phone number" }
                             }}
                         />
                     )}

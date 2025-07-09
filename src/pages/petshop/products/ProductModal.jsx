@@ -58,6 +58,16 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
       setIsSubmitting(true)
         try {
             await onSave(finalData)
+            if (!isEditMode) {
+              reset({
+                name: '',
+                description: '',
+                category: '',
+                price: '',
+                stockQuantity: '',
+                imageUrl: null,
+              })
+            }
             onClose()
         } catch (error) {
             console.error("Failed to save product:", error)
@@ -218,7 +228,7 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
 
             <FileUpload
               name="imageUrl"
-              label="Profile Picture"
+              label="Product Image"
               accept={{ 'image/*': ['.jpeg', '.jpg', '.png'] }}
               // register={register}
               setValue={setValue}

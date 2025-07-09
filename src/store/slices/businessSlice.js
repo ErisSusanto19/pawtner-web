@@ -138,9 +138,9 @@ export const fetchMyBusiness = () => {
           myBusiness.operationHours = formatToFrontendHours(myBusiness.operationHours)
         }
 
-        // localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
+        localStorage.setItem('businessDetails', JSON.stringify(myBusiness))
         dispatch(businessOperationSuccess({ businessDetails: myBusiness }))
-        // dispatch(updateUserBusinessStatus(true))
+        dispatch(updateUserBusinessStatus(true))
         
       } else {
         localStorage.removeItem('businessDetails')
@@ -168,7 +168,7 @@ export const fetchBusinessById = (businessId) => async (dispatch) => {
     
 
     if (fullBusinessDetails.operationHours) {
-        fullBusinessDetails.operationHours = formatToFrontendHours(fullBusinessDetails.operationHours)
+        fullBusinessDetails.operationHours = fullBusinessDetails.operationHours
     }
 
     dispatch(businessOperationSuccess({ businessDetails: fullBusinessDetails }))
@@ -185,6 +185,7 @@ export const fetchBusinessById = (businessId) => async (dispatch) => {
 export const updateBusinessDetails = (formData) => {
   return async (dispatch, getState) => {
     dispatch(businessOperationStart());
+    console.log(formData, '<<< cek data dari form profile bisnis');
 
     const businessId = getState().business.details?.businessId
     if (!businessId) {
@@ -231,6 +232,8 @@ export const updateBusinessDetails = (formData) => {
       }
 
       const response = await businessApi.updateBusiness(businessId, apiPayload)
+      console.log(response, '<<< cek response udapte business by id');
+      
 
       const updatedBusinessFromApi = response.data
 

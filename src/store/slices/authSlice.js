@@ -196,11 +196,16 @@ export const checkUserSession = () => async (dispatch, getState) => {
 
   if (!token) return
 
-  if (userInState && typeof userInState.hasBusiness === 'boolean') {
-    return
-  }
+  // if (userInState && typeof userInState.hasBusiness === 'boolean') {
+  //   return
+  // }
 
-  const userId = userInState.userId || userInState.id
+  const userId = userInState?.userId || userInState?.id
+  if (!userId) {
+      console.error("Session check failed: User ID not found in local state.");
+      dispatch(logout()); 
+      return;
+  }
   
   dispatch(authOperationStart())
   try {
@@ -281,24 +286,15 @@ export const updateUserProfile = (formData) => {
 
           const imageValue = formData.imageUrl
 
-          if (imageValue && imageValue[0] instanceof File) {
-            console.log("Scenario 1: New file uploaded. Appending file:", imageValue[0].name)
-            apiData.append('profileImage', imageValue[0])
-
-          } else if (typeof imageValue === 'string' && imageValue.startsWith('http')) {
-            console.log("Scenario 2: No new file uploaded, existing image URL found. Appending empty Blob.")
-            apiData.append('profileImage', new Blob(), '')
-
-          } else {
-            console.log("Scenario 3: No image data. Appending empty Blob to satisfy required part.")
-            apiData.append('profileImage', new Blob(), '')
+          if (imageValue) {
+            apiData.append('profileImage', imageValue)
           }
-
           console.log(formData, '<<< cek payload update');
-          
 
           const response = await authApi.updateProfile(apiData)
           const updatedUserFields = response.data
+          console.log(updatedUserFields, '<<< cek response update user by id');
+          
 
           if (!updatedUserFields) {
               throw new Error("Invalid response from server after update.")

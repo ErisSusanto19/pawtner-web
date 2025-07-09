@@ -3,14 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { ArrowLeft, Edit, Archive, Trash2 } from 'lucide-react';
-
 import { formatCurrencyIDR } from '../../../utils/formatter'
 import { fetchServiceById, setCurrentService, deleteExistingService, updateExistingService } from '../../../store/slices/serviceSlice';
-
 import Button from '../../../components/Button';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import ServiceModal from './ServiceModal';
 import defImg from '@/assets/undraw_images_of1m.svg'
+import ServiceReviews from './ServiceReviews';
 
 const formatCategory = (category = '') => {
     return category.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
@@ -123,15 +122,20 @@ const ServiceDetailPage = () => {
                             <h3 className="text-xs text-gray-500 uppercase font-semibold">Capacity/Day</h3>
                             <p className="text-lg font-bold text-gray-900 mt-1">{service.capacityPerDay ?? 'N/A'}</p>
                         </div>
-                        <div>
+                        {/* <div>
                             <h3 className="text-xs text-gray-500 uppercase font-semibold">Status</h3>
                             <p className={`mt-1 inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${service.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                                 {service.isActive ? 'Active' : 'Archived'}
                             </p>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
+            <ServiceReviews
+                reviews={service.reviews}
+                averageRating={service.averageRating}
+                reviewCount={service.reviewCount}
+            />
 
             <ServiceModal 
                 isOpen={isModalOpen}

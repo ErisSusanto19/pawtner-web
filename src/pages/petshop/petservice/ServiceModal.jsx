@@ -24,7 +24,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
             ? service 
             : {
                 name: '',
-                category: 'GROOMING',
+                category: '',
                 description: '',
                 basePrice: '',
                 capacityPerDay: '',
@@ -63,6 +63,16 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
             setIsSubmitting(true)
             try {
                 await onSave(finalData)
+                if (!isEditMode) {
+                    reset({
+                    name: '',
+                    category: '',
+                    description: '',
+                    basePrice: '',
+                    capacityPerDay: '',
+                    imageUrl: null,
+                    })
+                }
                 onClose()
             } catch (error) {
                 console.error("Failed to save service:", error);

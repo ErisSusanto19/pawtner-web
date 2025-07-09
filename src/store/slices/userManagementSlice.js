@@ -34,7 +34,7 @@ const userManagementSlice = createSlice({
     fetchAllUsersSuccess: (state, action) => {
       const usersData = action.payload.data;
       
-      state.items = usersData;
+      state.items = Array.isArray(usersData) ? usersData.filter(item => item.role != 'ADMIN') : [];
       state.isLoading = false;
       state.status = 'succeeded';
     
