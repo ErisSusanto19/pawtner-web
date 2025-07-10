@@ -82,12 +82,12 @@ export const {
     setCurrentProduct,
 } = productSlice.actions
 
-export const fetchProducts = (pageNumber = 0) => {
+export const fetchProducts = (params = {page: 0, size: 20}) => {
     return async (dispatch, getState) => {
         dispatch(productOperationStart())
         try {
             const businessId = getState().business.details?.businessId
-            const response = await productApi.getMyProducts(businessId)
+            const response = await productApi.getMyProducts(businessId, params)
             console.log(response, '<<< response fetch all products');
             
             dispatch(fetchProductsSuccess(response.data))

@@ -50,7 +50,7 @@ const RegisterAccountPage = () => {
                 <div className="flex flex-col justify-center items-center mb-10">
                     <img src={logoPawtner} alt="Logo Pawtner" className="w-48 h-auto" />
                     <p className="text-[#545F71] text-lg font-bold">Create Your Account</p>
-                    <p className="text-gray-900 font-medium">Start your journey with us</p>
+                    <p className="text-gray-900 font-medium text-sm">Start your journey with us</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -74,7 +74,7 @@ const RegisterAccountPage = () => {
                     </div>
                 </form>
 
-                {/* <div className="mt-6">
+                <div className="mt-6">
                     <p className="text-center text-gray-500 text-sm mb-2">Or sign up with</p>
                     <button
                         type="button"
@@ -84,7 +84,7 @@ const RegisterAccountPage = () => {
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
                         Continue with Google
                     </button>
-                </div> */}
+                </div>
 
                 <div className="text-center mt-8 text-sm">
                     <p>Already have an account? <Link to="/signin" className="text-[#545F71] font-bold hover:underline">Sign in</Link></p>

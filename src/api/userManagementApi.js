@@ -1,7 +1,7 @@
 import axiosAdminInstance from "./axiosAdminInstance";
 
-export const getAllUsers = async () => {
-    const response = await axiosAdminInstance.get('/users')
+export const getAllUsers = async (params) => {
+    const response = await axiosAdminInstance.get('/users', params)
     return response.data
 }
 

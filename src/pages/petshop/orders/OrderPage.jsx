@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Eye, MoreVertical, Edit, Printer, XCircle, Undo2 } from 'lucide-react';
+import { Search, Eye, MoreVertical, Edit, Printer, XCircle, Undo2, ChevronsUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 import Button from '../../../components/Button';
 import OrderModal from './OrderModal';
 import { fetchBusinessOrders, changeOrderStatus } from '../../../store/slices/orderSlice';
 import { toast } from 'react-toastify';
 import ConfirmationModal from '../../../components/ConfirmationModal';
+import Pagination from '../../../components/Pagination'
+import PageLoader from '../../../components/PageLoader';
+
 const formatStatus = (status = '') => {
     if (!status) return '';
     return status.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
@@ -49,8 +52,12 @@ const OrderPage = () => {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false)
     const [confirmAction, setConfirmAction] = useState({ fn: null, title: '', message: '' })
 
+    const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'descending' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5
+
     useEffect(() => {
-        dispatch(fetchBusinessOrders({ page: 0, size: 100 }));
+        dispatch(fetchBusinessOrders({ page: 0, size: 50 }));
     }, [dispatch]);
 
     useEffect(() => {
@@ -63,15 +70,60 @@ const OrderPage = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, []);
 
-    const filteredOrders = useMemo(() => {
-        if (!Array.isArray(orders)) return []
-        return orders.filter(order => {
+    const filteredAndSortedOrders = useMemo(() => {
+        let orderList = Array.isArray(orders) ? [...orders] : []
+        orderList = orderList.filter(order => {
             const searchPool = `${order.orderNumber} ${order.customer?.name} ${order.customer?.email}`.toLowerCase();
             const matchesSearch = searchPool.includes(searchTerm.toLowerCase())
             const matchesStatus = selectedStatus === 'ALL' || order.status === selectedStatus
             return matchesSearch && matchesStatus;
-        });
-    }, [searchTerm, selectedStatus, orders])
+        })
+
+        if (sortConfig.key !== null) {
+            orderList.sort((a, b) => {
+                const valA = a[sortConfig.key] ?? '';
+                const valB = b[sortConfig.key] ?? '';
+                
+                if (valA < valB) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (valA > valB) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+
+        return orderList
+    }, [searchTerm, selectedStatus, orders, sortConfig])
+
+    const paginatedOrders = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filteredAndSortedOrders.slice(startIndex, endIndex);
+    }, [filteredAndSortedOrders, currentPage]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+        setCurrentPage(1)
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) {
+            return <ChevronsUpDown size={14} className="ml-2 text-gray-400" />;
+        }
+        return sortConfig.direction === 'ascending' ? 
+            <ArrowUp size={14} className="ml-2 text-blue-600" /> : 
+            <ArrowDown size={14} className="ml-2 text-blue-600" />;
+    };
     
     const handleMenuOpen = (e, orderId) => {
         e.stopPropagation()
@@ -127,7 +179,7 @@ const OrderPage = () => {
         }
     };
 
-    if (status === 'loading' && orders.length === 0) return <div className="p-6 text-center">Loading orders...</div>;
+    if (status === 'loading' && orders.length === 0) return <PageLoader message="Loading orders..."/>
     if (status === 'failed') return <div className="p-6 text-center text-red-600">{error}</div>;
 
     const allStatuses = ['ALL', 'PENDING_PAYMENT', 'PROCESSING', 'SHIPPED', 'COMPLETED', 'CANCELLED', 'FAILED', 'REFUNDED'];
@@ -152,14 +204,18 @@ const OrderPage = () => {
                             <tr>
                                 <th className="py-3 px-4 font-semibold">Order ID</th>
                                 <th className="py-3 px-4 font-semibold">Customer</th>
-                                <th className="py-3 px-4 font-semibold">Date</th>
-                                <th className="py-3 px-4 font-semibold">Total</th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('createdAt')}>
+                                    <div className="flex items-center">Date {getSortIcon('createdAt')}</div>
+                                </th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('totalAmount')}>
+                                    <div className="flex items-center">Total {getSortIcon('totalAmount')}</div>
+                                </th>
                                 <th className="py-3 px-4 font-semibold">Status</th>
                                 <th className="py-3 px-4 font-semibold text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredOrders.map((order) => (
+                            {paginatedOrders.map((order) => (
                                 <tr key={order.id} className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA] cursor-pointer" onClick={() => navigate(`/orders/${order.id}`)}>
                                     <td className="py-3 px-4 font-medium text-[#545F71]">{order.orderNumber}</td>
                                     <td className="py-3 px-4">
@@ -177,7 +233,7 @@ const OrderPage = () => {
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex justify-center items-center gap-2">
-                                            <Button buttonType="button" onClick={(e) => { e.stopPropagation(); navigate(`/orders/${order.id}`); }} title="View Details"><Eye size={16} /></Button>
+                                            {/* <Button buttonType="button" onClick={(e) => { e.stopPropagation(); navigate(`/orders/${order.id}`); }} title="View Details"><Eye size={16} /></Button> */}
                                             <Button buttonType="button" onClick={(e) => handleMenuOpen(e, order.id)} secondary={true} title="More Actions"><MoreVertical size={16} /></Button>
                                         </div>
                                     </td>
@@ -185,7 +241,11 @@ const OrderPage = () => {
                             ))}
                         </tbody>
                     </table>
-                    {filteredOrders.length === 0 && <div className="text-center py-10 text-[#495057]"><p>No orders found matching your criteria.</p></div>}
+                    {filteredAndSortedOrders.length === 0 && (
+                        <div className="text-center py-10 text-[#495057]">
+                            <p>No orders found matching your criteria.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -202,8 +262,31 @@ const OrderPage = () => {
                 </div>
             )}
             
-            <OrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} currentStatus={selectedOrder?.status} onUpdate={handleStatusUpdateInModal} isUpdating={isUpdating} statusOptions={workflowStatuses} />
-            <ConfirmationModal isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} onConfirm={confirmAction.fn} title={confirmAction.title} message={confirmAction.message} isLoading={isUpdating} />
+            <OrderModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                currentStatus={selectedOrder?.status} 
+                onUpdate={handleStatusUpdateInModal} 
+                isUpdating={isUpdating} 
+                statusOptions={workflowStatuses} 
+            />
+
+            <ConfirmationModal 
+                isOpen={isConfirmOpen} 
+                onClose={() => setIsConfirmOpen(false)} 
+                onConfirm={confirmAction.fn} 
+                title={confirmAction.title} 
+                message={confirmAction.message} 
+                isLoading={isUpdating} 
+            />
+
+            <div className="mt-6">
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(filteredAndSortedOrders.length / ITEMS_PER_PAGE)}
+                    onPageChange={handlePageChange}
+                />
+            </div>
         </div>
     )
 }

@@ -91,10 +91,10 @@ const VerifyEmailPage = () => {
     if (isRedirecting) {
         return (
             <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-4">
-            <div className="text-center space-y-4">
-                <LoaderCircle className="animate-spin text-[#495057] mx-auto" size={40} />
-                <p className="text-[#495057] text-lg font-medium">Redirecting to sign in...</p>
-            </div>
+                <div className="text-center space-y-4">
+                    <LoaderCircle className="animate-spin text-[#495057] mx-auto" size={40} />
+                    <p className="text-[#495057] text-lg font-medium">Redirecting to sign in...</p>
+                </div>
             </div>
         )
     }

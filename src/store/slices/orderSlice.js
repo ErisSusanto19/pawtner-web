@@ -69,13 +69,13 @@ export const {
     clearCurrentOrder,
 } = orderSlice.actions
 
-export const fetchBusinessOrders = (params = { page: 0, size: 10 }) => {
+export const fetchBusinessOrders = (params = { page: 0, size: 20 }) => {
     return async (dispatch,getState) => {
         dispatch(orderOperationStart())
 
         try {
             const businessId = getState().business.details?.businessId
-            const response = await orderApi.getBusinessOrders(businessId)
+            const response = await orderApi.getBusinessOrders(businessId, params)
             console.log(response, '<<< cek order response');
             
             dispatch(fetchOrdersSuccess(response.data))

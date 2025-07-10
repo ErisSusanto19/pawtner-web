@@ -3,12 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchBusinessById, fetchMyBusiness } from '../../../store/slices/businessSlice';
 import BusinessProfileForm from './BusinessProfileForm';
 import NoBusinessProfile from './NoBusinessProfile';
-
-const FullPageLoader = () => (
-    <div className="p-6 text-center text-gray-500">
-        Loading Business Profile...
-    </div>
-);
+import PageLoader from '../../../components/PageLoader';
 
 const BusinessProfileTabContent = () => {
     const dispatch = useDispatch()
@@ -32,7 +27,7 @@ const BusinessProfileTabContent = () => {
     }
 
     if (status === 'loading') {
-        return <FullPageLoader />
+        return <PageLoader message="Loading Business Profile..." />
     }
 
     if (error) {

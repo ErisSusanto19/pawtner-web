@@ -8,6 +8,7 @@ import RegisterStep3 from './RegisterStep3'
 import { ChevronLeft } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createBusiness } from '../../../store/slices/businessSlice'
+import { toast } from 'react-toastify';
 
 const TOTAL_STEPS = 2
 
@@ -84,7 +85,7 @@ const RegisterBusinessPage = () => {
 
     useEffect(() => {
         if (businessStatus === 'succeeded' && user?.hasBusiness) {
-            alert("Your business profile has been created successfully!")
+            toast.success("Your business profile has been created successfully!")
             navigate('/');
         }
     }, [businessStatus, user, navigate])

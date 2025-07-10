@@ -11,6 +11,7 @@ import { formatCurrencyIDR } from '../../../utils/formatter';
 import { fetchServices, deleteExistingService, updateExistingService, createNewService } from '../../../store/slices/serviceSlice';
 import defImg from '@/assets/undraw_images_of1m.svg'
 import StarRating from '../../../components/StarRating';
+import PageLoader from '../../../components/PageLoader';
 
 const getStatusBadge = (isActive) => {
     return isActive
@@ -49,16 +50,17 @@ const ServicePage = () => {
     const ITEMS_PER_PAGE = 5
 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-    const [confirmAction, setConfirmAction] = useState({ fn: null, title: '', message: '' })
     const [isConfirmLoading, setIsConfirmLoading] = useState(false)
+    const [serviceToAction, setServiceToAction] = useState(null);
+    const [confirmAction, setConfirmAction] = useState({ fn: null, title: '', message: '' })
 
     useEffect(() => {
-        dispatch(fetchServices())
+        dispatch(fetchServices({page: 0, size: 20}))
     }, [dispatch, location])
 
     const filteredAndSortedServices = useMemo(() => {
-        const serviceList = Array.isArray(services) ? services : []
-        return serviceList.filter(service => {
+        let serviceList = Array.isArray(services) ? services : []
+        serviceList = serviceList.filter(service => {
             const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase())
             const matchesCategory = selectedCategory === 'All' || service.category === selectedCategory
 
@@ -68,7 +70,25 @@ const ServicePage = () => {
 
             return matchesSearch && matchesCategory /**&& matchesActiveStatus*/
         })
+
+        if(sortConfig.key !== null){
+            serviceList.sort((a, b) => {
+                const valA = a[sortConfig.key] ?? 0;
+                const valB = b[sortConfig.key] ?? 0;
+                
+                if (valA < valB) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (valA > valB) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            })
+        }
+
+        return serviceList
     }, [services, searchTerm, selectedCategory, sortConfig])
+
 
     const paginatedServices = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -78,6 +98,24 @@ const ServicePage = () => {
     const handlePageChange = (page) => {
         setCurrentPage(page)
     }
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+        setCurrentPage(1);
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) {
+            return <ChevronsUpDown size={14} className="ml-2 text-gray-400" />;
+        }
+        return sortConfig.direction === 'ascending' ? 
+            <ArrowUp size={14} className="ml-2 text-blue-600" /> : 
+            <ArrowDown size={14} className="ml-2 text-blue-600" />;
+    };
 
     const handleCreateService = async (newData) => {
         try {
@@ -110,13 +148,13 @@ const ServicePage = () => {
         setIsModalOpen(true)
     }
 
-    const handleConfirmArchive = async (serviceToArchive) => {
-        if (!serviceToArchive) return
+    const handleConfirmDelete = async () => {
+        if (!serviceToAction) return
 
         setIsConfirmLoading(true)
         try {
-            const response = await dispatch(deleteExistingService(serviceToArchive.id))
-            toast.success(response.message || `Service "${serviceToArchive.name}" has been archived.`)
+            const response = await dispatch(deleteExistingService(serviceToAction.id))
+            toast.success(response.message || `Service "${serviceToAction.name}" has been archived.`)
             setIsConfirmModalOpen(false)
         } catch (err) {
             toast.error(err.message || `Failed to archive service.`)
@@ -125,17 +163,18 @@ const ServicePage = () => {
         }
     }
 
-    const handleArchiveClick = (service) => {
+    const handleDeleteClick = (service) => {
+        setServiceToAction(service)
         setConfirmAction({
-            fn: () => handleConfirmArchive(service),
+            fn: () => handleConfirmDelete(service),
             title: "Confirm Archival",
-            message: `Are you sure you want to archive the service "${service.name}"? This action will make it inactive.`
+            message: `Are you sure you want to delete the service "${service.name}"? This action will make it inactive.`
         })
         setIsConfirmModalOpen(true)
     }
 
     if (status === 'loading' && (!services || services.length === 0)) {
-        return <div className="p-6 text-center">Loading services...</div>
+        return <PageLoader message="Loading services..."/>
     }
 
     if (status === 'failed' && error) {
@@ -179,8 +218,13 @@ const ServicePage = () => {
                             <tr>
                                 <th className="py-3 px-4 font-semibold">Service</th>
                                 <th className="py-3 px-4 font-semibold">Category</th>
-                                <th className="py-3 px-4 font-semibold">Base Price</th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('basePrice')}>
+                                    <div className="flex items-center">Base Price {getSortIcon('basePrice')}</div>
+                                </th>
                                 <th className="py-3 px-4 font-semibold">Capacity/Day</th>
+                                <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('averageRating')}>
+                                    <div className="flex items-center">Rating {getSortIcon('averageRating')}</div>
+                                </th>
                                 {/* <th className="py-3 px-4 font-semibold">Status</th> */}
                                 <th className="py-3 px-4 font-semibold">Actions</th>
                             </tr>
@@ -217,13 +261,23 @@ const ServicePage = () => {
                                         </span>
                                     </td> */}
                                     <td className="py-3 px-4">
+                                        {service.reviewCount > 0 ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <StarRating rating={service.averageRating} size={16} />
+                                                <span className="text-xs text-gray-500 mt-0.5">({service.reviewCount})</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-gray-400">-</span>
+                                        )}
+                                    </td>
+                                    <td className="py-3 px-4">
                                         <div className="flex items-center gap-2">
                                             <Button buttonType="button" onClick={(e) => { e.stopPropagation(); handleEdit(service); }} title="Edit Service">
                                                 <Edit size={16} />
                                             </Button>
                                             <Button
                                                 buttonType="button"
-                                                onClick={(e) => { e.stopPropagation(); handleArchiveClick(service); }}
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteClick(service); }}
                                                 danger={true}
                                                 title="Delete Service"
                                             >

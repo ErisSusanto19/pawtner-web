@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { isToday, isThisMonth, isAfter, startOfToday, parseISO, format, subDays } from 'date-fns';
 import RevenueChart from '../../../components/RevenueChart';
+import { LoaderCircle } from 'lucide-react'
 
 import StatCard from '../../../components/StatCard';
 import WelcomePage from './WelcomePage';
@@ -11,6 +12,7 @@ import { fetchBusinessOrders } from '../../../store/slices/orderSlice';
 import { formatCurrencyIDR } from '../../../utils/formatter';
 import BusinessNotApprovedPage from './BusinessNotApprovedPage';
 import BusinessRejectedPage from './BusinessRejectedPage'
+import PageLoader from '../../../components/PageLoader';
 
 const DashboardPage = () => {
     const navigate = useNavigate();
@@ -23,8 +25,8 @@ const DashboardPage = () => {
 
     useEffect(() => {
         if (user && user.hasBusiness) {
-            dispatch(fetchBusinessBookings({ page: 0, size: 50 }));
-            dispatch(fetchBusinessOrders({ page: 0, size: 50 }));
+            dispatch(fetchBusinessBookings({ page: 0, size: 100 }));
+            dispatch(fetchBusinessOrders({ page: 0, size: 100 }));
         }
     }, [dispatch, user?.hasBusiness]);
 
@@ -83,7 +85,7 @@ const DashboardPage = () => {
     }
 
     if (bookingStatus === 'loading' || orderStatus === 'loading') {
-        return <div className="p-6 text-center">Loading dashboard data...</div>;
+        return <PageLoader message="Loading dashboard data..."/>
     }
 
     const getStatusBadge = (status) => { const s = status?.toLowerCase(); if (['pending', 'pending_approval', 'awaiting_payment'].includes(s)) return "bg-yellow-100 text-yellow-800"; if (s === 'shipped') return "bg-blue-100 text-blue-800"; if (['completed', 'delivered'].includes(s)) return "bg-green-100 text-green-800"; if (s === 'confirmed') return "bg-cyan-100 text-cyan-800"; if (s === 'cancelled') return "bg-red-100 text-red-800"; return "bg-gray-100 text-gray-800"; };

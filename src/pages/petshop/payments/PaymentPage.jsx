@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Search, FileDown, Wallet } from 'lucide-react';
-
 import { fetchBusinessBookings } from '../../../store/slices/bookingSlice';
 import { fetchBusinessOrders } from '../../../store/slices/orderSlice';
-
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
+import PageLoader from '../../../components/PageLoader';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -51,7 +50,7 @@ const PaymentPage = () => {
     useEffect(() => {
         setIsLoading(true);
         Promise.all([
-            dispatch(fetchBusinessBookings({ page: 0, size: 100 })), // Ambil semua data
+            dispatch(fetchBusinessBookings({ page: 0, size: 100 })),
             dispatch(fetchBusinessOrders({ page: 0, size: 100 }))
         ]).catch(err => {
             console.error("Failed to fetch transactions:", err);
@@ -116,7 +115,7 @@ const PaymentPage = () => {
         }
     };
     
-    if (isLoading) return <div className="p-6 text-center">Loading payment history...</div>;
+    if (isLoading) return <PageLoader message="Loading payment history..."/>
     if (error) return <div className="p-6 text-center text-red-600">{error}</div>;
 
     return (

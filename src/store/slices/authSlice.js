@@ -12,6 +12,8 @@ const initialState = {
   error: null,
   message: null,
   status: 'idle',
+  isProfileUpdating: false,
+  isPasswordChanging: false,
 }
 
 const authSlice = createSlice({
@@ -59,16 +61,11 @@ const authSlice = createSlice({
 
     updateUserProfileSuccess: (state, action) => {
       state.isLoading = false
+      state.isProfileUpdating = false;
       if (state.user) {
         state.user = { ...state.user, ...action.payload.user }
       }
       state.status = 'succeeded'
-    },
-    
-    changePasswordSuccess: (state) => {
-      state.isLoading = false
-      state.status = 'succeeded'
-      state.message = "Password changed successfully!"
     },
 
     logoutSuccess: (state) => {
@@ -90,6 +87,27 @@ const authSlice = createSlice({
       state.status = 'verified'
       state.error = null
     },
+
+    changePasswordStart: (state) => {
+      state.isPasswordChanging = true;
+      state.error = null;
+      state.message = null;
+    },
+
+    changePasswordSuccess: (state) => {
+      state.isPasswordChanging = false;
+      state.message = "Password changed successfully!"
+    },
+
+    changePasswordFail: (state, action) => {
+      state.isPasswordChanging = false;
+      state.error = action.payload.error;
+    },
+
+    updateProfileStart: (state) => {
+      state.isProfileUpdating = true;
+      state.error = null;
+    }
   },
 })
 
@@ -100,11 +118,15 @@ export const {
   loginSuccess,
   fetchProfileSuccess,
   updateUserProfileSuccess,
-  changePasswordSuccess,
   logoutSuccess,
   updateUserBusinessStatus,
   verifyEmailSuccess, 
-  setToken
+  setToken,
+
+  changePasswordStart,
+  changePasswordSuccess,
+  changePasswordFail,
+  updateProfileStart,
 } = authSlice.actions
 
 export const registerUser = (userData) => {
@@ -266,6 +288,7 @@ export const fetchUserProfile = () => async (dispatch, getState) => {
 
 export const updateUserProfile = (formData) => {
   return async (dispatch, getState) => {
+      dispatch(updateProfileStart())
       dispatch(authOperationStart())
 
       try {
@@ -306,12 +329,13 @@ export const updateUserProfile = (formData) => {
           localStorage.setItem('user', JSON.stringify(newUserData))
           dispatch(updateUserProfileSuccess({ user: newUserData }))
           
-          return newUserData
+          return { ...newUserData, message: response.message };
 
       } catch (error) {
           console.error("Failed to update user profile:", error);
           const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile.';
           dispatch(authOperationFail({ error: errorMessage }));
+          dispatch({ type: 'auth/updateProfileFail' }); 
           throw new Error(errorMessage);
       }
   }
@@ -366,9 +390,27 @@ export const resetPassword = (resetData) => {
   }
 }
 
-export const logout = () => (dispatch) => {
-  // const { clearBusinessData } = require('./businessSlice');
+export const changeUserPassword = (passwordData) => {
+    return async (dispatch) => {
+        dispatch(changePasswordStart());
+        try {
+            console.log(passwordData, '<<< from komponen');
+            
+            const response = await authApi.changePassword(passwordData);
 
+            console.log(response, '<<< cek response change password');
+            
+            dispatch(changePasswordSuccess({ message: response.message }));
+            return response;
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to change password.';
+            dispatch(changePasswordFail({ error: errorMessage }));
+            throw new Error(errorMessage);
+        }
+    };
+};
+
+export const logout = () => (dispatch) => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   localStorage.removeItem('businessDetails')

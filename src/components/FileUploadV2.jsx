@@ -2,10 +2,14 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, File as FileIcon, X, Image as ImageIcon } from 'lucide-react';
 
-const FileUpload = ({ name, label, register, setValue, watch, accept, errors, rules = {} }) => {
+const FileUpload = ({ name, label, register, setValue, watch, accept, errors, rules = {}, circle = false }) => {
   const currentValue = watch(name)
   const [preview, setPreview] = useState(null)
   const [fileName, setFileName] = useState('')
+
+  useEffect(() => {
+    register(name, rules)
+  }, [register, name, rules])
 
   useEffect(() => {
     if (preview && preview.startsWith('blob:')) {
@@ -54,11 +58,14 @@ const FileUpload = ({ name, label, register, setValue, watch, accept, errors, ru
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-900 mb-2">{label}</label>
+      {!circle && (
+        <label className="block text-sm font-medium text-gray-900 mb-2">{label}</label>
+      )}
       <div
         {...getRootProps()}
         //  onClick={() => alert('Dropzone diklik!')}
-        className={`relative flex justify-center items-center w-full h-48 px-6 py-4 border-2 border-dashed rounded-md cursor-pointer transition-colors
+        className={`relative flex justify-center items-center border-2 border-dashed cursor-pointer transition-colors
+          ${circle ? 'w-48 h-48 rounded-full' : 'w-full h-48 rounded-md px-6 py-4'}
           ${isDragActive ? 'border-[#545F71] bg-[#E9ECEF]' : 'border-gray-300 hover:border-[#545F71]'}
           ${errorMessage ? 'border-red-500 bg-red-50' : ''}
           ${currentValue ? 'border-solid' : ''}
@@ -71,7 +78,7 @@ const FileUpload = ({ name, label, register, setValue, watch, accept, errors, ru
           <div className="text-center">
             {/* MODIFIKASI: Logika tampilan berdasarkan state `preview` */}
             {preview ? (
-              <img src={preview} alt="File preview" className="max-h-36 w-auto object-contain rounded-md" />
+              <img src={preview} alt="File preview" className={`${circle? 'w-auto h-47 rounded-full object-cover' : 'max-h-36 w-auto rounded-md object-contain'}`} />
             ) : (
               <div className="flex flex-col items-center text-[#495057]">
                 <FileIcon className="w-12 h-12" />
@@ -81,10 +88,10 @@ const FileUpload = ({ name, label, register, setValue, watch, accept, errors, ru
              <button
               type="button"
               onClick={handleRemoveFile}
-              className="absolute top-2 right-2 bg-white text-red-600 rounded-full p-1.5 shadow-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className={`absolute bg-white text-red-600 rounded-full p-1.5 shadow-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ${circle? 'border top-4 right-4' : 'top-2 right-2'}`}
               aria-label="Remove file"
             >
-              <X size={18} />
+              <X size={circle? 12 : 18} />
             </button>
           </div>
         ) : (

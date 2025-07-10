@@ -48,3 +48,8 @@ export const setRole = async (email) => {
   const response  = await axiosInstance.patch('/auth/user/set-role', {role: 'BUSINESS_OWNER', email})
   return response.data
 }
+
+export const changePassword = async (passwordData) => {
+  const response  = await axiosInstance.patch('/users/change-password', passwordData)
+  return response.data
+}

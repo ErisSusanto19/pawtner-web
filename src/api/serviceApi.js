@@ -1,9 +1,7 @@
 import axiosInstance from './axiosInstance'
 
-export const getMyServices = async (id, params) => {
-    const response = await axiosInstance.get(`/services/my-services/${id}`, { 
-        params: { page:0, size: 50 }
-     })
+export const getMyServices = async (businessId, params) => {
+    const response = await axiosInstance.get(`/services/my-services/${businessId}`, params)
     return response.data
 }
 

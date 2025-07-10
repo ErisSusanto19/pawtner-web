@@ -11,6 +11,9 @@ import PrivacyPolicyContent from '../../../components/PrivacyPolicyContent'
 
 const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
+const MAX_FILE_SIZE_MB = 2;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 const RegisterStep3 = ({register, errors, watch, getValues, setValue}) => {
     const hasEmergencyServices = watch("hasEmergencyServices")
     const [activeModal, setActiveModal] = useState(null)
@@ -83,7 +86,14 @@ const RegisterStep3 = ({register, errors, watch, getValues, setValue}) => {
                         watch={watch}
                         errors={errors}
                         accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.gif'] }}
-                        rules={{}}
+                        rules={{
+                            validate: {
+                                fileSize: (value) => {
+                                    if (!value || !(value instanceof File)) return true;
+                                    return value.size <= MAX_FILE_SIZE_BYTES || `File size must be less than ${MAX_FILE_SIZE_MB}MB`;
+                                }
+                            }
+                        }}
                     />
                     <FileUpload
                         name="certificateImageUrl"
@@ -93,7 +103,14 @@ const RegisterStep3 = ({register, errors, watch, getValues, setValue}) => {
                         watch={watch}
                         errors={errors}
                         accept={{ 'application/pdf': ['.pdf'], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] }}
-                        rules={{}}
+                        rules={{
+                            validate: {
+                                fileSize: (value) => {
+                                    if (!value || !(value instanceof File)) return true;
+                                    return value.size <= MAX_FILE_SIZE_BYTES || `File size must be less than ${MAX_FILE_SIZE_MB}MB`;
+                                }
+                            }
+                        }}
                     />
                 </div>
 

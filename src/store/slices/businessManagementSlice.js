@@ -71,10 +71,10 @@ export const {
   clearSelectedBusiness
 } = businessManagementSlice.actions;
 
-export const fetchAllBusinesses = () => async (dispatch) => {
+export const fetchAllBusinesses = (params = {page: 0, size: 20}) => async (dispatch) => {
   dispatch(operationStart());
   try {
-    const response = await businessManagementApi.getAllBusinesses();
+    const response = await businessManagementApi.getAllBusinesses(params);
     console.log(response, 'cek from thunk');
     
     dispatch(fetchAllBusinessesSuccess(response));

@@ -74,7 +74,7 @@ export const {
     setCurrentService,
 } = serviceSlice.actions
 
-export const fetchServices = (params = {}) => async (dispatch, getState) => {
+export const fetchServices = (params = {page: 0, size: 20}) => async (dispatch, getState) => {
     dispatch(serviceOperationStart())
     try {
         const businessId = getState().business.details?.businessId

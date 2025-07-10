@@ -230,7 +230,7 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
               name="imageUrl"
               label="Product Image"
               accept={{ 'image/*': ['.jpeg', '.jpg', '.png'] }}
-              // register={register}
+              register={register}
               setValue={setValue}
               watch={watch}
               errors={errors}

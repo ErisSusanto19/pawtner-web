@@ -2,12 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { checkUserSession } from '../store/slices/authSlice';
-
-const FullPageLoader = () => (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8f9fa' }}>
-        <p style={{ fontSize: '1.2rem', color: '#495057' }}>Loading application...</p>
-    </div>
-)
+import PageLoader from '../components/PageLoader';
 
 const RootLayout = () => {
     const dispatch = useDispatch()
@@ -29,7 +24,7 @@ const RootLayout = () => {
     }, [dispatch, token, isSessionChecked])
 
     if (!isSessionChecked) {
-        return <FullPageLoader />
+        return <PageLoader message="Loading application..."/>
     }
 
     const publicPaths = ['/signin', '/signup', '/verify-email', '/forgot-password', '/reset-password'] 
@@ -42,7 +37,7 @@ const RootLayout = () => {
 
         if (user) {
             if (typeof user.hasBusiness === 'undefined' || user.hasBusiness === null) {
-                return <FullPageLoader />
+                return <PageLoader message="Loading application..."/>
             }
 
             const isRegisterPage = location.pathname.includes('/register-business')
@@ -73,7 +68,7 @@ const RootLayout = () => {
         return <Navigate to="/signin" state={{ from: location }} replace />
     }
 
-    return <FullPageLoader />
+    return <PageLoader message="Loading application..."/>
 }
 
 export default RootLayout;

@@ -119,6 +119,9 @@ const BusinessProfileForm = ({ initialData }) => {
         }
     }
 
+    const MAX_FILE_SIZE_MB = 2;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
@@ -262,8 +265,34 @@ const BusinessProfileForm = ({ initialData }) => {
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
                 <h3 className="text-lg font-semibold text-[#495057] mb-4">Branding & Verification</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <FileUpload name="businessImageUrl" label="Business Profile Photo" {...{ register, setValue, watch, errors }} accept={{ 'image/*': [] }} />
-                    <FileUpload name="certificateImageUrl" label="Business Certificate" {...{ register, setValue, watch, errors }} accept={{ 'application/pdf': [] }} />
+                    <FileUpload
+                        name="businessImageUrl" 
+                        label="Business Profile Photo" 
+                        {...{ register, setValue, watch, errors }} 
+                        accept={{ 'image/*': [] }}
+                        rules={{
+                            validate: {
+                                fileSize: (value) => {
+                                    if (!value || !(value instanceof File)) return true;
+                                    return value.size <= MAX_FILE_SIZE_BYTES || `File size must be less than ${MAX_FILE_SIZE_MB}MB`;
+                                }
+                            }
+                        }}
+                        />
+                    <FileUpload 
+                        name="certificateImageUrl" 
+                        label="Business Certificate" 
+                        {...{ register, setValue, watch, errors }} 
+                        accept={{ 'application/pdf': [] }} 
+                        rules={{
+                            validate: {
+                                fileSize: (value) => {
+                                    if (!value || !(value instanceof File)) return true;
+                                    return value.size <= MAX_FILE_SIZE_BYTES || `File size must be less than ${MAX_FILE_SIZE_MB}MB`;
+                                }
+                            }
+                        }}
+                    />
                 </div>
             </div>
             

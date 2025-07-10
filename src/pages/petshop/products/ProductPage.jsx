@@ -12,6 +12,7 @@ import clsx from 'clsx';
 import Pagination from '../../../components/Pagination';
 import defImg from '@/assets/undraw_images_of1m.svg'
 import StarRating from '../../../components/StarRating';
+import PageLoader from '../../../components/PageLoader'
 
 const categoryOptions = [
   {value: "FOOD", label: "Food"},
@@ -60,7 +61,7 @@ const ProductsPage = () => {
     const [isConfirmLoading, setIsConfirmLoading] = useState(false)
 
     useEffect(() => {
-        dispatch(fetchProducts())
+        dispatch(fetchProducts({page: 0, size: 50}))
     }, [dispatch, location])
 
     const filteredProductsAndSortedProducts = useMemo(() => {
@@ -189,7 +190,7 @@ const ProductsPage = () => {
         setIsConfirmModalOpen(true)
     }
 
-    if (status === 'loading' && products.length === 0) return <div className="p-6 text-center">Loading products...</div>
+    if (status === 'loading' && products.length === 0) return <PageLoader message="Loading products..."/>
     if (status === 'failed') return <div className="p-6 text-center text-red-600">{error}</div>
 
     return (

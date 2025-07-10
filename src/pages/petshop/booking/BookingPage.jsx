@@ -5,6 +5,7 @@ import { format, parseISO, startOfToday, isToday, isYesterday, startOfWeek, endO
 import { MoreVertical, Calendar } from 'lucide-react';
 import { fetchBusinessBookings, changeBookingStatus } from '../../../store/slices/bookingSlice';
 import { formatCurrencyIDR } from '../../../utils/formatter'
+import PageLoader from '../../../components/PageLoader';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -69,7 +70,7 @@ const BookingPage = () => {
     const { items: bookings, status, error } = useSelector((state) => state.bookings);
 
     useEffect(() => {
-        dispatch(fetchBusinessBookings({ page: 0, size: 100 }));
+        dispatch(fetchBusinessBookings({ page: 0, size: 50 }));
     }, [dispatch]);
 
     const filteredBookingsByDate = useMemo(() => {
@@ -114,7 +115,7 @@ const BookingPage = () => {
     }, [bookings])
 
     if (status === 'loading' && bookings.length === 0) {
-        return <div className="p-6 text-center">Loading bookings...</div>;
+        return <PageLoader message="Loading bookings..."/>
     }
 
     if (status === 'failed') {

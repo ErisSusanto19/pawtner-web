@@ -145,6 +145,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
                           name="imageUrl"
                           label="Service Image"
                           accept={{ 'image/*': ['.jpeg', '.jpg', '.png'] }}
+                          register={register}
                           setValue={setValue}
                           watch={watch}
                           errors={errors}

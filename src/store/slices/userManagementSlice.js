@@ -79,7 +79,7 @@ export const {
   clearSelectedUser
 } = userManagementSlice.actions;
 
-export const fetchAllUsers = (params) => async (dispatch) => {
+export const fetchAllUsers = (params = {page: 0, size: 20}) => async (dispatch) => {
   dispatch(operationStart());
   try {
     const data = await userManagementApi.getAllUsers(params);

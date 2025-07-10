@@ -35,7 +35,7 @@ const UserManagementPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        dispatch(fetchAllUsers());
+        dispatch(fetchAllUsers({page: 0, size: 100}));
     }, [dispatch]);
 
     const filteredUsers = useMemo(() => {

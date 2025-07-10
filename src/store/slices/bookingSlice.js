@@ -70,12 +70,12 @@ export const {
     clearCurrentBooking,
 } = bookingSlice.actions
 
-export const fetchBusinessBookings = (params = { page: 0, size: 10 }) => {
+export const fetchBusinessBookings = (params = { page: 0, size: 20 }) => {
     return async (dispatch, getState) => {
         dispatch(bookingOperationStart())
         try {
             const businessId = getState().business.details?.businessId
-            const response = await bookingApi.getBusinessBookings(businessId)
+            const response = await bookingApi.getBusinessBookings(businessId, params)
             console.log(response, '<<< cek response booking');
             
             dispatch(fetchBookingsSuccess(response.data))

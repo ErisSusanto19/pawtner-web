@@ -69,7 +69,7 @@ const BusinessManagementPage = () => {
     const [debouncedSearchTerm] = useDebounce(filters.search, 300);
 
     useEffect(() => {
-        dispatch(fetchAllBusinesses());
+        dispatch(fetchAllBusinesses({page: 0, size: 100}));
     }, [dispatch]);
 
     const filteredBusinesses = useMemo(() => {

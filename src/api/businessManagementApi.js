@@ -1,7 +1,7 @@
 import axiosAdminInstance from "./axiosAdminInstance";
 
-export const getAllBusinesses = async() => {
-    const response = await axiosAdminInstance.get(`/business`)
+export const getAllBusinesses = async(params) => {
+    const response = await axiosAdminInstance.get(`/business`, params)
     return response.data
 }
 
