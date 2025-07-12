@@ -99,11 +99,14 @@ export const fetchBusinessById = (businessId) => async (dispatch) => {
   }
 };
 
-export const approveOrRejectBusiness = (businessId, isApproved) => async (dispatch) => {
-  dispatch(operationStart());
+export const approveOrRejectBusiness = (businessId, isApproved, reason) => async (dispatch) => {
+  dispatch(operationStart())
   try {
-    const requestBody = { approve: isApproved };
-    const response = await businessManagementApi.approveBusiness(businessId, requestBody);
+    const requestBody = { 
+      approve: isApproved,
+      reason
+    }
+    const response = await businessManagementApi.approveBusiness(businessId, requestBody)
 
     dispatch(updateBusinessSuccess(response.data)); 
     return response;

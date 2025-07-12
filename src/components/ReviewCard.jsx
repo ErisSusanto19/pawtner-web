@@ -1,12 +1,22 @@
 import StarRating from './StarRating';
 import { format } from 'date-fns';
-import { MoreVertical } from 'lucide-react'; 
+import { MoreVertical, User } from 'lucide-react';
+import defAvatar from '@/assets/undraw_male-avatar_zkzx.svg'
 
 const UserAvatar = ({ user }) => {
-    const initials = user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || '?';
+    // const initials = user?.name?.trim()?.split(' ').map(n => n[0]?.toUpperCase()).join('').substring(0, 2) || '?';
     return (
         <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-600 font-bold">
-            {initials}
+            <img
+                src={user.imageUrl || defAvatar}
+                alt={user.name || 'User'}
+                className="h-full w-full object-cover rounded-full"
+                loading="lazy"
+                onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = defAvatar
+                }}
+            />
         </div>
     );
 };

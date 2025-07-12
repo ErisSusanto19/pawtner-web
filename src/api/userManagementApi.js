@@ -10,12 +10,12 @@ export const getUserById = async (userId) => {
     return response.data
 }
 
-export const toggleUserStatus = async (userId, action, value) => {
-    const response = await axiosAdminInstance.patch(`/users/${userId}/status`, null, {
-        params: {
-            action,
-            value
-        }
+export const toggleUserStatus = async (userId, action, value, reason, isSend) => {
+    const response = await axiosAdminInstance.patch(`/users/${userId}/status`, {
+        action,
+        value,
+        reason,
+        isSend
     })
     return response.data
 }

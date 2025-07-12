@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { isToday, isThisMonth, isAfter, startOfToday, parseISO, format, subDays } from 'date-fns';
 import RevenueChart from '../../../components/RevenueChart';
 import { LoaderCircle } from 'lucide-react'
-
+import clsx from 'clsx';
 import StatCard from '../../../components/StatCard';
 import WelcomePage from './WelcomePage';
 import { fetchBusinessBookings } from '../../../store/slices/bookingSlice';
@@ -18,6 +18,8 @@ const DashboardPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    const [chartTimeRange, setChartTimeRange] = useState(7)
+
     const user = useSelector((state) => state.auth.user);
     const business = useSelector((state) => state.business.details);
     const { items: bookings, status: bookingStatus } = useSelector((state) => state.bookings);
@@ -25,31 +27,60 @@ const DashboardPage = () => {
 
     useEffect(() => {
         if (user && user.hasBusiness) {
-            dispatch(fetchBusinessBookings({ page: 0, size: 100 }));
-            dispatch(fetchBusinessOrders({ page: 0, size: 100 }));
+            dispatch(fetchBusinessBookings({ page: 0, size: 200 }));
+            dispatch(fetchBusinessOrders({ page: 0, size: 200 }));
         }
     }, [dispatch, user?.hasBusiness]);
 
+    // const chartData = useMemo(() => {
+    //     if (bookingStatus !== 'succeeded' || orderStatus !== 'succeeded') return [];
+    //     const last7Days = Array.from({ length: 7 }, (_, i) => subDays(new Date(), i));
+    //     const dataMap = new Map();
+    //     last7Days.forEach(day => {
+    //         dataMap.set(format(day, 'yyyy-MM-dd'), { date: format(day, 'MMM d'), revenue: 0 });
+    //     });
+    //     const allCompletedTransactions = [
+    //         ...bookings.filter(b => b.status === 'COMPLETED'),
+    //         ...orders.filter(o => o.status === 'COMPLETED')
+    //     ];
+    //     allCompletedTransactions.forEach(t => {
+    //         const transactionDateStr = format(parseISO(t.createdAt), 'yyyy-MM-dd');
+    //         if (dataMap.has(transactionDateStr)) {
+    //             const dayData = dataMap.get(transactionDateStr);
+    //             dayData.revenue += (t.totalPrice || t.totalAmount);
+    //         }
+    //     });
+    //     return Array.from(dataMap.values()).reverse();
+    // }, [bookings, orders, bookingStatus, orderStatus]);
+
     const chartData = useMemo(() => {
         if (bookingStatus !== 'succeeded' || orderStatus !== 'succeeded') return [];
-        const last7Days = Array.from({ length: 7 }, (_, i) => subDays(new Date(), i));
+ 
+        const rangeOfDays = Array.from({ length: chartTimeRange }, (_, i) => subDays(new Date(), i));
         const dataMap = new Map();
-        last7Days.forEach(day => {
+        
+        rangeOfDays.forEach(day => {
             dataMap.set(format(day, 'yyyy-MM-dd'), { date: format(day, 'MMM d'), revenue: 0 });
         });
+
         const allCompletedTransactions = [
             ...bookings.filter(b => b.status === 'COMPLETED'),
             ...orders.filter(o => o.status === 'COMPLETED')
         ];
+
         allCompletedTransactions.forEach(t => {
-            const transactionDateStr = format(parseISO(t.createdAt), 'yyyy-MM-dd');
-            if (dataMap.has(transactionDateStr)) {
-                const dayData = dataMap.get(transactionDateStr);
-                dayData.revenue += (t.totalPrice || t.totalAmount);
+            const transactionDate = parseISO(t.createdAt)
+            if (isAfter(transactionDate, subDays(new Date(), chartTimeRange))) {
+                const transactionDateStr = format(transactionDate, 'yyyy-MM-dd')
+                if (dataMap.has(transactionDateStr)) {
+                    const dayData = dataMap.get(transactionDateStr)
+                    dayData.revenue += (t.totalPrice || t.totalAmount)
+                }
             }
         });
+
         return Array.from(dataMap.values()).reverse();
-    }, [bookings, orders, bookingStatus, orderStatus]);
+    }, [bookings, orders, bookingStatus, orderStatus, chartTimeRange])
 
     const dashboardStats = useMemo(() => {
         if (bookingStatus !== 'succeeded' || orderStatus !== 'succeeded') {
@@ -108,7 +139,26 @@ const DashboardPage = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 mb-8">
-                <h3 className="text-lg font-semibold text-[#495057] mb-4">Last 7 Days Revenue</h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-[#495057]">Revenue</h3>
+                    <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+                        {[7, 30, 90].map((days) => (
+                            <button
+                                key={days}
+                                onClick={() => setChartTimeRange(days)}
+                                className={clsx(
+                                    "px-3 py-1 text-sm font-semibold rounded-md transition-colors",
+                                    {
+                                        "bg-white text-[#545F71] shadow-sm": chartTimeRange === days,
+                                        "text-gray-500 hover:bg-gray-200": chartTimeRange !== days,
+                                    }
+                                )}
+                            >
+                                {days} Days
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <RevenueChart data={chartData} />
             </div>
 
@@ -118,7 +168,7 @@ const DashboardPage = () => {
                     <div className="space-y-4">
                         {recentOrders.length > 0 ? recentOrders.map((order) => (
                             <div key={order.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                                <div><p className="font-medium text-[#545F71]">{order.orderNumber}</p><p className="text-sm text-[#ADB5BD]">by {order.customerName}</p></div>
+                                <div><p className="font-medium text-[#545F71]">{order.orderNumber}</p><p className="text-sm text-[#ADB5BD]">by {order.customer.name}</p></div>
                                 <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusBadge(order.status)}`}>{order.status.replace('_', ' ')}</span>
                             </div>
                         )) : <p className="text-center text-gray-500 py-4">No recent orders.</p>}

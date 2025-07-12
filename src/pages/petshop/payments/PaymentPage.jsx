@@ -6,6 +6,7 @@ import { fetchBusinessBookings } from '../../../store/slices/bookingSlice';
 import { fetchBusinessOrders } from '../../../store/slices/orderSlice';
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 import PageLoader from '../../../components/PageLoader';
+import Pagination from '../../../components/Pagination';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -47,6 +48,9 @@ const PaymentPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
 
+    const [currentPage, setCurrentPage] = useState(1)
+    const TRANSACTIONS_PER_PAGE = 5
+
     useEffect(() => {
         setIsLoading(true);
         Promise.all([
@@ -66,10 +70,11 @@ const PaymentPage = () => {
         }
 
         const normalizedBookings = bookings
-            .filter(b => b.status === 'COMPLETED' || b.status === 'CONFIRMED')
+            .filter(b => b.status === 'COMPLETED' /**|| b.status === 'CONFIRMED'*/)
             .map(b => ({
                 id: b.id,
                 type: 'Service Booking',
+                code: 'booking',
                 referenceNumber: b.bookingNumber,
                 createdAt: b.createdAt,
                 customerName: b.customer?.name || 'N/A',
@@ -82,9 +87,10 @@ const PaymentPage = () => {
             .map(o => ({
                 id: o.id,
                 type: 'Product Order',
+                code: 'order',
                 referenceNumber: o.orderNumber,
                 createdAt: o.createdAt,
-                customerName: o.customerName || 'N/A',
+                customerName: o.customer?.name || 'N/A',
                 totalAmount: o.totalAmount,
                 status: o.status,
             }));
@@ -95,6 +101,7 @@ const PaymentPage = () => {
     }, [bookings, orders, bookingStatus, orderStatus]);
 
     const filteredTransactions = useMemo(() => {
+        setCurrentPage(1)
         return allTransactions.filter(t => {
             const matchesSearch = t.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
                                   t.customerName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -103,17 +110,22 @@ const PaymentPage = () => {
         });
     }, [allTransactions, searchTerm, typeFilter]);
 
+    const totalPages = Math.ceil(filteredTransactions.length / TRANSACTIONS_PER_PAGE)
+
+    const paginatedTransactions = useMemo(() => {
+        const startIndex = (currentPage - 1) * TRANSACTIONS_PER_PAGE
+        const endIndex = startIndex + TRANSACTIONS_PER_PAGE
+        return filteredTransactions.slice(startIndex, endIndex)
+    }, [filteredTransactions, currentPage])
+
     const totalRevenue = useMemo(() => {
         return allTransactions.reduce((acc, t) => acc + t.totalAmount, 0);
     }, [allTransactions]);
 
     const handleRowClick = (transaction) => {
-        if (transaction.type === 'Product Order') {
-            navigate(`/orders/${transaction.id}`);
-        } else {
-            navigate(`/bookings/${transaction.id}`);
-        }
+        navigate(`/payments/${transaction.code}/${transaction.id}`)
     };
+    console.log(filteredTransactions, 'cek transction filterted')
     
     if (isLoading) return <PageLoader message="Loading payment history..."/>
     if (error) return <div className="p-6 text-center text-red-600">{error}</div>;
@@ -121,7 +133,7 @@ const PaymentPage = () => {
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-[#495057]">Transaction History</h1>
+                <h1 className="text-2xl font-bold text-[#495057]">Payment History</h1>
                 {/* <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">
                     <FileDown size={16} /> Export
                 </button> */}
@@ -163,6 +175,7 @@ const PaymentPage = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-[#F8F9FA] text-left text-[#495057]">
                             <tr>
+                                <th className="py-3 px-4 font-semibold text-center">#</th>
                                 <th className="py-3 px-4 font-semibold">Reference</th>
                                 <th className="py-3 px-4 font-semibold">Date</th>
                                 <th className="py-3 px-4 font-semibold text-right">Amount</th>
@@ -170,12 +183,15 @@ const PaymentPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredTransactions.map((t) => (
+                            {paginatedTransactions.map((t, index) => (
                                 <tr 
                                     key={t.id} 
                                     className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA] cursor-pointer"
                                     onClick={() => handleRowClick(t)}
                                 >
+                                    <td className="py-3 px-4 text-center text-[#495057]">
+                                        {(currentPage - 1) * TRANSACTIONS_PER_PAGE + index + 1}
+                                    </td>
                                     <td className="py-3 px-4">
                                         <p className="font-medium text-[#545F71]">{t.referenceNumber}</p>
                                         <p className="text-xs text-[#ADB5BD]">{t.type} by {t.customerName}</p>
@@ -194,11 +210,19 @@ const PaymentPage = () => {
 
                     {filteredTransactions.length === 0 && (
                         <div className="text-center py-10 text-[#495057]">
-                            <p>No transactions found matching your criteria.</p>
+                            <p>No payments found matching your criteria.</p>
                         </div>
                     )}
+
                 </div>
             </div>
+            {filteredTransactions.length > 0 && (
+                <Pagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                />
+            )}
         </div>
     )
 }

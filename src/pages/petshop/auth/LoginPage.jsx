@@ -25,8 +25,21 @@ const LoginPage = () => {
     },
   })
 
-  const onSubmit = (data) => {
-    dispatch(loginUser(data))
+  const onSubmit = async (data) => {
+    try {
+      await dispatch(loginUser(data))
+      toast.success("Signed in successfully")
+    } catch (error) {
+      if (error.message?.includes("User is disabled")) {
+        toast.error("Your account has been banned. Please contact support for more information.")
+      } else if(error.message?.includes("User account is locked")){
+        toast.error("Your account is currently suspended. Please try again later or contact support.")
+      } else if(error.message?.includes("Bad credentials")){
+        toast.error("Invalid email or password")
+      } else {
+        toast.error(error.message || "An unknown error occurred.")
+      }
+    }
   }
 
   const handleRequestReset = async (data) => {
@@ -102,7 +115,7 @@ const LoginPage = () => {
               </button>
             </div>
 
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {/* {error && <p className="text-red-500 text-sm text-center">{error}</p>} */}
 
             <Button buttonType="submit" fullWidth disabled={!isValid || isLoginLoading}>
               {isLoginLoading ? 'Signing In...' : 'Sign In'}
@@ -113,7 +126,7 @@ const LoginPage = () => {
               <p className="text-center text-gray-500 text-sm mb-2">Or sign up with</p>
               <button
                   type="button"
-                  onClick={() => window.location.href = `${import.meta.env.VITE_BASE_URL_API_V2}/oauth2/authorization/google`}
+                  onClick={() => window.location.href = `${import.meta.env.VITE_BASE_URL_API_OAUTH}/oauth2/authorization/google`}
                   className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md shadow-sm hover:bg-gray-100 transition"
               >
                   <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />

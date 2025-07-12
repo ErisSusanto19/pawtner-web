@@ -10,7 +10,7 @@ export const getBusinessById = async(businessId) => {
     return response.data
 }
 
-export const approveBusiness = async(businessId, statusApprove) => {
-    const response = await axiosAdminInstance.patch(`/business/${businessId}`, statusApprove)
+export const approveBusiness = async(businessId, requestBody) => {
+    const response = await axiosAdminInstance.patch(`/business/${businessId}`, requestBody)
     return response.data
 }

@@ -70,7 +70,7 @@ export const {
     clearCurrentBooking,
 } = bookingSlice.actions
 
-export const fetchBusinessBookings = (params = { page: 0, size: 20 }) => {
+export const fetchBusinessBookings = (params) => {
     return async (dispatch, getState) => {
         dispatch(bookingOperationStart())
         try {
@@ -86,24 +86,13 @@ export const fetchBusinessBookings = (params = { page: 0, size: 20 }) => {
     }
 }
 
-// export const fetchBookingById = (bookingId) => {
-//     return async (dispatch) => {
-//         dispatch(bookingOperationStart())
-//         try {
-//             const response = await bookingApi.getBookingById(bookingId)
-//             dispatch(fetchBookingByIdSuccess(response.data))
-//         } catch (error) {
-//             const errorMessage = error.response?.data?.message || error.message
-//             dispatch(bookingOperationFail({ error: errorMessage }))
-//         }
-//     }
-// }
-
 export const fetchBookingById = (bookingId) => {
     return async (dispatch) => {
         dispatch(bookingOperationStart())
         try {
             const bookingResponse = await bookingApi.getBookingById(bookingId)
+            console.log(bookingResponse, '<<< cek response booking by id');
+            
             const basicBookingData = bookingResponse.data
 
             const { serviceId } = basicBookingData

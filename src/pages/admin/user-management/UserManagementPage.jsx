@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import UserFilters from './UserFilters';
 import UsersTable from './UsersTable';
 import Pagination from '../../../components/Pagination';
-import ConfirmationModal from '../../../components/ConfirmationModal';
+import ConfirmationModal from '../../../components/ConfirmationModalV2';
 
 import { fetchAllUsers, toggleUserStatusAction } from '../../../store/slices/userManagementSlice';
 
@@ -78,22 +78,30 @@ const UserManagementPage = () => {
     const handleAction = (action, userId, value) => {
         const user = allUsers.find(u => u.id === userId);
         if (!user) return;
-        const verb = action === 'ban' ? (value ? 'unban' : 'ban') : (value ? 'unsuspend' : 'suspend');
-        setConfirmationData({
+        const verb = action === 'ban' ? (value ? 'unban' : 'ban') : (value ? 'unsuspend' : 'suspend')
+
+        const modalProps = {
             title: `Confirm ${verb.charAt(0).toUpperCase() + verb.slice(1)}`,
-            message: `Are you sure you want to ${verb} the user "${user.name}"?`,
-            onConfirm: () => handleConfirmAction({ userId, action, value }),
-        });
+            // message: `Are you sure you want to ${verb} the user "${user.name}"?`,
+            message: `You are about to ${verb} the user "${user.name}". This action will be recorded and an email will be sent. Please provide a clear reason below.`,
+            reasonInput: {
+                label: `Reason for ${verb}`,
+                placeholder: 'e.g., Spamming, abusive behavior, etc.'
+            },
+            onConfirm: (reason) => handleConfirmAction({ userId, action, value, reason}),
+        }
+        
+        setConfirmationData(modalProps)
         setIsModalOpen(true);
     };
 
-    const handleConfirmAction = async ({ userId, action, value }) => {
+    const handleConfirmAction = async ({ userId, action, value, reason}) => {
         setIsSubmitting(true);
         const verb = action === 'ban' ? (value ? 'unbanned' : 'banned') : (value ? 'unsuspended' : 'suspended');
         try {
-            await dispatch(toggleUserStatusAction(userId, action, value))
-            if(action === 'ban' && value === true){
-                await dispatch(toggleUserStatusAction(userId, 'suspend', true))
+            await dispatch(toggleUserStatusAction({userId, action, value, reason, isSend: true}))
+            if(action === 'ban' && value === false){
+                await dispatch(toggleUserStatusAction({userId, action:'suspend', value: true, reason, isSend: false}))
             }
             toast.success(`User has been successfully ${verb}.`);
         } catch (err) {
@@ -137,10 +145,11 @@ const UserManagementPage = () => {
             <ConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onConfirm={confirmationData?.onConfirm}
-                title={confirmationData?.title}
-                message={confirmationData?.message}
+                // onConfirm={confirmationData?.onConfirm}
+                // title={confirmationData?.title}
+                // message={confirmationData?.message}
                 isLoading={isSubmitting}
+                {...confirmationData}
             />
         </div>
     );

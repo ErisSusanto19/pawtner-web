@@ -202,6 +202,7 @@ const OrderPage = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-[#F8F9FA] text-left text-[#495057]">
                             <tr>
+                                <th className="py-3 px-4 font-semibold text-center">#</th>
                                 <th className="py-3 px-4 font-semibold">Order ID</th>
                                 <th className="py-3 px-4 font-semibold">Customer</th>
                                 <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('createdAt')}>
@@ -215,8 +216,11 @@ const OrderPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedOrders.map((order) => (
+                            {paginatedOrders.map((order, index) => (
                                 <tr key={order.id} className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA] cursor-pointer" onClick={() => navigate(`/orders/${order.id}`)}>
+                                    <td className="py-3 px-4 text-center text-[#495057]">
+                                        {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                                    </td>
                                     <td className="py-3 px-4 font-medium text-[#545F71]">{order.orderNumber}</td>
                                     <td className="py-3 px-4">
                                         <div>

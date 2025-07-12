@@ -27,8 +27,8 @@ const UserFilters = ({ filters, onFilterChange }) => {
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-800"
         >
           <option value="all">All Roles</option>
-          <option value="business_owner">Business Owner</option>
-          <option value="customer">Customer</option>
+          <option value="BUSINESS_OWNER">Business Owner</option>
+          <option value="CUSTOMER">Customer</option>
         </select>
       </div>
 

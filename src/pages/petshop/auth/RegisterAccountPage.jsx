@@ -29,8 +29,17 @@ const RegisterAccountPage = () => {
     })
 
     const onSubmit = async (data) => {
-        const { confirmPassword, ...userData } = data
-        dispatch(registerUser(userData))
+        try {
+            const { confirmPassword, ...userData } = data
+            await dispatch(registerUser(userData))
+            toast.success("Signed up successfully")
+        } catch (error) {
+            if(error.message?.toLowerCase().includes("similar record")){
+                toast.error("Phone number is already in use. Please use a different one.")
+            } else{
+                toast.error(error.message || "An unknown error occurred.")
+            }
+        }
     }
 
     useEffect(() => {
@@ -39,9 +48,9 @@ const RegisterAccountPage = () => {
             navigate('/verify-email', { state: { email: email } })
         }
 
-        if(error){
-            toast.error(error)
-        }
+        // if(error){
+        //     toast.error(error)
+        // }
     }, [message, error, navigate, getValues])
 
     return (
@@ -62,14 +71,15 @@ const RegisterAccountPage = () => {
                         setValue={setValue}
                     />
 
-                    <div className="mt-4 text-center">
+                    {/* <div className="mt-4 text-center">
                         {error && <p className="text-red-500 text-sm">{error}</p>}
                         {message && <p className="text-green-600 text-sm">{message}</p>}
-                    </div>
+                    </div> */}
 
                     <div className="mt-4">
-                        <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
-                            {isLoading ? 'Signing up...' : 'Sign up'}
+                        <Button buttonType="submit" fullWidth disabled={!isValid || isLoading} isLoading={isLoading}>
+                            {/* {isLoading ? 'Signing up...' : 'Sign up'} */}
+                            Sign up
                         </Button>
                     </div>
                 </form>
@@ -78,7 +88,7 @@ const RegisterAccountPage = () => {
                     <p className="text-center text-gray-500 text-sm mb-2">Or sign up with</p>
                     <button
                         type="button"
-                        onClick={() => window.location.href = `${import.meta.env.VITE_BASE_URL_API_V2}/oauth2/authorization/google`}
+                        onClick={() => window.location.href = `${import.meta.env.VITE_BASE_URL_API_OAUTH}/oauth2/authorization/google`}
                         className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md shadow-sm hover:bg-gray-100 transition"
                     >
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />

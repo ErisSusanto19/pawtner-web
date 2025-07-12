@@ -1,178 +1,179 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Hash, CreditCard, Clock, User, ShoppingBag, Briefcase, DollarSign, Percent, Pocket, HandCoins } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { ArrowLeft } from 'lucide-react';
+
+// Impor thunk slices Anda
+import { fetchOrderById } from '../../../store/slices/orderSlice'
+import { fetchBookingById } from '../../../store/slices/bookingSlice';
+
+import PageLoader from '../../../components/PageLoader';
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 
-const dummyTransactionDetail = {
-    payment: {
-        id: 1,
-        order_id: 1, booking_id: null,
-        payment_gateway_ref_id: 'd9b1c7e0-1234-5678-9abc-def012345678',
-        amount: 59990.00,
-        platform_fee: 2999.50,
-        net_amount: 56990.50,
-        payment_method: 'gopay',
-        status: 'settlement',
-        created_at: '2023-10-26T10:00:00Z',
-        updated_at: '2023-10-26T10:01:15Z'
-    },
-    related_item: {
-        type: 'Product Order',
-        items: [
-            { id: 'prod_001', name: 'Royal Canin Maxi Adult', quantity: 1, price: 59990.00 },
-        ]
-    },
-    // related_item: {
-    //     type: 'Service Booking',
-    //     items: [
-    //         { id: 'svc_01', name: 'Premium Full Grooming', date: '2023-10-28', price: 55000.00 },
-    //     ]
-    // },
-    customer: {
-        name: 'Budi Santoso',
-        email: 'budi.s@example.com'
-    }
-}
-
-const formatPaymentStatus = (status) => {
-    switch (status) {
-        case 'settlement':
-        case 'capture':
-            return { label: 'Success', badge: "bg-green-100 text-green-800" }
-        case 'pending':
-            return { label: 'Pending', badge: "bg-yellow-100 text-yellow-800" }
-        case 'failure':
-            return { label: 'Failed', badge: "bg-red-100 text-red-800" }
-        case 'cancel':
-            return { label: 'Canceled', badge: "bg-gray-200 text-gray-800" }
-        case 'expire':
-            return { label: 'Expired', badge: "bg-orange-100 text-orange-800" }
-        default:
-            return { label: status, badge: "bg-gray-100 text-gray-800" }
-    }
-}
-
-const DetailRow = ({ icon, label, value, valueClass = 'text-[#495057]' }) => (
-    <div className="flex justify-between items-center py-3 border-b border-[#E9ECEF] last:border-b-0">
-        <div className="flex items-center text-sm text-[#495057]">
-            {icon}
-            <span className="ml-2">{label}</span>
-        </div>
-        <span className={`text-sm font-medium ${valueClass}`}>{value}</span>
+// Komponen Card untuk membungkus setiap seksi detail
+const DetailCard = ({ title, children }) => (
+    <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
+        <h3 className="text-lg font-semibold text-[#495057] border-b border-[#E9ECEF] pb-3 mb-4">{title}</h3>
+        {children}
     </div>
-)
+);
+
+// Komponen untuk baris detail agar rapi
+const DetailRow = ({ label, value }) => (
+    <div className="flex justify-between py-2">
+        <span className="text-sm text-gray-500">{label}</span>
+        <span className="text-sm font-medium text-[#495057] text-right">{value}</span>
+    </div>
+);
 
 
 const PaymentDetailPage = () => {
-    const { paymentId } = useParams();
-    const [transaction, setTransaction] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const { type, id } = useParams();
+    console.log(type, '<< cek type')
+    console.log(id, '<< cek id')
+    
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    // Ambil data dari kedua slice. Hanya satu yang akan relevan pada satu waktu.
+    const { currentOrder: orderData, status: orderStatus, error: orderError } = useSelector(state => state.orders);
+    const { currentBooking: bookingData, status: bookingStatus, error: bookingError } = useSelector(state => state.bookings);
 
     useEffect(() => {
-        setLoading(true)
-        setTimeout(() => {
-            setTransaction(dummyTransactionDetail)
-            setLoading(false)
-        }, 500);
-    }, [paymentId])
+        if (type == 'order') {
+            dispatch(fetchOrderById(id));
+        } else if (type == 'booking') {
+            dispatch(fetchBookingById(id));
+        }
+    }, [dispatch, type, id]);
 
-    if (loading) return <div className="p-6 text-center">Loading transaction details...</div>
-    if (!transaction) return <div className="p-6 text-center text-red-600">Transaction not found.</div>
-    
-    const { payment, related_item, customer } = transaction
-    const displayStatus = formatPaymentStatus(payment.status)
-    const referenceId = payment.order_id || payment.booking_id
-    const referenceType = payment.order_id ? 'Order' : 'Booking'
-    const referenceLink = payment.order_id ? `/orders/${referenceId}` : `/petshop/bookings/${referenceId}`
+    // useMemo untuk menyatukan data dari order atau booking menjadi satu struktur
+    const transactionDetails = useMemo(() => {
+        
+        if (type == 'order' && orderData?.id == id) {
+            return {
+                type: 'Product Order',
+                referenceId: orderData.id,
+                date: orderData.completedAt || orderData.createdAt,
+                customer: {
+                    name: orderData.customer?.name || 'N/A',
+                    email: orderData.customer?.email || 'N/A',
+                },
+                items: orderData.items?.map(item => ({
+                    name: item.productName || 'Product Not Found',
+                    quantity: item.quantity,
+                    price: item.pricePerUnit,
+                    total: item.quantity * item.pricePerUnit
+                })) || [],
+                totalAmount: orderData.totalAmount,
+                // paymentMethod: orderData.paymentMethod || 'Not specified',
+                status: orderData.status,
+            };
+        }
+        
+        if (type == 'booking' && bookingData?.id == id) {
+            return {
+                type: 'Service Booking',
+                referenceId: bookingData.id,
+                date: bookingData.createdAt,
+                customer: {
+                    name: bookingData.customer?.name || 'N/A',
+                    email: bookingData.customer?.email || 'N/A',
+                },
+                items: [{
+                    name: `Booking for ${bookingData.service?.name || 'Service Not Found'}`,
+                    quantity: 1,
+                    price: bookingData.totalCost,
+                    total: bookingData.totalCost
+                }],
+                totalAmount: bookingData.totalPrice,
+                paymentMethod: bookingData.paymentDetails?.method || 'Not specified',
+                status: bookingData.status,
+            };
+        }
+
+        return null;
+    }, [type, id, orderData, bookingData]);
+
+    const status = type === 'order' ? orderStatus : bookingStatus;
+    const error = type === 'order' ? orderError : bookingError;
+
+    if (status === 'loading') return <PageLoader message={`Loading ${type} details...`} />;
+    if (status === 'failed') return <div className="p-6 text-center text-red-600">{error}</div>;
+    if (!transactionDetails) return <div className="p-6 text-center text-gray-500">Payment data not found.</div>;
 
     return (
-        <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
-            
-            <div>
-                <Link to="/payments" className="flex items-center gap-2 text-sm text-[#545F71] hover:text-[#495057] mb-4">
-                    <ArrowLeft size={16} /> Back to Payments
-                </Link>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-2xl font-bold text-[#495057]">
-                            Payment for {referenceType} #{referenceId}
-                        </h1>
-                        <p className="text-sm text-[#ADB5BD]">Gateway Ref: {payment.payment_gateway_ref_id}</p>
-                    </div>
-                    <span className={`px-4 py-2 text-sm font-semibold rounded-full ${displayStatus.badge}`}>
-                        {displayStatus.label}
-                    </span>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div className="lg:col-span-2 space-y-6">
-
-                    <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
-                        <h2 className="text-lg font-semibold text-[#495057] mb-4 flex items-center">
-                            {related_item.type === 'Product Order' 
-                                ? <ShoppingBag size={20} className="mr-2" /> 
-                                : <Briefcase size={20} className="mr-2" />}
-                            {related_item.type} Details
-                        </h2>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="text-left text-[#ADB5BD]">
-                                    <tr>
-                                        <th className="py-2 font-normal">Item</th>
-                                        <th className="py-2 font-normal text-center">Quantity</th>
-                                        <th className="py-2 font-normal text-right">Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {related_item.items.map((item, index) => (
-                                        <tr key={index}>
-                                            <td className="py-2 font-medium text-[#545F71]">{item.name}</td>
-                                            <td className="py-2 text-center text-[#495057]">{item.quantity || 1}</td>
-                                            <td className="py-2 text-right font-medium text-[#495057]">{formatCurrencyIDR(item.price)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
-                        <h2 className="text-lg font-semibold text-[#495057] mb-4 flex items-center">
-                            <User size={20} className="mr-2" /> Customer Information
-                        </h2>
-                        <DetailRow icon={<></>} label="Name" value={customer.name} />
-                        <DetailRow icon={<></>} label="Email" value={customer.email} />
-                    </div>
+        <div className="p-4 md:p-6 bg-gray-50 min-h-full">
+            <div className="max-w-4xl mx-auto">
+                <div className="mb-6 flex items-center gap-4">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-2 rounded-md hover:bg-gray-200 transition-colors"
+                    >
+                        <ArrowLeft size={20} className="text-[#495057]" />
+                    </button>
+                    <h1 className="text-2xl font-bold text-[#495057]">
+                        Payment Details
+                    </h1>
                 </div>
 
                 <div className="space-y-6">
-
-                    <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
-                        <h2 className="text-lg font-semibold text-[#495057] mb-4">Financial Summary</h2>
-                        <DetailRow icon={<HandCoins size={16} />} label="Gross Amount" value={formatCurrencyIDR(payment.amount)} />
-                        {/* <DetailRow icon={<Percent size={16} />} label="Platform Fee" value={`- ${formatCurrencyIDR(payment.platform_fee)}`} valueClass="text-red-600" />
-                        <DetailRow icon={<Pocket size={16} />} label="Net Received" value={formatCurrencyIDR(payment.net_amount)} valueClass="text-green-700 font-bold" /> */}
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
-                        <h2 className="text-lg font-semibold text-[#495057] mb-4">Payment Info</h2>
-                        <DetailRow icon={<Hash size={16} />} label="Payment ID" value={payment.id} />
-                        <DetailRow icon={<CreditCard size={16} />} label="Payment Method" value={payment.payment_method.replace('_', ' ').toUpperCase()} />
-                        <DetailRow icon={<Clock size={16} />} label="Created At" value={formatDate(payment.created_at)} />
-                        <DetailRow icon={<Clock size={16} />} label="Last Updated" value={formatDate(payment.updated_at)} />
-                        <div className="mt-4">
-                            <Link to={referenceLink} className="w-full text-center block px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057] transition-colors">
-                                View Full {referenceType}
-                            </Link>
+                    <DetailCard title="Payment Summary">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                            <DetailRow label="Reference ID" value={transactionDetails.referenceId} />
+                            <DetailRow label="Payment Type" value={transactionDetails.type} />
+                            <DetailRow label="Payment Date" value={formatDate(transactionDetails.date)} />
+                            <DetailRow label="Payment Status" value={
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                    {transactionDetails.status}
+                                </span>
+                            }/>
+                            {/* <DetailRow label="Payment Method" value={transactionDetails.paymentMethod} /> */}
+                            {transactionDetails.type == 'Service Booking' && (
+                                <DetailRow label="Total Cost" value={formatCurrencyIDR(transactionDetails.totalAmount)} />
+                            )}
                         </div>
-                    </div>
-                </div>
+                    </DetailCard>
 
+                    <DetailCard title="Customer Information">
+                         <DetailRow label="Customer Name" value={transactionDetails.customer.name} />
+                         <DetailRow label="Email Address" value={transactionDetails.customer.email} />
+                    </DetailCard>
+
+                    {transactionDetails.type === 'Product Order' && (
+                        <DetailCard title="Item Details">
+                            <table className="w-full text-sm">
+                                <thead className="text-left text-[#495057]">
+                                    <tr className="border-b">
+                                        <th className="py-2 px-3 font-semibold">Item/Service</th>
+                                        <th className="py-2 px-3 font-semibold text-center">Quantity</th>
+                                        <th className="py-2 px-3 font-semibold text-right">Unit Price</th>
+                                        <th className="py-2 px-3 font-semibold text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {transactionDetails.items.map((item, index) => (
+                                        <tr key={index} className="border-b last:border-none">
+                                            <td className="py-3 px-3">{item.name}</td>
+                                            <td className="py-3 px-3 text-center">{item.quantity}</td>
+                                            <td className="py-3 px-3 text-right">{formatCurrencyIDR(item.price)}</td>
+                                            <td className="py-3 px-3 text-right">{formatCurrencyIDR(item.total)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="font-bold">
+                                        <td colSpan="3" className="py-3 px-3 text-right text-[#495057]">Grand Total</td>
+                                        <td className="py-3 px-3 text-right text-lg text-[#495057]">{formatCurrencyIDR(transactionDetails.totalAmount)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </DetailCard>
+                    )}
+                </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default PaymentDetailPage

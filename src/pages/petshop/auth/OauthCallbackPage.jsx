@@ -1,10 +1,10 @@
-// src/pages/OAuthCallbackPage.jsx
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { loginSuccess, setToken, updateUserBusinessStatus } from '../../../store/slices/authSlice';
 import { fetchMyBusiness } from '../../../store/slices/businessSlice';
 import { getProfile, setRole } from '../../../api/authApi';
+import { toast } from 'react-toastify';
 
 const OAuthCallbackPage = () => {
   const dispatch = useDispatch();
@@ -50,10 +50,11 @@ const OAuthCallbackPage = () => {
         } else {
           dispatch(updateUserBusinessStatus(false));
         }
-
+        toast.success("Welcome! You're signed in with Google.");
         navigate("/");
       } catch (error) {
         console.error("OAuth failed:", error);
+        toast.error("Google sign-in failed. Please try again.");
         navigate("/signin");
       }
     };

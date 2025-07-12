@@ -33,8 +33,13 @@ const productSlice = createSlice({
         fetchProductsSuccess: (state, action) => {
             state.status = 'succeeded'
             const { content, page } = action.payload
-            state.items = Array.isArray(content) ? content.filter(item => item.isActive) : []
-            state.pagination = page
+            const activeItems = Array.isArray(content) ? content.filter(item => item.isActive) : []
+            state.items = activeItems
+
+            state.pagination.number = page.number
+            state.pagination.size = page.size
+            state.pagination.totalElements = activeItems.length
+            state.pagination.totalPages = Math.ceil(activeItems.length / page.size)
         },
 
         fetchProductByIdSuccess: (state, action) => {
@@ -82,7 +87,7 @@ export const {
     setCurrentProduct,
 } = productSlice.actions
 
-export const fetchProducts = (params = {page: 0, size: 20}) => {
+export const fetchProducts = (params) => {
     return async (dispatch, getState) => {
         dispatch(productOperationStart())
         try {

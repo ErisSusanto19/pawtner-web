@@ -11,6 +11,7 @@ import CreatePrescriptionModal from './CreatePrescriptionModal';
 import { fetchBookingById, changeBookingStatus, clearCurrentBooking } from '../../../store/slices/bookingSlice';
 import { fetchPrescriptionsByBooking, createNewPrescription, deleteExistingPrescription, clearPrescriptions } from '../../../store/slices/prescriptionSlice';
 import { formatCurrencyIDR } from '../../../utils/formatter';
+import PageLoader from '../../../components/PageLoader';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -150,7 +151,7 @@ const BookingDetailPage = () => {
     };
 
     if (bookingStatus === 'loading' && !booking) {
-        return <div className="p-6 text-center">Loading booking details...</div>;
+        return <PageLoader message="Loading booking details..."/>
     }
 
     if (bookingStatus === 'failed' && !booking) {
@@ -202,6 +203,7 @@ const BookingDetailPage = () => {
                     <h3 className="text-lg font-semibold text-[#495057]">Booking Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                         <div className="flex flex-col"><span className="text-xs text-[#ADB5BD] uppercase font-semibold">Service</span><span className="font-medium text-[#495057] mt-1">{booking.service?.name}</span></div>
+                        <div className="flex flex-col"><span className="text-xs text-[#ADB5BD] uppercase font-semibold">Category</span><span className="font-medium text-[#495057] mt-1">{booking.service?.category}</span></div>
                         <div className="flex flex-col"><span className="text-xs text-[#ADB5BD] uppercase font-semibold">Date & Time</span><span className="font-medium text-[#495057] mt-1">{format(parseISO(booking.startTime), 'EEEE, MMMM d, yyyy')} at {format(parseISO(booking.startTime), 'HH:mm')}</span></div>
                         <div className="flex flex-col"><span className="text-xs text-[#ADB5BD] uppercase font-semibold">Total Price</span><span className="font-medium text-[#495057] mt-1">{formatCurrencyIDR(booking.totalPrice)}</span></div>
                         <div className="flex flex-col"><span className="text-xs text-[#ADB5BD] uppercase font-semibold">Status</span><span className={`px-2 py-1 text-xs font-medium rounded-full self-start mt-1 capitalize ${getStatusBadge(booking.status)}`}>{formatStatusText(booking.status)}</span></div>
@@ -229,22 +231,24 @@ const BookingDetailPage = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
-                <h3 className="text-lg font-semibold text-[#495057] mb-4 flex items-center gap-2"><FileText size={20}/> Prescription History</h3>
-                {prescriptionStatus === 'loading' && <p className="text-sm text-center text-gray-500 py-6">Loading prescriptions...</p>}
-                {prescriptionStatus === 'failed' && <p className="text-sm text-center text-red-500 py-6">Error loading prescriptions: {prescriptionError}</p>}
-                {prescriptionStatus === 'succeeded' && (
-                    prescriptions.length > 0 ? (
-                        <div className="space-y-4">
-                            {prescriptions.map(p => (
-                                <PrescriptionCard key={p.id} prescription={p} onDelete={handleDeletePrescription} />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-sm text-center text-[#ADB5BD] py-6">No prescription has been issued for this booking yet.</p>
-                    )
-                )}
-            </div>
+            {isVeterinaryService && (
+                <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
+                    <h3 className="text-lg font-semibold text-[#495057] mb-4 flex items-center gap-2"><FileText size={20}/> Prescription History</h3>
+                    {prescriptionStatus === 'loading' && <p className="text-sm text-center text-gray-500 py-6">Loading prescriptions...</p>}
+                    {prescriptionStatus === 'failed' && <p className="text-sm text-center text-red-500 py-6">Error loading prescriptions: {prescriptionError}</p>}
+                    {prescriptionStatus === 'succeeded' && (
+                        prescriptions.length > 0 ? (
+                            <div className="space-y-4">
+                                {prescriptions.map(p => (
+                                    <PrescriptionCard key={p.id} prescription={p} onDelete={handleDeletePrescription} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-center text-[#ADB5BD] py-6">No prescription has been issued for this booking yet.</p>
+                        )
+                    )}
+                </div>
+            )}
             
             <BookingModal 
                 isOpen={isStatusModalOpen}

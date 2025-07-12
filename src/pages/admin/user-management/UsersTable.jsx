@@ -105,7 +105,7 @@ const UsersTable = ({ users, onAction }) => {
                                     </Link>
                                     <button 
                                         onClick={() => {
-                                            onAction('ban', user.id, !user.isEnable)
+                                            onAction('ban', user.id, !user.isEnable, user)
                                         }}
                                         className={`font-semibold ${
                                             user.isEnable 
@@ -118,7 +118,7 @@ const UsersTable = ({ users, onAction }) => {
                                     </button>
                                     {user.isEnable && (
                                         <button 
-                                            onClick={() => onAction('suspend', user.id, !user.isNoLocked)}
+                                            onClick={() => onAction('suspend', user.id, !user.isNoLocked, user)}
                                             className={`font-semibold ${
                                                 user.isNoLocked 
                                                 ? 'text-green-600 hover:text-green-900'

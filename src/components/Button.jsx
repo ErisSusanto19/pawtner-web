@@ -9,7 +9,7 @@ const Button = ({children, buttonType, disabled, onClick, fullWidth, secondary, 
             onClick={onClick}
             disabled={disabled}
             className={clsx(
-                "flex justify-center items-center text-sm text-white font-semibold rounded-md",
+                "flex justify-center items-center text-sm text-white font-semibold rounded-md cursor-pointer",
                 padding && "py-2 px-3",
                 disabled && "opacity-50 cursor-default",
                 fullWidth && "w-full",

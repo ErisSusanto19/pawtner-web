@@ -92,7 +92,7 @@ export const fetchOrderById = (orderId) => {
         try {
             const response = await orderApi.getOrderById(orderId)
 
-            console.log(response, '<<< cek response oder by id');
+            console.log(response, '<<< cek response order by id');
             
 
             dispatch(fetchOrderByIdSuccess(response.data))

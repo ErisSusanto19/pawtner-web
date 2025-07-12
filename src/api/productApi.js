@@ -1,7 +1,7 @@
 import axiosInstance from './axiosInstance'
 
 export const getMyProducts = async (businessId, params) => {
-    const response = await axiosInstance.get(`/products/my-products/${businessId}`, params)
+    const response = await axiosInstance.get(`/products/my-products/${businessId}`, { params } )
     return response.data
 }
 

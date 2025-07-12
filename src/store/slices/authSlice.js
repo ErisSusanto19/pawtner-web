@@ -142,6 +142,7 @@ export const registerUser = (userData) => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'Registration failed.'
       dispatch(authOperationFail({error: errorMessage}))
+      return Promise.reject(new Error(errorMessage))
     }
   }
 }
@@ -156,7 +157,8 @@ export const verifyUserEmail = (verificationData) => async (dispatch) => {
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.message || 'Verification failed'
     dispatch(authOperationFail({ error: errorMessage }))
-    throw new Error(errorMessage)
+    // throw new Error(errorMessage)
+    return Promise.reject(new Error(errorMessage))
   }
 }
 
@@ -169,6 +171,7 @@ export const resendVerificationLink = (email) => async (dispatch) => {
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.message || 'Failed to resend link.'
     dispatch(authOperationFail({ error: errorMessage }))
+    return Promise.reject(new Error(errorMessage))
   }
 }
 
@@ -176,7 +179,10 @@ export const loginUser = (credentials) => {
   return async (dispatch, getState) => {
     dispatch(authOperationStart());
     try {
-      const { data } = await authApi.login(credentials)
+      const response = await authApi.login(credentials)
+      console.log(response, '<<< cek response login');
+      
+      const { data } = response
 
       if (!data.token || !data.userId) {
         throw new Error("Login response from server is incomplete.")
@@ -208,7 +214,7 @@ export const loginUser = (credentials) => {
       dispatch(authOperationFail({ error: errorMessage }))
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      throw error
+      return Promise.reject(new Error(errorMessage))
     }
   }
 }
@@ -217,10 +223,6 @@ export const checkUserSession = () => async (dispatch, getState) => {
   const { token, user: userInState } = getState().auth
 
   if (!token) return
-
-  // if (userInState && typeof userInState.hasBusiness === 'boolean') {
-  //   return
-  // }
 
   const userId = userInState?.userId || userInState?.id
   if (!userId) {
@@ -255,6 +257,7 @@ export const checkUserSession = () => async (dispatch, getState) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
         dispatch(logout())
     }
+    return Promise.reject(new Error(errorMessage))
   }
 }
 
@@ -282,7 +285,8 @@ export const fetchUserProfile = () => async (dispatch, getState) => {
     } catch (error) {
         console.error("Failed to fetch user profile:", error);
         const errorMessage = error.response?.data?.message || error.message || 'Failed to load profile data.';
-        dispatch(authOperationFail({ error: errorMessage }));
+        dispatch(authOperationFail({ error: errorMessage }))
+        return Promise.reject(new Error(errorMessage))
     }
 };
 
@@ -336,7 +340,8 @@ export const updateUserProfile = (formData) => {
           const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile.';
           dispatch(authOperationFail({ error: errorMessage }));
           dispatch({ type: 'auth/updateProfileFail' }); 
-          throw new Error(errorMessage);
+          // throw new Error(errorMessage);
+          return Promise.reject(new Error(errorMessage))
       }
   }
 }
@@ -359,7 +364,8 @@ export const requestPasswordReset = (email) => {
           console.error("Failed to request password reset:", error)
           const errorMessage = error.response?.data?.message || error.message || 'Failed to request password reset.'
           dispatch(authOperationFail({ error: errorMessage }))
-          throw new Error(errorMessage)
+          // throw new Error(errorMessage)
+          return Promise.reject(new Error(errorMessage))
       }
   }
 }
@@ -385,7 +391,8 @@ export const resetPassword = (resetData) => {
       console.error("Failed to reset password:", error)
       const errorMessage = error.response?.data?.message || error.message || 'Failed to reset password.'
       dispatch(authOperationFail({ error: errorMessage }))
-      throw new Error(errorMessage)
+      // throw new Error(errorMessage)
+      return Promise.reject(new Error(errorMessage))
     }
   }
 }
@@ -405,7 +412,8 @@ export const changeUserPassword = (passwordData) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'Failed to change password.';
             dispatch(changePasswordFail({ error: errorMessage }));
-            throw new Error(errorMessage);
+            // throw new Error(errorMessage);
+            return Promise.reject(new Error(errorMessage))
         }
     };
 };

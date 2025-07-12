@@ -34,43 +34,57 @@ const VerifyEmailPage = () => {
         }
     })
 
-    const onSubmit = (formData) => {
-        console.log('submit verifiaction clicked');
-        
+    const onSubmit = async (formData) => {        
         if (!email || email === 'your email address') {
             toast.error('Email address not found. Please go back to sign up.')
-            return;
+            return
         }
         const verificationData = {
             email: email,
             verificationCode: formData.verificationCode
-        };
-        dispatch(verifyUserEmail(verificationData))
+        }
+
+        try {
+            await dispatch(verifyUserEmail(verificationData))
+            
+            toast.success('Verification successful!')
+            setIsRedirecting(true);
+
+        } catch (err) {
+            toast.error(err.message || "Verification failed. Please check the code.")
+        }
     }
 
-    const handleResend = () => {
+    const handleResend = async () => {
         if (!email || email === 'your email address') {
             toast.error('Email address not found. Please try registering again.')
-            return;
+            return
         }
-        dispatch(resendVerificationLink(email))
 
-        setResendTimer(10)
+        try {
+            await dispatch(resendVerificationLink(email))
+            
+            toast.success("A new verification link has been sent.")
+            setResendTimer(10)
+
+        } catch (err) {
+            toast.error(err.message || "Failed to resend the link.")
+        }
     }
 
-    useEffect(() => {
-        if (status === 'verified') {
-            toast.success(message || 'Verification successful! You can now sign in.');
+    // useEffect(() => {
+    //     if (status === 'verified') {
+    //         toast.success(message || 'Verification successful! You can now sign in.');
 
-            setIsRedirecting(true)
+    //         setIsRedirecting(true)
 
-            const timeout = setTimeout(() => {
-                navigate('/signin')
-            }, 2000)
+    //         const timeout = setTimeout(() => {
+    //             navigate('/signin')
+    //         }, 2000)
 
-            return () => clearTimeout(timeout)
-        }
-    }, [status, navigate, message])
+    //         return () => clearTimeout(timeout)
+    //     }
+    // }, [status, navigate, message])
 
     useEffect(() => {
         if (resendTimer === 0) return;
@@ -131,9 +145,9 @@ const VerifyEmailPage = () => {
                         />
                     </div>
 
-                    {error && status !== 'verified' && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    {/* {error && status !== 'verified' && <p className="text-red-500 text-sm text-center">{error}</p>} */}
                     
-                    {message && status === 'registered' && <p className="text-green-600 text-sm text-center">{message}</p>}
+                    {/* {message && status === 'registered' && <p className="text-green-600 text-sm text-center">{message}</p>} */}
 
                     <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
                         {isLoading ? (

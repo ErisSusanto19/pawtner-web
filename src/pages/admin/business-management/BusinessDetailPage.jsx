@@ -7,13 +7,13 @@ import {
     Briefcase, Mail, Phone, MapPin, Globe, AlertTriangle, AlertCircle
 } from 'lucide-react';
 import defImg from '@/assets/undraw_images_of1m.svg'
-
-import ConfirmationModal from '../../../components/ConfirmationModal';
+import ConfirmationModal from '../../../components/ConfirmationModalV2';
 import {
     fetchBusinessById,
     approveOrRejectBusiness,
     clearSelectedBusiness
 } from '../../../store/slices/businessManagementSlice';
+import PageLoader from '../../../components/PageLoader';
 
 const StatusBadge = ({ status }) => {
     if (status == 'Approved') {
@@ -68,6 +68,14 @@ const BusinessDetailsCard = ({ business }) => (
                     {business.hasEmergencyServices ? 'Available' : 'Not Available'}
                 </span>
             </div>
+            {business.hasEmergencyServices && (
+                <div className="flex justify-between">
+                    <span className="font-semibold text-gray-600">Emergency Phone:</span>
+                    <span className={`font-medium text-red-600`}>
+                        {business.emergencyPhone}
+                    </span>
+                </div>
+            )}
             <div className="flex justify-between">
                 <span className="font-semibold text-gray-600">Coordinates (Lat, Lng):</span>
                 <span className="text-gray-800 font-mono text-xs">{`${business.latitude}, ${business.longitude}`}</span>
@@ -139,7 +147,6 @@ const AdminActionsCard = ({ business, onAction }) => (
     </div>
 );
 
-
 const BusinessDetailPage = () => {
     const { businessId } = useParams()
     const dispatch = useDispatch();
@@ -164,19 +171,30 @@ const BusinessDetailPage = () => {
     }, [dispatch, businessId]);
     
     const handleAdminAction = (id, isApproved, verb) => {
-        setConfirmationData({
+        const modalProps = {
             title: `Confirm ${verb.charAt(0).toUpperCase() + verb.slice(1)}`,
-            message: `Are you sure you want to ${verb} this business? This action may affect its visibility to users.`,
-            onConfirm: () => handleConfirmAction(id, isApproved, verb),
-        });
+            message: `Are you sure you want to ${verb} this business?`,
+            onConfirm: (reason) => handleConfirmAction(id, isApproved, verb, reason),
+        }
+
+        if (verb === 'reject') {
+            modalProps.message = `You are about to ${verb} this business. This action will be recorded and an email notification will be sent. Please provide a clear reason.`;
+            modalProps.reasonInput = {
+                label: `Reason for ${verb}`,
+                placeholder: 'e.g., Incomplete data, invalid certificate, etc.'
+            };
+        }
+
+        setConfirmationData(modalProps);
         setIsModalOpen(true);
     };
 
-    const handleConfirmAction = async (id, isApproved, verb) => {
+    const handleConfirmAction = async (id, isApproved, verb, reason) => {
         setIsSubmitting(true);
         try {
-            await dispatch(approveOrRejectBusiness(id, isApproved))
-            toast.success(`Business has been successfully ${verb}${verb.endsWith('e') ? 'd' : 'ed'}.`);
+            await dispatch(approveOrRejectBusiness(id, isApproved, reason))
+            const pastTenseVerb = verb.endsWith('e') ? `${verb}d` : `${verb}ed`
+            toast.success(`Business has been successfully ${pastTenseVerb}.`)
         } catch (err) {
             toast.error(err.message || `Failed to ${verb} business.`);
         } finally {
@@ -193,7 +211,7 @@ const BusinessDetailPage = () => {
     };
 
     if (isLoading && !business) {
-        return <div className="text-center p-8">Loading business details...</div>;
+        return <PageLoader message="Loading business details..."/>
     }
 
     if (error) {
@@ -232,10 +250,11 @@ const BusinessDetailPage = () => {
             <ConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onConfirm={confirmationData?.onConfirm}
-                title={confirmationData?.title}
-                message={confirmationData?.message}
+                // onConfirm={confirmationData?.onConfirm}
+                // title={confirmationData?.title}
+                // message={confirmationData?.message}
                 isLoading={isSubmitting}
+                {...confirmationData}
             />
         </div>
     );

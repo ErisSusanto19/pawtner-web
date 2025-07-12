@@ -180,12 +180,12 @@ const ProductsPage = () => {
         }
     }
 
-    const handleArchive = (product) => {
+    const handleDelete = (product) => {
         setProductToAction(product)
         setConfirmAction({
             fn: () => confirmActionHandler(product),
-            title: "Confirm Archival",
-            message: `Are you sure you want to archive the product "${product.name}"? This will remove it from the active list.`
+            title: "Confirm Deletion",
+            message: `Are you sure you want to delete the product "${product.name}"? This will remove it from the list.`
         })
         setIsConfirmModalOpen(true)
     }
@@ -257,6 +257,7 @@ const ProductsPage = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-[#F8F9FA] text-left text-[#495057]">
                             <tr>
+                                <th className="py-3 px-4 font-semibold text-center">#</th>
                                 <th className="py-3 px-4 font-semibold">Product</th>
                                 <th className="py-3 px-4 font-semibold">Category</th>
                                 <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('price')}>
@@ -273,12 +274,15 @@ const ProductsPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedProducts.map((product) => (
+                            {paginatedProducts.map((product, index) => (
                                 <tr 
                                     key={product.id} 
                                     className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA] cursor-pointer"
                                     onClick={() => navigate(`/products/${product.id}`)}
                                 >
+                                    <td className="py-3 px-4 text-center text-[#495057]">
+                                        {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                                    </td>
                                     <td className="py-3 px-4">
                                         <div className="flex items-center">
                                             <img 
@@ -324,7 +328,7 @@ const ProductsPage = () => {
                                             </Button>
                                             <Button
                                                 buttonType="button"
-                                                onClick={(e) => { e.stopPropagation(); handleArchive(product); }}
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(product); }}
                                                 danger={true}
                                                 title="Delete Product"
                                             >

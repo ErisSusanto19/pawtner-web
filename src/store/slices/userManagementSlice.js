@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import * as userManagementApi from '../../api/userManagementApi'; 
+import * as userManagementApi from '../../api/userManagementApi';
 
 const initialState = {
   items: [],
@@ -107,14 +107,20 @@ export const fetchUserById = (userId) => async (dispatch) => {
   }
 };
 
-export const toggleUserStatusAction = (userId, action, value) => async (dispatch) => {
+export const toggleUserStatusAction = ({ userId, action, value, reason, isSend }) => async (dispatch) => {
+  console.log(reason, 'cekk reason from modal');
+  console.log(isSend, 'cek isSend from modal');
+  
   dispatch(operationStart());
   try {
-    const updatedUserData = await userManagementApi.toggleUserStatus(userId, action, value)
+    const updatedUserData = await userManagementApi.toggleUserStatus(userId, action, value, reason, isSend)
     console.log('User status updated successfully:', updatedUserData)
+    
     dispatch(updateUserSuccess(updatedUserData.data))
     return updatedUserData
   } catch (error) {
+    console.log(error, '<<< cek error');
+    
     const errorMessage = error.response?.data?.message || error.message || 'Failed to update user status.'
     dispatch(operationFail({ error: errorMessage }))
     throw new Error(errorMessage)
