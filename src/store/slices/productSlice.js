@@ -99,6 +99,7 @@ export const fetchProducts = (params) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(productOperationFail({ error: errorMessage }))
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -113,7 +114,8 @@ export const fetchProductById = (productId) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(productOperationFail({ error: errorMessage }))
-            throw new Error(errorMessage)
+            // throw new Error(errorMessage)
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -150,7 +152,8 @@ export const createNewProduct = (productData) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(productOperationFail({ error: errorMessage }))
-            throw new Error(errorMessage)
+            // throw new Error(errorMessage)
+            return Promise.reject(new Error(errorMessage))
         }
     };
 }
@@ -186,7 +189,8 @@ export const updateExistingProduct = ({ productId, productData }) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(productOperationFail({ error: errorMessage }))
-            throw new Error(errorMessage)
+            // throw new Error(errorMessage)
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -204,7 +208,8 @@ export const deleteExistingProduct = (productId) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(productOperationFail({ error: errorMessage }))
-            throw new Error(errorMessage)
+            // throw new Error(errorMessage)
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }

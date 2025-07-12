@@ -13,6 +13,9 @@ import Pagination from '../../../components/Pagination';
 import defImg from '@/assets/undraw_images_of1m.svg'
 import StarRating from '../../../components/StarRating';
 import PageLoader from '../../../components/PageLoader'
+import { useDebounce } from '../../../hooks/useDebounce';
+
+const IS_BACKEND_DRIVEN = false
 
 const categoryOptions = [
   {value: "FOOD", label: "Food"},
@@ -40,7 +43,7 @@ const ProductsPage = () => {
     const dispatch = useDispatch()
     const location = useLocation()
 
-    const {items: products, status, error} = useSelector(state =>  state.products)
+    const {items: products, pagination, status, error} = useSelector(state =>  state.products)
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState(null)
@@ -48,11 +51,12 @@ const ProductsPage = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [selectedStatus, setSelectedStatus] = useState('All')
-
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
     const [currentPage, setCurrentPage] = useState(1)
+
     const ITEMS_PER_PAGE = 5
+
+    const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
     const [productToAction, setProductToAction] = useState(null)
@@ -60,67 +64,108 @@ const ProductsPage = () => {
     const [isConfirmLoading, setIsConfirmLoading] = useState(false)
 
     useEffect(() => {
-        dispatch(fetchProducts({page: 0, size: 50}))
-    }, [dispatch, location])
+        let params = {}
 
-    useEffect(() => {
-        if (status === 'failed' && products.length > 0) {
-            toast.error(`Failed to refresh products: ${error}`)
+        if(IS_BACKEND_DRIVEN) {
+            params = {
+                page: currentPage - 1,
+                size: ITEMS_PER_PAGE,
+                sortBy: sortConfig.key,
+                direction: sortConfig.direction,
+                name: debouncedSearchTerm,
+                isActive: true,
+            }
+
+            if(searchTerm) params.name = searchTerm
+            if(selectedCategory !== 'All'){ params.category = selectedCategory }
+        } else {
+            params = {page: 0, size: 100}
         }
-    }, [status, error, products.length])
 
-    const filteredProductsAndSortedProducts = useMemo(() => {
-        const alarmLowStock = 10
-        let productList = Array.isArray(products) ? products : []
-        productList = productList
-            .map(p => {
-                let status;
-                if (p.stockQuantity === 0) status = "Out of Stock"
-                else if (p.stockQuantity <= alarmLowStock) status = "Low Stock"
-                else status = "In Stock"
-                return { ...p, status }
-            })
-            .filter(product => {
-                const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-                const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory
-                const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus
+        dispatch(fetchProducts(params))
+    }, IS_BACKEND_DRIVEN
+        ? [dispatch, location, currentPage, debouncedSearchTerm, selectedCategory, sortConfig]
+        : [dispatch, location]
+    )
 
-                return matchesSearch && matchesCategory && matchesStatus
-            })
-        
-        if (sortConfig.key !== null) {
-            productList.sort((a, b) => {
-
-                const valA = a[sortConfig.key] ?? 0;
-                const valB = b[sortConfig.key] ?? 0;
+       const { finalProducts, totalPages } = useMemo(() => {
+            if (IS_BACKEND_DRIVEN) {
+                const alarmLowStock = 10
+                const processedProducts = products.map(p => {
+                    let status;
+                    if (p.stockQuantity === 0) status = "Out of Stock"
+                    else if (p.stockQuantity <= alarmLowStock) status = "Low Stock"
+                    else status = "In Stock"
+                    return { ...p, status }
+                })
+                return {
+                    finalProducts: processedProducts,
+                    totalPages: paginationFromApi.totalPages || 1
+                }
+            } else {
+                const alarmLowStock = 10
+                let productList = Array.isArray(products) ? [...products] : [];
+    
+                // Search/Filter
+                productList = productList
+                    .map(p => {
+                        let status;
+                        if (p.stockQuantity === 0) status = "Out of Stock";
+                        else if (p.stockQuantity <= alarmLowStock) status = "Low Stock";
+                        else status = "In Stock";
+                        return { ...p, status };
+                    })
+                    .filter(product => {
+                        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                        const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+                        const matchesStatus = selectedStatus === 'All' || product.status === selectedStatus;
+                        return matchesSearch && matchesCategory && matchesStatus;
+                    });
+    
+                // Sorting
+                if (sortConfig.key !== null) {
+                    productList.sort((a, b) => {
+                        const valA = a[sortConfig.key] ?? 0;
+                        const valB = b[sortConfig.key] ?? 0;
+                        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+                        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+                        return 0;
+                    });
+                }
+    
+                // Paginasi
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                const paginated = productList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
                 
-                if (valA < valB) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (valA > valB) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
+                return {
+                    finalProducts: paginated,
+                    totalPages: Math.ceil(productList.length / ITEMS_PER_PAGE)
+                };
+            }
+        }, [
+            products,
+            pagination,
+            searchTerm,
+            selectedCategory,
+            selectedStatus,
+            sortConfig,
+            currentPage
+        ])
 
-        return productList
-    }, [products, searchTerm, selectedCategory, selectedStatus, sortConfig])
-
-    const paginatedProducts = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-        const endIndex = startIndex + ITEMS_PER_PAGE
-        return filteredProductsAndSortedProducts.slice(startIndex, endIndex)
-    }, [filteredProductsAndSortedProducts, currentPage])
+    // const paginatedProducts = useMemo(() => {
+    //     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    //     const endIndex = startIndex + ITEMS_PER_PAGE
+    //     return filteredProductsAndSortedProducts.slice(startIndex, endIndex)
+    // }, [filteredProductsAndSortedProducts, currentPage])
 
     const handlePageChange = (page) => {
         setCurrentPage(page)
     }
 
     const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
         }
         setSortConfig({ key, direction });
         setCurrentPage(1);
@@ -192,9 +237,7 @@ const ProductsPage = () => {
     }
 
     if (status === 'loading' && products.length === 0) return <PageLoader message="Loading products..."/>
-    if (status === 'failed' && products.length === 0) {
-        return <div className="p-6 text-center text-red-600">Error loading products: {error}</div>
-    }
+    if (status === 'failed') return <div className="p-6 text-center text-red-600">{error}</div>
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -219,13 +262,19 @@ const ProductsPage = () => {
                             placeholder="Search products..." 
                             className="w-full border border-[#E9ECEF] rounded-lg pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value)
+                                setCurrentPage(1)
+                            }}
                         />
                     </div>
                      <select 
                         className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white"
                         value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedCategory(e.target.value)
+                            setCurrentPage(1)
+                        }}
                     >
                         <option value="All">All Categories</option>
                         
@@ -238,7 +287,9 @@ const ProductsPage = () => {
                     <select 
                         className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white"
                         value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedStatus(e.target.value)
+                        }}
                     >
                         <option value="All">All Status</option>
                         <option value="In Stock">In Stock</option>
@@ -251,7 +302,7 @@ const ProductsPage = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-[#F8F9FA] text-left text-[#495057]">
                             <tr>
-                                <th className="py-3 px-4 font-semibold text-center">#</th>
+                                <th className="py-3 px-4 font-semibold w-12">#</th>
                                 <th className="py-3 px-4 font-semibold">Product</th>
                                 <th className="py-3 px-4 font-semibold">Category</th>
                                 <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('price')}>
@@ -264,11 +315,11 @@ const ProductsPage = () => {
                                 <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('averageRating')}>
                                     <div className="flex items-center">Rating {getSortIcon('averageRating')}</div>
                                 </th>
-                                <th className="py-3 px-4 font-semibold">Actions</th>
+                                <th className="py-3 px-4 font-semibold"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedProducts.map((product, index) => (
+                            {finalProducts.map((product, index) => (
                                 <tr 
                                     key={product.id} 
                                     className="border-b border-[#E9ECEF] hover:bg-[#F8F9FA] cursor-pointer"
@@ -317,6 +368,7 @@ const ProductsPage = () => {
                                             <Button
                                                 buttonType="button"
                                                 onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
+                                                title="Edit Product"
                                             >
                                                 <Edit size={16} />
                                             </Button>
@@ -335,7 +387,7 @@ const ProductsPage = () => {
                         </tbody>
                     </table>
                     
-                    {filteredProductsAndSortedProducts.length === 0 && (
+                    {status == 'succeded' && finalProducts.length === 0 && (
                         <div className="text-center py-10 text-[#495057]">
                             <p>No products found matching your criteria.</p>
                         </div>
@@ -363,7 +415,8 @@ const ProductsPage = () => {
             <div className="mt-6">
                 <Pagination
                     currentPage={currentPage}
-                    totalPages={Math.ceil(filteredProductsAndSortedProducts.length / ITEMS_PER_PAGE)}
+                    // totalPages={Math.ceil(filteredProductsAndSortedProducts.length / ITEMS_PER_PAGE)}
+                    totalPages={pagination.totalPages || 1}
                     onPageChange={handlePageChange}
                 />
             </div>

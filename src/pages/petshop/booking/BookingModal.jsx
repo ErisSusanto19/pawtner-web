@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 const statuses = [
-    'REQUESTED',
-    'PENDING_APPROVAL',
-    'AWAITING_PAYMENT',
-    'CONFIRMED',
-    'COMPLETED',
-    'CANCELLED'
+    { value: "AWAITING_PAYMENT", label: "Awaiting Payment" },
+    { value: "REQUESTED", label: "Requested" },
+    { value: "CONFIRMED", label: "Confirmed" },
+    { value: "COMPLETED", label: "Completed" },
+    { value: "CANCELLED", label: "Cancelled" },
 ]
 
 const BookingModal = ({ isOpen, onClose, currentStatus, onUpdate, isLoading }) => {
@@ -64,10 +63,13 @@ const BookingModal = ({ isOpen, onClose, currentStatus, onUpdate, isLoading }) =
                                 onChange={(e) => setNewStatus(e.target.value)}
                                 className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white"
                             >
-                                {statuses.map(status => (
+                                {/* {statuses.map(status => (
                                     <option key={status} value={status}>
                                         {formatStatusText(status)}
                                     </option>
+                                ))} */}
+                                {statuses.map(el => (
+                                    <option key={el.value} value={el.value}>{formatStatusText(el.label)}</option>
                                 ))}
                             </select>
                         </div>

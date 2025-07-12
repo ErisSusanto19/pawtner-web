@@ -63,8 +63,8 @@ const RegisterStep2 = ({register, errors, setValue, watch}) => {
         setLocationError('')
 
         try {
-            setValue('latitude', lat, { shouldValidate: true });
-            setValue('longitude', lng, { shouldValidate: true });
+            setValue('latitude', lat, { shouldValidate: true, shouldDirty: true });
+            setValue('longitude', lng, { shouldValidate: true, shouldDirty: true });
 
             const apiKey = import.meta.env.VITE_LOCATIONIQ_API_KEY;
             const url = `https://us1.locationiq.com/v1/reverse.php?key=${apiKey}&lat=${lat}&lon=${lng}&format=json`;

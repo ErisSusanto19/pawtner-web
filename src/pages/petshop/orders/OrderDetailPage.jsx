@@ -7,6 +7,7 @@ import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 import { fetchOrderById, clearCurrentOrder, changeOrderStatus } from '../../../store/slices/orderSlice'; // Pastikan path benar
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
+import PageLoader from '../../../components/PageLoader';
 
 const formatStatus = (status = '') => {
     if (!status) return '';
@@ -49,7 +50,13 @@ const OrderDetailPage = () => {
         return () => {
             dispatch(clearCurrentOrder());
         };
-    }, [orderId, dispatch]);
+    }, [orderId, dispatch])
+
+    useEffect(() => {
+        if (status === 'failed' && order) {
+            toast.error(`Failed to refresh order details: ${error}`)
+        }
+    }, [status, error, order]);
 
     const financials = useMemo(() => {
         if (!order || !order.items) return { subtotal: 0, shipping: 0, tax: 0, total: 0 };
@@ -85,9 +92,21 @@ const OrderDetailPage = () => {
 
     const isDataReady = status === 'succeeded' && !!order
 
-    if (status === 'loading' && !order) return <div className="p-6 text-center">Loading order details...</div>;
-    if (status === 'failed' && !order) return <div className="p-6 text-center text-red-600"><h2>{error}</h2><Link to="/orders" className="text-[#545F71] hover:underline mt-4 inline-block">Back to all orders</Link></div>;
-    if (!order) return null;
+    if (status === 'loading' && !order) return <PageLoader message="Loading order details..."/>
+    if (status === 'succeeded' && !order) {
+        return (
+             <div className="p-6 text-center text-gray-600">
+                <h2 className="text-xl font-bold mb-2">Failed to Load Order</h2>
+                <p className="mb-4">The order with ID '{orderId}' could not be found.</p>
+                <button onClick={() => navigate('/orders')} className="text-[#545F71] hover:underline inline-flex items-center gap-2">
+                    <ArrowLeft size={16} />
+                    Back to all orders
+                </button>
+            </div>
+        )
+    }
+
+    if (!order) return null
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -150,8 +169,8 @@ const OrderDetailPage = () => {
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">
                         {/* <h3 className="text-lg font-semibold text-[#495057]">Customer & Shipping</h3> */}
                         <h3 className="text-lg font-semibold text-[#495057]">Customer</h3>
-                        <p className="font-medium text-[#495057]">{order.customerName}</p>
-                        {/* <p className="text-sm text-[#5D6D7E]">{order.customer?.email}</p> */}
+                        <p className="font-medium text-[#495057]">{order.customer?.name}</p>
+                        <p className="text-sm text-[#5D6D7E]">{order.customer?.email}</p>
                         {/* <p className="text-sm text-[#5D6D7E] pt-2 border-t border-[#E9ECEF]">{order.shippingAddress?.fullAddress}</p> */}
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">

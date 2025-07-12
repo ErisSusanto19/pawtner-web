@@ -61,6 +61,12 @@ const OrderPage = () => {
     }, [dispatch]);
 
     useEffect(() => {
+        if (status === 'failed' && orders.length > 0) {
+            toast.error(`Failed to refresh orders: ${error}`)
+        }
+    }, [status, error, orders.length])
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setMenuState({ isOpen: false, orderId: null, position: {} })
@@ -180,7 +186,9 @@ const OrderPage = () => {
     };
 
     if (status === 'loading' && orders.length === 0) return <PageLoader message="Loading orders..."/>
-    if (status === 'failed') return <div className="p-6 text-center text-red-600">{error}</div>;
+    if (status === 'failed' && orders.length === 0) {
+        return <div className="p-6 text-center text-red-600">Error loading orders: {error}</div>
+    }
 
     const allStatuses = ['ALL', 'PENDING_PAYMENT', 'PROCESSING', 'SHIPPED', 'COMPLETED', 'CANCELLED', 'FAILED', 'REFUNDED'];
 

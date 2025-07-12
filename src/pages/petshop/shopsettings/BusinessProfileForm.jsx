@@ -20,6 +20,12 @@ const businessTypeOptions = [
     {value: "HYBRID", label: "Hybrid"},
 ]
 
+const veterinaryStatusOptions = [
+    { value: "ACCEPTING_PATIENTS", label: "Accepting New Patients" },
+    { value: "AT_CAPACITY", label: "At Capacity" },
+    { value: "CLOSED", label: "Closed" },
+]
+
 const BusinessProfileForm = ({ initialData }) => {
     const dispatch = useDispatch()
     const [isLocating, setIsLocating] = useState(false);
@@ -42,7 +48,8 @@ const BusinessProfileForm = ({ initialData }) => {
             businessImageUrl: null,
             certificateImageUrl: null,
             latitude: null,
-            longitude: null
+            longitude: null,
+            statusRealTime: ''
         }
     })
 
@@ -61,10 +68,10 @@ const BusinessProfileForm = ({ initialData }) => {
                 businessImageUrl: initialData.businessImageUrl,
                 certificateImageUrl: initialData.certificateImageUrl,
                 operationHours: formatToFrontendHours(initialData.operationHours),
-                // operationHours: initialData.operationHours,
                 latitude: initialData.latitude,
                 longitude: initialData.longitude,
-                statusApproved: initialData.statusApproved
+                statusApproved: initialData.statusApproved,
+                statusRealTime: initialData.statusRealTime
             }
 
             console.log(mappedData, '<<< cek mapped data')
@@ -75,8 +82,11 @@ const BusinessProfileForm = ({ initialData }) => {
 
     const onSubmit = async (data) => {
         try {
+            if (data.businessType !== 'VETERINARY_CLINIC') {
+                delete data.statusRealTime
+            }
             const response = await dispatch(updateBusinessDetails(data))
-            toast.success(response.message)
+            toast.success("Business information has been successfully saved.")
         } catch (error) {
             toast.error(error.message || `Failed to update profile business`)
         }
@@ -87,6 +97,9 @@ const BusinessProfileForm = ({ initialData }) => {
 
     const watchedLat = watch('latitude')
     const watchedLng = watch('longitude')
+
+    const watchedBusinessType = watch('businessType')
+    const isVeterinaryClinic = watchedBusinessType === 'VETERINARY_CLINIC'
 
     const handleLocationSelect = async (lat, lng) => {
         setIsLocating(true)
@@ -232,6 +245,9 @@ const BusinessProfileForm = ({ initialData }) => {
                             />
                             <label htmlFor="hasEmergencyServices" className="text-sm font-medium text-gray-900">Offers Emergency Services</label>
                         </div>
+                        <p className="ml-7 text-sm text-gray-500">
+                            Customers will be able to contact you outside normal business hours.
+                        </p>
                     </div>
                     {hasEmergency && (
                         <Input
@@ -252,6 +268,23 @@ const BusinessProfileForm = ({ initialData }) => {
             {/* Operating Hours Card */}
             <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6">
                 <h3 className="text-lg font-semibold text-[#495057] mb-2">Operating Hours</h3>
+                
+                {isVeterinaryClinic && (
+                    <div className="mb-4">
+                        <label htmlFor="statusRealTime" className="block text-sm text-gray-900 font-medium mb-2">
+                            Current Patient Intake Status
+                        </label>
+                        <select 
+                            id="statusRealTime"
+                            {...register('statusRealTime')} 
+                            className="block w-full border rounded-md border-[#545F71] focus:outline-none p-1.5 focus:ring focus:ring-[#545F71] focus:border-none shadow-md"
+                        >
+                            {veterinaryStatusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1 mb-8">This status is shown to users in real-time.</p>
+                    </div>
+                )}
+
                 <div className="p-4 border rounded-md border-[#545F71] space-y-3">
                     {watchedOperationHours && typeof watchedOperationHours === 'object' ? (
                         daysOfWeek.map(day => (

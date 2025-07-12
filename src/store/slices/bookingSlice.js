@@ -82,6 +82,7 @@ export const fetchBusinessBookings = (params) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(bookingOperationFail({ error: errorMessage }))
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -110,6 +111,7 @@ export const fetchBookingById = (bookingId) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(bookingOperationFail({ error: errorMessage }))
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -124,7 +126,8 @@ export const changeBookingStatus = ({ bookingId, status }) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(bookingOperationFail({ error: errorMessage }))
-            throw new Error(errorMessage)
+            // throw new Error(errorMessage)
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }

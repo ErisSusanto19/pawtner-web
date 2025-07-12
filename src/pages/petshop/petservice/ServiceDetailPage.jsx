@@ -32,6 +32,12 @@ const ServiceDetailPage = () => {
         }
     }, [serviceId, dispatch]);
 
+    useEffect(() => {
+        if (status === 'failed' && service) {
+            toast.error(`Failed to refresh service data: ${error}`)
+        }
+    }, [status, error, service])
+
     const handleArchive = () => {
         setIsConfirmModalOpen(true)
     }
@@ -40,10 +46,10 @@ const ServiceDetailPage = () => {
         if (!service) return
         try {
             const response = await dispatch(deleteExistingService(service.id));
-            toast.success(response.data?.message || `Service "${service.name}" archived successfully!`);
+            toast.success(response.data?.message || `Service "${service.name}" removed successfully!`);
             navigate('/services')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to archive service.')
+            toast.error(err.response?.data?.message || 'Failed to remove service.')
         } finally {
             setIsConfirmModalOpen(false)
         }
@@ -62,14 +68,18 @@ const ServiceDetailPage = () => {
     
     if (status === 'loading' && !service) return <div className="p-6 text-center">Loading service details...</div>;
     
-    if (status === 'failed') return (
-        <div className="p-6 text-center">
-            <h2 className="text-xl text-red-600">{error}</h2>
-            <Link to="/services" className="text-[#545F71] hover:underline mt-4 inline-block">
-                Back to all services
-            </Link>
-        </div>
-    )
+    if (status === 'failed' && !service) {
+        return (
+            <div className="p-6 text-center text-red-600">
+                <h2 className="text-xl font-bold mb-2">Failed to Load Service</h2>
+                <p className="mb-4">{error}</p>
+                <Link to="/services" className="text-[#545F71] hover:underline inline-flex items-center gap-2">
+                    <ArrowLeft size={16} />
+                    Back to all services
+                </Link>
+            </div>
+        );
+    }
     
     if (!service) return null
 
@@ -122,12 +132,6 @@ const ServiceDetailPage = () => {
                             <h3 className="text-xs text-gray-500 uppercase font-semibold">Capacity/Day</h3>
                             <p className="text-lg font-bold text-gray-900 mt-1">{service.capacityPerDay ?? 'N/A'}</p>
                         </div>
-                        {/* <div>
-                            <h3 className="text-xs text-gray-500 uppercase font-semibold">Status</h3>
-                            <p className={`mt-1 inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${service.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                {service.isActive ? 'Active' : 'Archived'}
-                            </p>
-                        </div> */}
                     </div>
                 </div>
             </div>

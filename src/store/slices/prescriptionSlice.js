@@ -72,7 +72,8 @@ export const fetchPrescriptionsByBooking = (bookingId) => async (dispatch) => {
             dispatch(fetchPrescriptionsSuccess(null));
         } else {
             const errorMessage = error.response?.data?.message || error.message;
-            dispatch(operationFail({ error: errorMessage }));
+            dispatch(operationFail({ error: errorMessage }))
+            return Promise.reject(new Error(errorMessage))
         }
     }
 };
@@ -86,7 +87,8 @@ export const createNewPrescription = (payload) => async (dispatch) => {
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message;
         dispatch(operationFail({ error: errorMessage }));
-        throw error;
+        // throw error;
+        return Promise.reject(new Error(errorMessage))
     }
 };
 
@@ -98,6 +100,7 @@ export const deleteExistingPrescription = (prescriptionId) => async (dispatch) =
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message;
         dispatch(operationFail({ error: errorMessage }));
+        return Promise.reject(new Error(errorMessage))
     }
 };
 

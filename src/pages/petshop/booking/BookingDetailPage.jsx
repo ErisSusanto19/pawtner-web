@@ -1,5 +1,3 @@
-// src/pages/BookingDetailPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +10,8 @@ import { fetchBookingById, changeBookingStatus, clearCurrentBooking } from '../.
 import { fetchPrescriptionsByBooking, createNewPrescription, deleteExistingPrescription, clearPrescriptions } from '../../../store/slices/prescriptionSlice';
 import { formatCurrencyIDR } from '../../../utils/formatter';
 import PageLoader from '../../../components/PageLoader';
+import { toast } from 'react-toastify';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -19,7 +19,7 @@ const getStatusBadge = (status) => {
         case 'COMPLETED': return "bg-blue-100 text-blue-800";
         case 'AWAITING_PAYMENT': return "bg-orange-100 text-orange-800";
         case 'REQUESTED':
-        case 'PENDING_APPROVAL': return "bg-yellow-100 text-yellow-800";
+        // case 'PENDING_APPROVAL': return "bg-yellow-100 text-yellow-800";
         case 'CANCELLED': return "bg-red-100 text-red-800";
         default: return "bg-gray-100 text-gray-800";
     }
@@ -96,6 +96,9 @@ const BookingDetailPage = () => {
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [prescriptionToDelete, setPrescriptionToDelete] = useState(null)
+
     const { currentBooking: booking, status: bookingStatus, error: bookingError } = useSelector((state) => state.bookings);
     const { items: prescriptions, status: prescriptionStatus, error: prescriptionError } = useSelector(state => state.prescriptions);
 
@@ -109,21 +112,33 @@ const BookingDetailPage = () => {
             dispatch(clearCurrentBooking());
             dispatch(clearPrescriptions());
         };
-    }, [bookingId, dispatch]);
+    }, [bookingId, dispatch])
+
+    useEffect(() => {
+        if (bookingStatus === 'failed' && bookingError) {
+            toast.error(`Failed to load booking details: ${bookingError}`)
+        }
+        
+        if (prescriptionStatus === 'failed' && prescriptionError) {
+             toast.error(`Failed to load prescriptions: ${prescriptionError}`)
+        }
+
+    }, [bookingStatus, bookingError, prescriptionStatus, prescriptionError])
 
     const handleStatusUpdate = async (newStatus) => {
         try {
-            await dispatch(changeBookingStatus({ bookingId, status: newStatus }));
-            setIsStatusModalOpen(false);
+            await dispatch(changeBookingStatus({ bookingId, status: newStatus }))
+            setIsStatusModalOpen(false)
+            toast.success("Status has been updated.")
         } catch (err) {
             console.error("Failed to update status:", err);
-            alert(`Error: ${err.message}`);
+            toast.error(err.message)
         }
     };
     
     const handlePrescriptionCreate = async (formData) => {
         if (!booking || !booking.pet || !booking.businessId) {
-            alert("Booking data is incomplete.");
+            toast.error("Booking data is incomplete.");
             return;
         }
         const payload = {
@@ -137,18 +152,33 @@ const BookingDetailPage = () => {
         try {
             await dispatch(createNewPrescription(payload));
             setIsPrescriptionModalOpen(false);
+            toast.success("Prescription has been created")
         } catch (error) {
             const message = error.response?.data?.message || error.message
-            alert(`Failed to create prescription: ${message}`);
-            console.error(error);
+            toast.error(`Failed to create prescription: ${message}`)
+            console.error(error)
         }
-    };
+    }
 
     const handleDeletePrescription = (prescriptionId) => {
-        if (window.confirm("Are you sure you want to delete this prescription? This action cannot be undone.")) {
-            dispatch(deleteExistingPrescription(prescriptionId));
+        setPrescriptionToDelete(prescriptionId)
+        setIsDeleteModalOpen(true)
+    }
+
+    const confirmDeletePrescription = async () => {
+        if (prescriptionToDelete) {
+            try {
+                await dispatch(deleteExistingPrescription(prescriptionToDelete))
+                toast.success("Prescription has been deleted.")
+            } catch (error) {
+                toast.error("Failed to delete prescription.")
+                console.error(error)
+            } finally {
+                setIsDeleteModalOpen(false)
+                setPrescriptionToDelete(null)
+            }
         }
-    };
+    }
 
     if (bookingStatus === 'loading' && !booking) {
         return <PageLoader message="Loading booking details..."/>
@@ -256,11 +286,21 @@ const BookingDetailPage = () => {
                 currentStatus={booking.status}
                 onUpdate={handleStatusUpdate}
             />
+
              <CreatePrescriptionModal
                 isOpen={isPrescriptionModalOpen}
                 onClose={() => setIsPrescriptionModalOpen(false)}
                 onSave={handlePrescriptionCreate}
                 petName={booking.pet?.name}
+                isLoading={prescriptionStatus === 'loading'}
+            />
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDeletePrescription}
+                title="Delete Prescription"
+                message="Are you sure you want to delete this prescription? This action cannot be undone."
                 isLoading={prescriptionStatus === 'loading'}
             />
         </div>

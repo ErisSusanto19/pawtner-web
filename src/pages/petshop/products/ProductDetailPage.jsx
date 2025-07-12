@@ -9,7 +9,8 @@ import ConfirmationModal from '../../../components/ConfirmationModal';
 import { deleteExistingProduct, fetchProductById, setCurrentProduct, updateExistingProduct } from '../../../store/slices/productSlice';
 import { toast } from 'react-toastify';
 import defImg from '@/assets/undraw_images_of1m.svg'
-import ProductReviews from './ProductReviews';
+import ProductReviews from './ProductReviews'
+import PageLoader from '../../../components/PageLoader';
 
 const ProductDetailPage = () => {
     const { productId } = useParams()
@@ -33,6 +34,12 @@ const ProductDetailPage = () => {
         }
     }, [productId, dispatch])
 
+    useEffect(() => {
+        if (status === 'failed' && product) {
+            toast.error(`Failed to refresh product data: ${error}`)
+        }
+    }, [status, error, product])
+
     const handleDelete = () => {
         setIsConfirmModalOpen(true)
     }
@@ -55,15 +62,19 @@ const ProductDetailPage = () => {
         await dispatch(updateExistingProduct({ productId: product.id, productData: updatedData }))
     }
 
-    if (status == 'loading' && !product) return <div className="p-6 text-center">Loading product details...</div>
-    if (status == 'failed' && error) return (
-        <div className="p-6 text-center">
-            <h2 className="text-xl text-red-600">{error}</h2>
-            <Link to="/products" className="text-[#545F71] hover:underline mt-4 inline-block">
-                Back to all products
-            </Link>
-        </div>
-    )
+    if (status == 'loading' && !product) return <PageLoader message="Loading product details...S"/>
+    if (status === 'failed' && !product) {
+        return (
+            <div className="p-6 text-center text-red-600">
+                <h2 className="text-xl font-bold mb-2">Failed to Load Product</h2>
+                <p className="mb-4">{error}</p>
+                <Link to="/products" className="text-[#545F71] hover:underline inline-flex items-center gap-2">
+                    <ArrowLeft size={16} />
+                    Back to all products
+                </Link>
+            </div>
+        )
+    }
     if (!product) return null
 
     return (

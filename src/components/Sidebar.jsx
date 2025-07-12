@@ -19,7 +19,7 @@ const getLinkClass = ({ isActive }, isDisabled) => {
 }
 
 const menuItems = [
-  { name: 'Dashboard', icon: LayoutDashboard, path: "/" },
+  { name: 'Dashboard', icon: LayoutDashboard, path: "/dashboard" },
   { name: 'Products', icon: Package, path: "/products" },
   { name: 'Orders', icon: ShoppingCart, path: "/orders" },
   { name: 'Services', icon: Wrench, path: "/services" },
@@ -36,7 +36,7 @@ const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" }
 //   return <NavLink to={to} end className={({ isActive }) => getLinkClass({ isActive }, false)}>{children}</NavLink>
 // }
 
-const alwaysEnabledPaths = ['/', '/settings']
+const alwaysEnabledPaths = ['/dashboard', '/settings']
 
 const Sidebar = ({ menuDisabled }) => {
   const dispatch = useDispatch()
@@ -59,7 +59,7 @@ const Sidebar = ({ menuDisabled }) => {
       <aside className="w-64 bg-white border-r border-[#E9ECEF] flex flex-col h-screen shadow-md">
         
         <div className="flex items-center p-4 space-x-3 border-b shadow-sm border-[#E9ECEF]">
-          <NavLink to={'/'}>
+          <NavLink to={'/dashboard'}>
             <img src={logoPawtner} alt="Pawtner Logo" className="h-10 w-auto" />
           </NavLink>
           <div>

@@ -85,6 +85,7 @@ export const fetchServices = (params = {page: 0, size: 20}) => async (dispatch, 
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message
         dispatch(serviceOperationFail({ error: errorMessage }))
+        return Promise.reject(new Error(errorMessage))
     }
 }
 
@@ -99,7 +100,8 @@ export const fetchServiceById = (serviceId) => async (dispatch) => {
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message
         dispatch(serviceOperationFail({ error: errorMessage }))
-        throw error
+        // throw error
+        return Promise.reject(new Error(errorMessage))
     }
 };
 
@@ -132,7 +134,8 @@ export const createNewService = (serviceData) => async (dispatch, getState) => {
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message
         dispatch(serviceOperationFail({ error: errorMessage }))
-        throw error
+        // throw error
+        return Promise.reject(new Error(errorMessage))
     }
 }
 
@@ -163,7 +166,8 @@ export const updateExistingService = ({ serviceId, serviceData }) => async (disp
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message
         dispatch(serviceOperationFail({ error: errorMessage }))
-        throw error
+        // throw error
+        return Promise.reject(new Error(errorMessage))
     }
 }
 
@@ -177,7 +181,8 @@ export const deleteExistingService = (serviceId) => async (dispatch) => {
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message
         dispatch(serviceOperationFail({ error: errorMessage }))
-        throw error
+        // throw error
+        return Promise.reject(new Error(errorMessage))
     }
 }
 

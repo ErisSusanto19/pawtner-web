@@ -132,6 +132,9 @@ const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
                             type="tel" 
                             register={register} 
                             errors={errors}
+                            rules={{
+                                pattern: {value: /^((\+62|62|0)(8[1-9][0-9]{6,13}|2[1-9][0-9]{6,10}))$/, message: "Please use a valid phone number"}
+                            }}
                         />
                     </div>
                 </div>

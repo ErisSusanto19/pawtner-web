@@ -45,7 +45,6 @@ const ServicePage = () => {
 
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
-    // const [filterIsActive, setFilterIsActive] = useState('active')
     const [currentPage, setCurrentPage] = useState(1)
     const ITEMS_PER_PAGE = 5
 
@@ -55,8 +54,14 @@ const ServicePage = () => {
     const [confirmAction, setConfirmAction] = useState({ fn: null, title: '', message: '' })
 
     useEffect(() => {
-        dispatch(fetchServices({page: 0, size: 20}))
+        dispatch(fetchServices({page: 0, size: 50}))
     }, [dispatch, location])
+
+    useEffect(() => {
+        if (status === 'failed' && services.length > 0) {
+            toast.error(`Failed to refresh services: ${error}`)
+        }
+    }, [status, error, services.length])
 
     const filteredAndSortedServices = useMemo(() => {
         let serviceList = Array.isArray(services) ? services : []
@@ -64,11 +69,7 @@ const ServicePage = () => {
             const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase())
             const matchesCategory = selectedCategory === 'All' || service.category === selectedCategory
 
-            // let matchesActiveStatus = true
-            // if (filterIsActive === 'active') matchesActiveStatus = service.isActive
-            // else if (filterIsActive === 'archived') matchesActiveStatus = !service.isActive
-
-            return matchesSearch && matchesCategory /**&& matchesActiveStatus*/
+            return matchesSearch && matchesCategory
         })
 
         if(sortConfig.key !== null){
@@ -154,10 +155,10 @@ const ServicePage = () => {
         setIsConfirmLoading(true)
         try {
             const response = await dispatch(deleteExistingService(serviceToAction.id))
-            toast.success(response.message || `Service "${serviceToAction.name}" has been archived.`)
+            toast.success(response.message || `Service "${serviceToAction.name}" has been removed.`)
             setIsConfirmModalOpen(false)
         } catch (err) {
-            toast.error(err.message || `Failed to archive service.`)
+            toast.error(err.message || `Failed to delete service.`)
         } finally {
             setIsConfirmLoading(false)
         }
@@ -205,11 +206,6 @@ const ServicePage = () => {
                             </option>
                         ))}
                     </select>
-                    {/* <select value={filterIsActive} onChange={(e) => setFilterIsActive(e.target.value)} className="w-full border border-[#E9ECEF] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#545F71] bg-white">
-                        <option value="active">Active</option>
-                        <option value="archived">Archived</option>
-                        <option value="all">All</option>
-                    </select> */}
                 </div>
 
                 <div className="overflow-x-auto">
@@ -226,7 +222,6 @@ const ServicePage = () => {
                                 <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('averageRating')}>
                                     <div className="flex items-center">Rating {getSortIcon('averageRating')}</div>
                                 </th>
-                                {/* <th className="py-3 px-4 font-semibold">Status</th> */}
                                 <th className="py-3 px-4 font-semibold">Actions</th>
                             </tr>
                         </thead>

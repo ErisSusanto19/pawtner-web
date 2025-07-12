@@ -5,7 +5,7 @@ import Button from '../../../components/Button';
 import RegisterStep1 from './RegisterStep1';
 import { useDispatch, useSelector } from 'react-redux'
 import { registerUser } from '../../../store/slices/authSlice';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify'
 
 const RegisterAccountPage = () => {

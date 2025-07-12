@@ -36,6 +36,8 @@ const LoginPage = () => {
         toast.error("Your account is currently suspended. Please try again later or contact support.")
       } else if(error.message?.includes("Bad credentials")){
         toast.error("Invalid email or password")
+      } else if(error.message?.includes("Email belum terverifikasi.")){
+        toast.error("Your email hasn't been verified yet")
       } else {
         toast.error(error.message || "An unknown error occurred.")
       }

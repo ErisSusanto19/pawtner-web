@@ -13,12 +13,12 @@ import { toast } from 'react-toastify';
 const TOTAL_STEPS = 2
 
 const stepFields = {
-    1: ["nameBusiness", "businessType", "businessEmail", "businessPhone", "businessAddress"],
+    1: ["nameBusiness", "businessType", "businessEmail", "businessPhone", "businessAddress", "latitude", "longitude"],
     2: ["termsAccepted", "privacyAccepted"]
 }
 
 const requiredFieldsByStep = {
-    1: ["nameBusiness", "businessType", "businessEmail", "businessPhone"],
+    1: ["nameBusiness", "businessType", "businessEmail", "businessPhone", "latitude", "longitude"],
     2: ["termsAccepted", "privacyAccepted"]
 }
 
@@ -86,9 +86,13 @@ const RegisterBusinessPage = () => {
     useEffect(() => {
         if (businessStatus === 'succeeded' && user?.hasBusiness) {
             toast.success("Your business profile has been created successfully!")
-            navigate('/dashboard');
+            navigate('/dashboard')
         }
-    }, [businessStatus, user, navigate])
+
+        if (businessStatus === 'failed' && error) {
+            toast.error(error)
+        }
+    }, [businessStatus, user, error, navigate])
 
     const handleNext = async () => {
         const fieldsToValidate = stepFields[currStep]
@@ -121,7 +125,7 @@ const RegisterBusinessPage = () => {
                     {currStep === 1 && <RegisterStep2 register={register} errors={errors} setValue={setValue} watch={watch} />}
                     {currStep === 2 && <RegisterStep3 register={register} errors={errors} watch={watch} getValues={getValues} setValue={setValue} />}
                     
-                    {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
+                    {/* {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>} */}
 
                     <div className="flex justify-between mt-8 pt-6 border-t">
                         <Button
@@ -141,8 +145,8 @@ const RegisterBusinessPage = () => {
                                 Next Step
                             </Button>
                         ) : (
-                            <Button buttonType="submit" disabled={!canProceed || isLoading}>
-                                {isLoading ? 'Creating Business...' : 'Finish & Create Business'}
+                            <Button buttonType="submit" disabled={!canProceed || isLoading} isLoading={isLoading}>
+                                Finish & Create Business
                             </Button>
                         )}
                     </div>

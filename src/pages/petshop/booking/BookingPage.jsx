@@ -46,6 +46,12 @@ const BookingPage = () => {
 
     }, [dispatch, activeTab, currentPage, debouncedSearchTerm, filters.bookingStatus, selectedDate])
 
+    useEffect(() => {
+        if (status === 'failed' && bookings.length > 0) {
+            toast.error(`Failed to refresh bookings: ${error}`)
+        }
+    }, [status, error, bookings.length])
+
     const handleTabClick = (tabName) => {
         if (tabName === 'all' && activeTab !== 'all') {
             setCurrentPage(1)

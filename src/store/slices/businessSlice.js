@@ -114,8 +114,12 @@ export const createBusiness = (formData) => {
       }
       
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred.'
+      let errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred.'
+      if(errorMessage.includes("similar record")){
+        errorMessage = "Business email is already in use. Please use a different one."
+      }
       dispatch(businessOperationFail({ error: errorMessage }))
+      return Promise.reject(new Error(errorMessage))
     }
   }
 }
@@ -150,6 +154,7 @@ export const fetchMyBusiness = () => {
       const errorMessage = error.response?.data?.message || error.message || 'Gagal memuat data bisnis.'
       dispatch(businessOperationFail({ error: errorMessage }))
       localStorage.removeItem('businessDetails')
+      return Promise.reject(new Error(errorMessage))
     }
   }
 }
@@ -179,6 +184,7 @@ export const fetchBusinessById = (businessId) => async (dispatch) => {
     console.error("Failed to fetch business by ID:", error)
     const errorMessage = error.response?.data?.message || error.message || 'Gagal mengambil detail bisnis.'
     dispatch(businessOperationFail({ error: errorMessage }))
+    return Promise.reject(new Error(errorMessage))
   }
 }
 
@@ -254,7 +260,8 @@ export const updateBusinessDetails = (formData) => {
       console.error("Failed to update business details:", error)
       const errorMessage = error.response?.data?.message || error.message || 'Failed to update business'
       dispatch(businessOperationFail({ error: errorMessage }))
-      throw error
+      // throw error
+      return Promise.reject(new Error(errorMessage))
     }
   }
 }

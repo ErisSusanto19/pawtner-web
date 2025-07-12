@@ -48,7 +48,11 @@ const VerifyEmailPage = () => {
             await dispatch(verifyUserEmail(verificationData))
             
             toast.success('Verification successful!')
-            setIsRedirecting(true);
+            setIsRedirecting(true)
+            
+            setTimeout(() => {
+                navigate('/signin')
+            }, 2000)
 
         } catch (err) {
             toast.error(err.message || "Verification failed. Please check the code.")

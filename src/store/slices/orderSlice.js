@@ -69,7 +69,7 @@ export const {
     clearCurrentOrder,
 } = orderSlice.actions
 
-export const fetchBusinessOrders = (params = { page: 0, size: 20 }) => {
+export const fetchBusinessOrders = (params) => {
     return async (dispatch,getState) => {
         dispatch(orderOperationStart())
 
@@ -82,6 +82,7 @@ export const fetchBusinessOrders = (params = { page: 0, size: 20 }) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(orderOperationFail({ error: errorMessage }))
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -99,6 +100,7 @@ export const fetchOrderById = (orderId) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(orderOperationFail({ error: errorMessage }))
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
@@ -113,7 +115,8 @@ export const changeOrderStatus = ({ orderId, payload }) => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message
             dispatch(orderOperationFail({ error: errorMessage }))
-            throw new Error(errorMessage)
+            // throw new Error(errorMessage)
+            return Promise.reject(new Error(errorMessage))
         }
     }
 }
