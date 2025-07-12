@@ -51,7 +51,7 @@ const OAuthCallbackPage = () => {
           dispatch(updateUserBusinessStatus(false));
         }
         toast.success("Welcome! You're signed in with Google.");
-        navigate("/");
+        navigate("/dashboard");
       } catch (error) {
         console.error("OAuth failed:", error);
         toast.error("Google sign-in failed. Please try again.");

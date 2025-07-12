@@ -86,7 +86,7 @@ const RegisterBusinessPage = () => {
     useEffect(() => {
         if (businessStatus === 'succeeded' && user?.hasBusiness) {
             toast.success("Your business profile has been created successfully!")
-            navigate('/');
+            navigate('/dashboard');
         }
     }, [businessStatus, user, navigate])
 

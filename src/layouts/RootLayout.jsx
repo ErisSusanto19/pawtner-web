@@ -32,7 +32,7 @@ const RootLayout = () => {
 
     if (isAuthenticated) {
         if (isPublicPath) {
-            return <Navigate to="/" replace />
+            return <Navigate to="/dashboard" replace />
         }
 
         if (user) {
@@ -43,7 +43,7 @@ const RootLayout = () => {
             const isRegisterPage = location.pathname.includes('/register-business')
 
             if (user.hasBusiness === true && isRegisterPage) {
-                return <Navigate to="/" replace />
+                return <Navigate to="/dashboard" replace />
             }
 
             if (user.hasBusiness && details) {
@@ -52,7 +52,7 @@ const RootLayout = () => {
                 const isTryingToAccessRestricted = !alwaysEnabledPaths.some(p => location.pathname.startsWith(p));
 
                 if (!isApproved && isTryingToAccessRestricted) {
-                    return <Navigate to="/" replace />;
+                    return <Navigate to="/dashboard" replace />;
                 }
             }
         }

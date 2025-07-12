@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import CompleteProfileBanner from '../components/CompleteProfileBanner';
 
 const getTitleFromPath = (path) => {
-  if (path === '/' || path === '') return 'Dashboard'
-  const mainSegment = path.split('/')[1] || ''
+  if (path === '/dashboard' || path === 'dashboard') return 'Dashboard'
+  const mainSegment = path.split('/dashboard')[1] || ''
   const title = mainSegment
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -30,7 +30,7 @@ const PetshopLayout = ({ children }) => {
   const menuDisabled = !user.hasBusiness || !isBusinessApproved;
   /**const menuDisabled = user && !user.hasBusiness*/
 
-  const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/' && location.pathname !== '/register-business'
+  const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/dashboard' && location.pathname !== '/register-business'
 
   if (!user) {
     return null

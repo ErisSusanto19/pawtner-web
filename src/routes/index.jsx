@@ -36,7 +36,13 @@ import ResetPasswordPage from '../pages/petshop/auth/ResetPasswordPage';
 import OAuthCallbackPage from '../pages/petshop/auth/OauthCallbackPage';
 import NotFoundPage from '../pages/NotFoundPage';
 
+import LandingPage from '../pages/LandingPage'
+
 const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <LandingPage/>
+    },
     {
         element: <RootLayout/>,
         children: [
@@ -44,7 +50,7 @@ const router = createBrowserRouter([
                 element: <PetshopLayout/>,
                 children: [
                     {
-                        path: '/',
+                        path: 'dashboard',
                         element: <DashboardPage />,
                     },
                     {
@@ -166,7 +172,8 @@ const router = createBrowserRouter([
     {
         path: '*',
         element: <NotFoundPage/>
-    }
+    },
+
   
 ])
 
