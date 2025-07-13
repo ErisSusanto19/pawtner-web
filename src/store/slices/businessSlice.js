@@ -237,6 +237,8 @@ export const updateBusinessDetails = (formData) => {
         apiPayload.append('certificateImage', certificateFile)
       }
 
+      console.log(dataToSend, '<<< cek payload after convertion')
+
       const response = await businessApi.updateBusiness(businessId, apiPayload)
       console.log(response, '<<< cek response udapte business by id');
       

@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileDown, Wallet } from 'lucide-react';
+import { Search, FileDown, Wallet, ChevronRight, Eye } from 'lucide-react';
 import { fetchBusinessBookings } from '../../../store/slices/bookingSlice';
 import { fetchBusinessOrders } from '../../../store/slices/orderSlice';
 import { formatCurrencyIDR, formatDate } from '../../../utils/formatter';
 import PageLoader from '../../../components/PageLoader';
 import Pagination from '../../../components/Pagination';
+import Button from '../../../components/Button';
 
 const getStatusBadge = (status) => {
     switch (status) {
@@ -180,6 +181,7 @@ const PaymentPage = () => {
                                 <th className="py-3 px-4 font-semibold">Date</th>
                                 <th className="py-3 px-4 font-semibold text-right">Amount</th>
                                 <th className="py-3 px-4 font-semibold">Status</th>
+                                <th className="py-3 px-4 font-semibold"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -202,6 +204,12 @@ const PaymentPage = () => {
                                         <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusBadge(t.status)}`}>
                                             {t.status.replace('_', ' ').toLowerCase()}
                                         </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-center text-[#ADB5BD]">
+                                        {/* <ChevronRight size={18} /> */}
+                                        <div className="flex justify-center items-center gap-2">
+                                            <Button buttonType="button" onClick={(e) => { e.stopPropagation(); handleRowClick(t); }} title="View Details"><Eye size={16} /></Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

@@ -87,7 +87,11 @@ const AccountProfileForm = ({ initialData }) => {
             toast.success(response.message || "Password changed successfully!");
             resetPasswordForm();
         } catch (error) {
-            toast.error(error.message || "Failed to change password.");
+            if(error.message?.includes('Password lama yang Anda masukkan salah.')){
+                toast.error("The current password you entered is incorrect.")
+            } else{
+                toast.error(error.message || "Failed to change password.")
+            }
         } finally {
             setChangePasswordModalOpen(false);
             setPasswordChangeData(null);

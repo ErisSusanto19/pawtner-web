@@ -116,13 +116,13 @@ const OrderDetailPage = () => {
                     <h1 className="text-2xl font-bold text-[#495057]">Order Details <span className="text-[#ADB5BD]">#{order.orderNumber}</span></h1>
                     <div className="flex gap-2">
                         <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]"><Edit size={16} /> Update Status</button>
-                        <button
+                        {/* <button
                             onClick={handlePrint}
                             disabled={!isDataReady}
                             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#495057] bg-white border border-[#E9ECEF] rounded-md hover:bg-[#F8F9FA] disabled:opacity-50"
                         >
                             <Printer size={16} /> Print Invoice
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
@@ -167,11 +167,11 @@ const OrderDetailPage = () => {
                         </div>
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">
-                        {/* <h3 className="text-lg font-semibold text-[#495057]">Customer & Shipping</h3> */}
-                        <h3 className="text-lg font-semibold text-[#495057]">Customer</h3>
+                        <h3 className="text-lg font-semibold text-[#495057]">Customer & Shipping</h3>
+                        {/* <h3 className="text-lg font-semibold text-[#495057]">Customer</h3> */}
                         <p className="font-medium text-[#495057]">{order.customer?.name}</p>
                         <p className="text-sm text-[#5D6D7E]">{order.customer?.email}</p>
-                        {/* <p className="text-sm text-[#5D6D7E] pt-2 border-t border-[#E9ECEF]">{order.shippingAddress?.fullAddress}</p> */}
+                        <p className="text-sm text-[#5D6D7E] pt-2 border-t border-[#E9ECEF]">{order.deliveryAddress? order.deliveryAddress : '-'}</p>
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-[#E9ECEF] p-6 space-y-3">
                         <h3 className="text-lg font-semibold text-[#495057]">Payment Details</h3>

@@ -28,14 +28,32 @@ export const formatDate = (isoString) => {
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
+// export const formatToBackendHours = (frontendHours) => {
+//   if (!frontendHours) return {}
+
+//   const backendHours = {}
+//   DAYS.forEach(day => {
+//     const dayData = frontendHours[day]
+//     if (dayData && dayData.isOpen && dayData.open && dayData.close) {
+//       backendHours[day] = `${dayData.open}-${dayData.close}`
+//     } else {
+//       backendHours[day] = null
+//     }
+//   })
+//   return backendHours
+// }
+
 export const formatToBackendHours = (frontendHours) => {
   if (!frontendHours) return {}
 
   const backendHours = {}
   DAYS.forEach(day => {
-    const dayData = frontendHours[day]
+    const dayData = frontendHours[day];
     if (dayData && dayData.isOpen && dayData.open && dayData.close) {
-      backendHours[day] = `${dayData.open}-${dayData.close}`
+      backendHours[day] = {
+        open: dayData.open,
+        close: dayData.close,
+      };
     } else {
       backendHours[day] = null
     }
@@ -43,15 +61,41 @@ export const formatToBackendHours = (frontendHours) => {
   return backendHours
 }
 
+// export const formatToFrontendHours = (backendHours = {}) => {
+//   const frontendHours = {};
+//   DAYS.forEach(day => {
+//     const hours = backendHours[day];
+//     if (hours && typeof hours === 'string' && hours.includes('-')) {
+//       const [open, close] = hours.split('-')
+//       frontendHours[day] = { isOpen: true, open, close }
+//     } else {
+//       frontendHours[day] = { isOpen: false, open: '', close: '' }
+//     }
+//   })
+//   return frontendHours
+// }
+
 export const formatToFrontendHours = (backendHours = {}) => {
-  const frontendHours = {};
+  const frontendHours = {}
   DAYS.forEach(day => {
-    const hours = backendHours[day];
-    if (hours && typeof hours === 'string' && hours.includes('-')) {
-      const [open, close] = hours.split('-')
-      frontendHours[day] = { isOpen: true, open, close }
+    const dayData = backendHours[day]
+    if (
+      dayData &&
+      typeof dayData === 'object' &&
+      dayData.open &&
+      dayData.close
+    ) {
+      frontendHours[day] = {
+        isOpen: true,
+        open: dayData.open,
+        close: dayData.close,
+      }
     } else {
-      frontendHours[day] = { isOpen: false, open: '', close: '' }
+      frontendHours[day] = {
+        isOpen: false,
+        open: '',
+        close: '',
+      }
     }
   })
   return frontendHours

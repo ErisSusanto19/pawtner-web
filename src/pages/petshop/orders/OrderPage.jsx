@@ -245,7 +245,7 @@ const OrderPage = () => {
                                     </td>
                                     <td className="py-3 px-4">
                                         <div className="flex justify-center items-center gap-2">
-                                            {/* <Button buttonType="button" onClick={(e) => { e.stopPropagation(); navigate(`/orders/${order.id}`); }} title="View Details"><Eye size={16} /></Button> */}
+                                            <Button buttonType="button" onClick={(e) => { e.stopPropagation(); navigate(`/orders/${order.id}`); }} title="View Details"><Eye size={16} /></Button>
                                             <Button buttonType="button" onClick={(e) => handleMenuOpen(e, order.id)} secondary={true} title="More Actions"><MoreVertical size={16} /></Button>
                                         </div>
                                     </td>
@@ -264,7 +264,7 @@ const OrderPage = () => {
             {menuState.isOpen && (
                 <div ref={menuRef} className="fixed w-52 bg-white rounded-md shadow-lg border z-50" style={{ top: `${menuState.position.top}px`, left: `${menuState.position.left}px` }}>
                     <a href="#" onClick={(e) => { e.preventDefault(); handleOpenUpdateModal(orders.find(o => o.id === menuState.orderId)); }} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><Edit size={14} /> Update Workflow</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><Printer size={14} /> Print Invoice</a>
+                    {/* <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><Printer size={14} /> Print Invoice</a> */}
                     {['PENDING_PAYMENT', 'PROCESSING'].includes(orders.find(o => o.id === menuState.orderId)?.status) && (
                         <a href="#" onClick={(e) => { e.preventDefault(); handleConfirmAction(orders.find(o => o.id === menuState.orderId), 'CANCELLED', 'Confirm Cancellation', `Are you sure you want to CANCEL order ${orders.find(o => o.id === menuState.orderId).orderNumber}?`); }} className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"><XCircle size={14} /> Cancel Order</a>
                     )}

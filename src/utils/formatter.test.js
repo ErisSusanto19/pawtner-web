@@ -40,9 +40,9 @@ describe('formatToBackendHours', () => {
       wednesday: { isOpen: true, open: '10:00', close: '18:00' },
     };
     const expectedBackendHours = {
-      monday: '09:00-17:00',
+      monday: { open: '09:00', close: '17:00' },
       tuesday: null,
-      wednesday: '10:00-18:00',
+      wednesday: { open: '10:00', close: '18:00' },
       thursday: null,
       friday: null,
       saturday: null,
@@ -65,9 +65,9 @@ describe('formatToBackendHours', () => {
 describe('formatToFrontendHours', () => {
   it('should convert backend hours to frontend format', () => {
     const backendHours = {
-      monday: '09:00-17:00',
+      monday: { open: '09:00', close: '17:00' },
       tuesday: null,
-      wednesday: '10:00-18:00',
+      wednesday: { open: '10:00', close: '18:00' },
     };
     const expectedFrontendHours = {
       monday: { isOpen: true, open: '09:00', close: '17:00' },

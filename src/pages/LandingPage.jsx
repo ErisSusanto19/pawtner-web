@@ -168,7 +168,7 @@ const LandingPage = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                   {/* App Store Badge */}
                   <a 
-                    href="https://apps.apple.com/your-app-link" // <-- LINK APP STORE
+                    href="https://apps.apple.com/" // <-- LINK APP STORE
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="bg-black text-white px-5 py-2.5 rounded-lg flex items-center space-x-3 w-48 justify-center transition-transform hover:scale-105"
@@ -181,7 +181,7 @@ const LandingPage = () => {
                   </a>
                   {/* Google Play Badge */}
                   <a 
-                    href="https://play.google.com/your-app-link" // <-- LINK GOOGLE PLAY
+                    href="https://play.google.com/" // <-- LINK GOOGLE PLAY
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="bg-black text-white px-5 py-2.5 rounded-lg flex items-center space-x-3 w-48 justify-center transition-transform hover:scale-105"
