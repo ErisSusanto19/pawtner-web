@@ -42,7 +42,7 @@ const RoleBadge = ({ role }) => {
     return <span className={`${baseClasses} bg-purple-100 text-purple-800`}>Customer</span>;
 };
 
-const UsersTable = ({ users, onAction }) => {
+const UsersTable = ({ users, onAction, pageStartIndex }) => {
       
     if (!users || users.length === 0) {
         return <p className="text-center text-gray-500 py-8">No users found.</p>;
@@ -53,6 +53,7 @@ const UsersTable = ({ users, onAction }) => {
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
+                        <th scope="col" className="pl-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -61,8 +62,11 @@ const UsersTable = ({ users, onAction }) => {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
+                    {users.map((user, index) => (
                         <tr key={user.id}>
+                            <td className="pl-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                                {pageStartIndex + index + 1}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-10 w-10">

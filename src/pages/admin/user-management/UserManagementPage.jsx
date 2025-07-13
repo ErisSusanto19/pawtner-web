@@ -10,7 +10,7 @@ import ConfirmationModal from '../../../components/ConfirmationModalV2';
 
 import { fetchAllUsers, toggleUserStatusAction } from '../../../store/slices/userManagementSlice';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const UserManagementPage = () => {
     const dispatch = useDispatch();
@@ -117,7 +117,9 @@ const UserManagementPage = () => {
         if (isSubmitting) return;
         setIsModalOpen(false);
         setConfirmationData(null);
-    };
+    }
+
+    const pageStartIndex = (currentPage - 1) * ITEMS_PER_PAGE
 
     return (
         <div className="p-4 md:p-6">
@@ -130,7 +132,7 @@ const UserManagementPage = () => {
             
             {!isLoading && !error && (
                 <>
-                    <UsersTable users={paginatedUsers} onAction={handleAction} />
+                    <UsersTable users={paginatedUsers} onAction={handleAction} pageStartIndex={pageStartIndex}/>
                     
                     <div className="mt-6">
                         <Pagination 

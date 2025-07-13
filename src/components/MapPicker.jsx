@@ -55,7 +55,14 @@ const MapPicker = ({ onLocationSelect, initialLat, initialLng }) => {
     const [isLocating, setIsLocating] = useState(false)
     const [locationError, setLocationError] = useState('')
 
-    // const [currentPos, setCurrentPos] = useState({ lat: initialLat, lng: initialLng })
+    const [currentPos, setCurrentPos] = useState({ lat: initialLat, lng: initialLng })
+
+    useEffect(() => {
+        if (initialLat && initialLng) {
+            setCurrentPos({ lat: initialLat, lng: initialLng });
+        }
+    }, [initialLat, initialLng]);
+
 
     const handleGetMyLocation = () => {
         if (!navigator.geolocation) {
@@ -70,7 +77,7 @@ const MapPicker = ({ onLocationSelect, initialLat, initialLng }) => {
             (position) => {
                 const { latitude, longitude } = position.coords
                 
-                // setCurrentPos({ lat: latitude, lng: longitude })
+                setCurrentPos({ lat: latitude, lng: longitude })
 
                 onLocationSelect(latitude, longitude)
                 
@@ -97,15 +104,12 @@ const MapPicker = ({ onLocationSelect, initialLat, initialLng }) => {
     }
 
     const handlePositionChange = (latlng) => {
-        // setCurrentPos({ lat: latlng.lat, lng: latlng.lng })
+        setCurrentPos({ lat: latlng.lat, lng: latlng.lng })
         onLocationSelect(latlng.lat, latlng.lng)
     }
 
-    const mapCenter = initialLat && initialLng ? [initialLat, initialLng] : defaultPosition
-    // const mapCenter = currentPos.lat && currentPos.lng ? [currentPos.lat, currentPos.lng] : defaultPosition
-
-    const initialZoom = initialLat && initialLng ? 15 : 5
-    // const initialZoom = currentPos.lat && currentPos.lng ? 15 : 5
+    const mapCenter = currentPos.lat && currentPos.lng ? [currentPos.lat, currentPos.lng] : defaultPosition
+    const initialZoom = currentPos.lat && currentPos.lng ? 15 : 5
 
     return (
         <div className="h-64 w-full rounded-md overflow-hidden border relative">
@@ -129,14 +133,9 @@ const MapPicker = ({ onLocationSelect, initialLat, initialLng }) => {
                 />
                 <LocationMarker
                     onPositionChange={handlePositionChange}
-                    initialLat={initialLat} 
-                    initialLng={initialLng}
-                />
-                {/* <LocationMarker
-                    onPositionChange={handlePositionChange}
                     initialLat={currentPos.lat}
                     initialLng={currentPos.lng}
-                /> */}
+                />
             </MapContainer>
         </div>
     );

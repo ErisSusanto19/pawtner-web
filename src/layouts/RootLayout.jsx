@@ -35,27 +35,30 @@ const RootLayout = () => {
             return <Navigate to="/dashboard" replace />
         }
 
-        if (user) {
-            if (typeof user.hasBusiness === 'undefined' || user.hasBusiness === null) {
-                return <PageLoader message="Loading application..."/>
-            }
+        // if (user) {
+        //     // if (typeof user.hasBusiness === 'undefined' || user.hasBusiness === null) {
+        //     //     console.log("user: ", user)
+        //     //     console.log("Stuck karena masalah user");
+                
+        //     //     return <PageLoader message="Loading application..."/>
+        //     // }
 
-            const isRegisterPage = location.pathname.includes('/register-business')
+        //     const isRegisterPage = location.pathname.includes('/register-business')
 
-            if (user.hasBusiness === true && isRegisterPage) {
-                return <Navigate to="/dashboard" replace />
-            }
+        //     if (user.hasBusiness === true && isRegisterPage) {
+        //         return <Navigate to="/dashboard" replace />
+        //     }
 
-            if (user.hasBusiness && details) {
-                const isApproved = details.statusApproved === 'Approved';
-                const alwaysEnabledPaths = ['/', '/settings', '/register-business'];
-                const isTryingToAccessRestricted = !alwaysEnabledPaths.some(p => location.pathname.startsWith(p));
+        //     if (user.hasBusiness && details) {
+        //         const isApproved = details.statusApproved === 'Approved';
+        //         const alwaysEnabledPaths = ['/', '/settings', '/register-business'];
+        //         const isTryingToAccessRestricted = !alwaysEnabledPaths.some(p => location.pathname.startsWith(p));
 
-                if (!isApproved && isTryingToAccessRestricted) {
-                    return <Navigate to="/dashboard" replace />;
-                }
-            }
-        }
+        //         if (!isApproved && isTryingToAccessRestricted) {
+        //             return <Navigate to="/dashboard" replace />;
+        //         }
+        //     }
+        // }
 
         return <Outlet />
     }

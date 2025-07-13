@@ -22,18 +22,24 @@ const getTitleFromPath = (path) => {
 const PetshopLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
-  const { user } = useSelector((state) => state.auth)
-  const { details } = useSelector((state) => state.business);
-  // console.log(details, 'cek businnes from petshop layout');
+  const { user, status: authStatus } = useSelector((state) => state.auth)
+  const { details, status: businessStatus } = useSelector((state) => state.business);
 
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
+  if (authStatus === 'loading') {
+    return <PageLoader message="Preparing your session..." />;
+  }
+  
+  if (!user) {
+    return <PageLoader message="Session not found. Redirecting..." />;
+  }
+
   const handleLogout = () => {
     setIsLoggingOut(true)
 
-    
     setTimeout(() => {
       dispatch(logout())
       dispatch(clearBusinessData())
@@ -44,15 +50,11 @@ const PetshopLayout = ({ children }) => {
 
   const title = getTitleFromPath(location.pathname)
 
-  const isBusinessApproved = details && details.statusApproved == 'Approved';
-  const menuDisabled = !user.hasBusiness || !isBusinessApproved;
-  /**const menuDisabled = user && !user.hasBusiness*/
+  const isBusinessApproved = details && details.statusApproved == 'Approved'
+  const menuDisabled = !user.hasBusiness || !isBusinessApproved
 
   const shouldShowBanner = user && !user.hasBusiness && location.pathname !== '/dashboard' && location.pathname !== '/register-business'
 
-  if (!user) {
-    return null
-  }
 
   return (
     <>

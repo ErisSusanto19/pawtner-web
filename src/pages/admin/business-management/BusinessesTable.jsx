@@ -46,12 +46,12 @@ const TypeBadge = ({ type }) => {
     );
 };
 
-const BusinessesTable = ({ businesses }) => {
+const BusinessesTable = ({ businesses, pageStartIndex }) => {
     if (!businesses || businesses.length === 0) {
         return <p className="text-center text-gray-500 py-8">No businesses found.</p>;
     }
 
-    console.log(businesses, 'cek business from component table');
+    // console.log(businesses, 'cek business from component table');
     
 
     return (
@@ -59,6 +59,7 @@ const BusinessesTable = ({ businesses }) => {
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Name</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -69,8 +70,11 @@ const BusinessesTable = ({ businesses }) => {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {businesses.map((biz) => (
+                    {businesses.map((biz, index) => (
                         <tr key={biz.businessId}>
+                            <td className="pl-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                                {pageStartIndex + index + 1}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <img 

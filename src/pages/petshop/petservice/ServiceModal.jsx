@@ -33,7 +33,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
               };
     }, [isEditMode, service])
 
-    const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm({
+    const { register, handleSubmit, reset, formState: { errors, isDirty, isValid }, setValue, watch } = useForm({
         mode: 'onChange',
         defaultValues,
     })
@@ -114,7 +114,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
                         />
                         
                         <div className="w-full">
-                            <label htmlFor="category" className="block text-sm text-gray-900 font-medium mb-1">Category</label>
+                            <label htmlFor="category" className="block text-sm text-gray-900 font-medium mb-1">Category<span className="text-red-500"> *</span></label>
                             <select 
                                 id="category"
                                 {...register("category", { required: "Category is required" })}
@@ -130,7 +130,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="basePrice" className="block text-sm font-medium text-gray-900 mb-1">Base Price</label>
+                                <label htmlFor="basePrice" className="block text-sm font-medium text-gray-900 mb-1">Base Price<span className="text-red-500"> *</span></label>
                                 <input id="basePrice" type="number" step="any" {...register('basePrice', { required: 'Price is required.', valueAsNumber: true, min: { value: 0, message: "Price can't be negative" } })} className="w-full border rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-[#545F71]" />
                                 {errors.basePrice && <p className="text-red-500 text-xs mt-1">{errors.basePrice.message}</p>}
                             </div>
@@ -156,7 +156,11 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isLoading }) => {
                 <div className="flex-shrink-0 p-6 border-t border-[#E9ECEF]">
                     <div className="flex justify-end gap-4">
                         <Button buttonType="button" onClick={onClose} secondary={true} disabled={isSubmitting || isLoading}>Cancel</Button>
-                        <Button buttonType="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting || isLoading}>
+                        <Button 
+                            buttonType="button" 
+                            onClick={handleSubmit(onSubmit)} 
+                            disabled={!isValid || !isDirty || isSubmitting || isLoading}
+                        >
                             {isSubmitting ? <><Spinner /> Saving...</> : (isEditMode ? 'Save Changes' : 'Create Service')}
                         </Button>
                     </div>

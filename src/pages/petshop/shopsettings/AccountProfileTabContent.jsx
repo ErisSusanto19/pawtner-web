@@ -13,7 +13,7 @@ const AccountProfileTabContent = () => {
         return <div className="p-6 text-center text-red-500">Could not load user profile.</div>;
     }
 
-    return <AccountProfileForm initialData={user} />
+    return <AccountProfileForm initialData={user} status={status}/>
 }
 
 export default AccountProfileTabContent

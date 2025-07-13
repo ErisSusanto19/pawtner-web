@@ -251,7 +251,7 @@ const ProductsPage = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-[#F8F9FA] text-left text-[#495057]">
                             <tr>
-                                <th className="py-3 px-4 font-semibold text-center">#</th>
+                                <th className="py-3 px-4 font-semibold text-center">No.</th>
                                 <th className="py-3 px-4 font-semibold">Product</th>
                                 <th className="py-3 px-4 font-semibold">Category</th>
                                 <th className="py-3 px-4 font-semibold cursor-pointer hover:bg-gray-200" onClick={() => requestSort('price')}>

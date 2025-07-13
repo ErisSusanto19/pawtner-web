@@ -42,7 +42,10 @@ const businessSlice = createSlice({
     },
     clearBusinessData: (state) => {
       localStorage.removeItem('businessDetails')
-      Object.assign(state, initialState)
+      state.details = null
+      state.isLoading = false
+      state.error = null
+      state.status = 'idle'
     },
   },
 })

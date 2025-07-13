@@ -69,7 +69,15 @@ const authSlice = createSlice({
     },
 
     logoutSuccess: (state) => {
-      Object.assign(state, { ...initialState, user: null, token: null, isAuthenticated: false })
+      state.user = null
+      state.token = null
+      state.isAuthenticated = false
+      state.isLoading = false
+      state.error = null
+      state.message = null
+      state.status = 'idle'
+      state.isProfileUpdating = false
+      state.isPasswordChanging = false
     },
 
     updateUserBusinessStatus: (state, action) => {

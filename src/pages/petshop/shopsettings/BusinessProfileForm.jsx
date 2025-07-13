@@ -4,12 +4,13 @@ import Input from '../../../components/Input';
 import TextArea from '../../../components/TextArea';
 import DayRow from '../../../components/DayRow';
 import FileUpload from '../../../components/FileUploadV2';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateBusinessDetails } from '../../../store/slices/businessSlice';
 import { formatToFrontendHours } from '../../../utils/formatter'
 import MapPicker from '../../../components/MapPicker';
 import { toast } from 'react-toastify';
+import Button from '../../../components/Button';
 
 const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 const businessTypeOptions = [
@@ -31,54 +32,76 @@ const BusinessProfileForm = ({ initialData }) => {
     const [isLocating, setIsLocating] = useState(false);
     const [locationError, setLocationError] = useState('');
 
-    console.log(initialData, 'cek initial data')
-
-    const { register, handleSubmit, watch, reset, setValue, formState: { errors, isSubmitting, dirtyFields } } = useForm({
-        mode: 'onChange',
-        defaultValues: {
-            nameBusiness: '',
-            descriptionBusiness: '',
-            businessType: '',
-            businessEmail: '',
-            businessPhone: '',
-            businessAddress: '',
-            hasEmergencyServices: false,
-            emergencyPhone: '',
-            operationHours: {},
-            businessImageUrl: null,
-            certificateImageUrl: null,
-            latitude: null,
-            longitude: null,
-            statusRealTime: ''
+    const memoizedData = useMemo(() => {
+        if (!initialData) {
+            return {
+                nameBusiness: '',
+                descriptionBusiness: '',
+                businessType: '',
+                businessEmail: '',
+                businessPhone: '',
+                businessAddress: '',
+                hasEmergencyServices: false,
+                emergencyPhone: '',
+                operationHours: formatToFrontendHours({}),
+                businessImageUrl: null,
+                certificateImageUrl: null,
+                latitude: null,
+                longitude: null,
+                statusRealTime: ''
+            };
         }
+        
+        return {
+            nameBusiness: initialData.businessName,
+            descriptionBusiness: initialData.descriptionBusiness || initialData.description,
+            businessType: initialData.businessType,
+            businessEmail: initialData.businessEmail,
+            businessPhone: initialData.businessPhone,
+            businessAddress: initialData.businessAddress,
+            hasEmergencyServices: Boolean(initialData.hasEmergencyServices),
+            emergencyPhone: initialData.emergencyPhone,
+            businessImageUrl: initialData.businessImageUrl,
+            certificateImageUrl: initialData.certificateImageUrl,
+            operationHours: formatToFrontendHours(initialData.operationHours),
+            latitude: initialData.latitude,
+            longitude: initialData.longitude,
+            statusApproved: initialData.statusApproved,
+            statusRealTime: initialData.statusRealTime
+        };
+    }, [initialData])
+
+    const { register, handleSubmit, watch, reset, setValue, formState: { errors, isSubmitting, dirtyFields, isValid, isDirty } } = useForm({
+        mode: 'onChange',
+        values: memoizedData
     })
 
-    useEffect(() => {
-        if (initialData) {
+    // useEffect(() => {
+    //     if (initialData) {
 
-            const mappedData = {
-                nameBusiness: initialData.businessName,
-                descriptionBusiness: initialData.descriptionBusiness? initialData.descriptionBusiness : initialData.description,
-                businessType: initialData.businessType,
-                businessEmail: initialData.businessEmail,
-                businessPhone: initialData.businessPhone,
-                businessAddress: initialData.businessAddress,
-                hasEmergencyServices: Boolean(initialData.hasEmergencyServices),
-                emergencyPhone: initialData.emergencyPhone,
-                businessImageUrl: initialData.businessImageUrl,
-                certificateImageUrl: initialData.certificateImageUrl,
-                operationHours: formatToFrontendHours(initialData.operationHours),
-                latitude: initialData.latitude,
-                longitude: initialData.longitude,
-                statusApproved: initialData.statusApproved,
-                statusRealTime: initialData.statusRealTime
-            }
+    //         const mappedData = {
+    //             nameBusiness: initialData.businessName,
+    //             descriptionBusiness: initialData.descriptionBusiness? initialData.descriptionBusiness : initialData.description,
+    //             businessType: initialData.businessType,
+    //             businessEmail: initialData.businessEmail,
+    //             businessPhone: initialData.businessPhone,
+    //             businessAddress: initialData.businessAddress,
+    //             hasEmergencyServices: Boolean(initialData.hasEmergencyServices),
+    //             emergencyPhone: initialData.emergencyPhone,
+    //             businessImageUrl: initialData.businessImageUrl,
+    //             certificateImageUrl: initialData.certificateImageUrl,
+    //             operationHours: formatToFrontendHours(initialData.operationHours),
+    //             latitude: initialData.latitude,
+    //             longitude: initialData.longitude,
+    //             statusApproved: initialData.statusApproved,
+    //             statusRealTime: initialData.statusRealTime
+    //         }
 
-            console.log(mappedData, '<<< cek mapped data')
+    //         // console.log(mappedData, '<<< cek mapped data')
 
-            reset(mappedData)
-        }
-    }, [initialData, reset])
+    //         reset(mappedData)
+    //     }
+    // }, [initialData, reset])
 
     const onSubmit = async (data) => {
         try {
@@ -132,8 +155,15 @@ const BusinessProfileForm = ({ initialData }) => {
         }
     }
 
-    const MAX_FILE_SIZE_MB = 2;
-    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const MAX_FILE_SIZE_MB = 2
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+
+    console.log({ 
+        isDirty, 
+        isValid, 
+        isSubmitting,
+        errors 
+    })
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -231,7 +261,7 @@ const BusinessProfileForm = ({ initialData }) => {
                         rows={3} 
                     />
 
-                    <p className="text-xs text-gray-500 mt-3 mb-4 ml-1">
+                    <p className="text-xs text-gray-500 mt-2 mb-4 ml-1">
                         This address is automatically filled from the map. You can edit it for more detail (e.g., add floor number or block).
                     </p>
                     
@@ -330,14 +360,16 @@ const BusinessProfileForm = ({ initialData }) => {
             </div>
             
             <div className="flex justify-end pt-4 border-t border-gray-200">
-                <button 
-                    type="submit"
-                    disabled={isSubmitting}
+                <Button 
+                    buttonType="submit"
+                    disabled={ !isDirty || !isValid || isSubmitting }
                     className="flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]"
+                    isLoading={isSubmitting}
                 >
                     <Save size={16} />
-                    {isSubmitting ? 'Saving...' : 'Save Business Info'}
-                </button>
+                    {/* {isSubmitting ? 'Saving...' : 'Save Business Info'} */}
+                    Save Business Info
+                </Button>
             </div>
         </form>
     )

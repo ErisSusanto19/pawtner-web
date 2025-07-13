@@ -9,7 +9,7 @@ import BusinessesTable from './BusinessesTable';
 import Pagination from '../../../components/Pagination';
 import { fetchAllBusinesses } from '../../../store/slices/businessManagementSlice';
 
-const ITEMS_PER_PAGE = 5
+const ITEMS_PER_PAGE = 10
 
 const BusinessFilters = ({ filters, onFilterChange }) => (
     <div className="mb-6 flex flex-col sm:flex-row items-center gap-4 p-4 bg-gray-50 rounded-lg">
@@ -110,6 +110,8 @@ const BusinessManagementPage = () => {
         setFilters(prev => ({ ...prev, [name]: value }))
     }
 
+    const pageStartIndex = (currentPage - 1) * ITEMS_PER_PAGE
+
     return (
         <div className="p-4 md:p-6">
             <h1 className="text-2xl font-bold mb-6 text-gray-800">Business Management</h1>
@@ -121,7 +123,7 @@ const BusinessManagementPage = () => {
             
             {!isLoading && !error && (
                 <>
-                    <BusinessesTable businesses={paginatedBusinesses} />
+                    <BusinessesTable businesses={paginatedBusinesses} pageStartIndex={pageStartIndex}/>
                     
                     <div className="mt-6">
                         <Pagination 

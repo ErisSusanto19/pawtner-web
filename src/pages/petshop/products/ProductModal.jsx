@@ -34,7 +34,7 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
         }
   }, [isEditMode, product])
 
-  const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm({
+  const { register, handleSubmit, reset, formState: { errors, isDirty, isValid }, watch, setValue } = useForm({
     mode: "onChange",
     defaultValues
   })
@@ -131,13 +131,13 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
               id="description"
               label="Description"
               register={register}
-              rules={{ required: 'Description is required.' }}
+              // rules={{ required: 'Description is required.' }}
               errors={errors}
               rows={3}
             />
             
             <div className="w-full">
-                <label htmlFor="category" className="block text-sm text-gray-900 font-medium mb-2">Category</label>
+                <label htmlFor="category" className="block text-sm text-gray-900 font-medium mb-2">Category<span className="text-red-500"> *</span></label>
                 <select 
                     id="category" 
                     name="category"
@@ -165,7 +165,7 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-full">
-                <label htmlFor="price" className="block text-sm text-gray-900 font-medium mb-2">Price</label>
+                <label htmlFor="price" className="block text-sm text-gray-900 font-medium mb-2">Price<span className="text-red-500"> *</span></label>
                 <input
                   id="price"
                   type="text"
@@ -253,6 +253,7 @@ const ProductModal = ({isOpen, onClose, product, onSave, isLoading }) => {
           <Button
             buttonType="button"
             onClick={handleSubmit(onSubmit)}
+            disabled={!isDirty || !isValid || isSubmitting}
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
