@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import logoPawtner from '@/assets/pawtner2.png';
 import Button from '../../../components/Button';
 import RegisterStep1 from './RegisterStep1';
@@ -33,6 +33,9 @@ const RegisterAccountPage = () => {
             const { confirmPassword, ...userData } = data
             await dispatch(registerUser(userData))
             toast.success("Signed up successfully")
+
+            const email = getValues('email')
+            navigate('/verify-email', { state: { email: email } })
         } catch (error) {
             if(error.message?.toLowerCase().includes("similar record")){
                 toast.error("Phone number is already in use. Please use a different one.")
@@ -42,22 +45,24 @@ const RegisterAccountPage = () => {
         }
     }
 
-    useEffect(() => {
-        if (message && !error) {
-            const email = getValues('email')
-            navigate('/verify-email', { state: { email: email } })
-        }
+    // useEffect(() => {
+    //     if (message && !error) {
+    //         const email = getValues('email')
+    //         navigate('/verify-email', { state: { email: email } })
+    //     }
 
-        // if(error){
-        //     toast.error(error)
-        // }
-    }, [message, error, navigate, getValues])
+    //     // if(error){
+    //     //     toast.error(error)
+    //     // }
+    // }, [message, error, navigate, getValues])
 
     return (
         <div className="bg-[#BAC0CA] min-h-screen w-full flex items-center justify-center p-8">
             <div className="bg-white w-11/12 md:max-w-lg p-6 md:p-8 rounded-xl shadow-lg">
                 <div className="flex flex-col justify-center items-center mb-10">
-                    <img src={logoPawtner} alt="Logo Pawtner" className="w-48 h-auto" />
+                    <NavLink to={'/'}>
+                        <img src={logoPawtner} alt="Logo Pawtner" className="w-48 h-auto" />
+                    </NavLink>
                     <p className="text-[#545F71] text-lg font-bold">Create Your Account</p>
                     <p className="text-gray-900 font-medium text-sm">Start your journey with us</p>
                 </div>

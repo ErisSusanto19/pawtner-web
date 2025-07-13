@@ -8,7 +8,7 @@ import { clearBusinessData } from '../store/slices/businessSlice'
 import ConfirmationModal from './ConfirmationModal';
 import defAvatar from '@/assets/undraw_male-avatar_zkzx.svg'
 
-const Header = ({ title, setSidebarOpen }) => {
+const Header = ({ title, setSidebarOpen, onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLogoutModalOpen, setLogoutModalOpen] = useState(false)
   const dropdownRef = useRef(null)
@@ -40,10 +40,15 @@ const Header = ({ title, setSidebarOpen }) => {
   }, [])
 
   const handleConfirmLogout = () => {
-    dispatch(logout())
-    dispatch(clearBusinessData())
+    // dispatch(logout())
+    // dispatch(clearBusinessData())
+    // setLogoutModalOpen(false)
+    // navigate('/signin')
+
+    if (onLogout) {
+      onLogout()
+    }
     setLogoutModalOpen(false)
-    navigate('/signin')
   }
 
   const handleLogoutClick = () => {

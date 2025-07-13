@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CompleteProfileBanner from '../components/CompleteProfileBanner';
+import PageLoader from '../components/PageLoader';
+import { logout } from '../store/slices/authSlice'
+import { clearBusinessData } from '../store/slices/businessSlice'
 
 const getTitleFromPath = (path) => {
   if (path === '/dashboard' || path === 'dashboard') return 'Dashboard'
@@ -22,6 +25,21 @@ const PetshopLayout = ({ children }) => {
   const { user } = useSelector((state) => state.auth)
   const { details } = useSelector((state) => state.business);
   // console.log(details, 'cek businnes from petshop layout');
+
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const handleLogout = () => {
+    setIsLoggingOut(true)
+
+    
+    setTimeout(() => {
+      dispatch(logout())
+      dispatch(clearBusinessData())
+      navigate('/signin')
+    }, 800)
+  }
   
 
   const title = getTitleFromPath(location.pathname)
@@ -37,24 +55,27 @@ const PetshopLayout = ({ children }) => {
   }
 
   return (
+    <>
+      {isLoggingOut && <PageLoader/>}
 
-    <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-100">
 
-      <div className="hidden md:flex md:flex-shrink-0">
-        <Sidebar menuDisabled={menuDisabled}/>
+        <div className="hidden md:flex md:flex-shrink-0">
+          <Sidebar menuDisabled={menuDisabled} onLogout={handleLogout}/>
+        </div>
+
+        <div className="flex flex-col flex-1 w-0">
+          <Header title={title} setSidebarOpen={setSidebarOpen} onLogout={handleLogout}/>
+          <main className="flex-1 overflow-y-auto focus:outline-none p-4 sm:p-6">
+
+            {shouldShowBanner && <CompleteProfileBanner />}
+
+            <Outlet />
+
+          </main>
+        </div>
       </div>
-
-      <div className="flex flex-col flex-1 w-0">
-        <Header title={title} setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-y-auto focus:outline-none p-4 sm:p-6">
-
-          {shouldShowBanner && <CompleteProfileBanner />}
-
-          <Outlet />
-
-        </main>
-      </div>
-    </div>
+    </>
   )
 }
 

@@ -38,16 +38,20 @@ const settingsMenuItem = { name: 'Settings', icon: Settings, path: "/settings" }
 
 const alwaysEnabledPaths = ['/dashboard', '/settings']
 
-const Sidebar = ({ menuDisabled }) => {
+const Sidebar = ({ menuDisabled, onLogout }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [isLogoutModalOpen, setLogoutModalOpen] = useState(false)
 
   const handleConfirmLogout = () => {
-    dispatch(logout())
-    dispatch(clearBusinessData())
+    // dispatch(logout())
+    // dispatch(clearBusinessData())
+    // setLogoutModalOpen(false)
+
+    if (onLogout) {
+      onLogout()
+    }
     setLogoutModalOpen(false)
-    navigate('/signin')
   }
 
   const visibleMenuItems = menuItems.filter(item => {

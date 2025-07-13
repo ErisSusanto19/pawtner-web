@@ -52,7 +52,7 @@ const VerifyEmailPage = () => {
             
             setTimeout(() => {
                 navigate('/signin')
-            }, 2000)
+            }, 1500)
 
         } catch (err) {
             toast.error(err.message || "Verification failed. Please check the code.")

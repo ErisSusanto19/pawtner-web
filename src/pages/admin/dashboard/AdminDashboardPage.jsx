@@ -1,6 +1,4 @@
-// src/pages/admin/dashboard/AdminDashboardPage.jsx
-
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Users, Building, ShieldAlert, ArrowRight } from 'lucide-react';
@@ -27,20 +25,43 @@ const StatCard = ({ title, value, icon, color, linkTo }) => {
 
 // #1
 const BusinessTypeChart = ({ data }) => {
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF']
+
+    const CustomizedPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+        const RADIAN = Math.PI / 180
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+        const x = cx + radius * Math.cos(-midAngle * RADIAN)
+        const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
+        return (
+            <text
+                x={x}
+                y={y}
+                fill="white"
+                textAnchor="middle"
+                dominantBaseline="central"
+                style={{ fontSize: '6px' }}
+                // stroke='black'
+                // strokeWidth={0.5}
+            >
+                {`${name} (${(percent * 100).toFixed(0)}%)`}
+            </text>
+        )
+    }
+
     if (!data || data.length === 0) {
         return <div className="text-center text-gray-400">No business data for chart.</div>;
     }
     return (
         <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-                <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={80} fill="#8884d8" dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={90} fill="#8884d8" dataKey="value" nameKey="name" label={<CustomizedPieLabel />}>
                     {data.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Pie>
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '8px' }}/>
             </PieChart>
         </ResponsiveContainer>
     );
@@ -96,7 +117,8 @@ const QuickActionList = ({ title, items, linkToAll }) => (
 );
 
 const AdminDashboardPage = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch()
+    const [timeRange, setTimeRange] = useState('3_MONTHS')
 
     const { items: allUsers, isLoading: usersLoading } = useSelector((state) => state.userManagement);
     const { items: allBusinesses, isLoading: businessesLoading } = useSelector((state) => state.businessManagement);
@@ -121,6 +143,38 @@ const AdminDashboardPage = () => {
         };
     }, [allUsers, allBusinesses]);
 
+    // const chartData = useMemo(() => {
+    //     const businessTypeCounts = allBusinesses.reduce((acc, biz) => {
+    //         const type = biz.businessType || 'Unknown';
+    //         acc[type] = (acc[type] || 0) + 1;
+    //         return acc;
+    //     }, {});
+    //     const businessTypeDistribution = Object.keys(businessTypeCounts).map(type => ({
+    //         name: type.replace(/_/g, ' '),
+    //         value: businessTypeCounts[type],
+    //     }));
+
+    //     const sevenDaysAgo = new Date();
+    //     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    //     const recentUsers = allUsers.filter(user => new Date(user.createdAt) > sevenDaysAgo);
+    //     const userSignupsByDay = recentUsers.reduce((acc, user) => {
+    //         const date = new Date(user.createdAt).toLocaleDateString('en-CA');
+    //         acc[date] = (acc[date] || 0) + 1;
+    //         return acc;
+    //     }, {});
+    //     const newUserSignups = Array.from({ length: 7 }, (_, i) => {
+    //         const d = new Date();
+    //         d.setDate(d.getDate() - i);
+    //         const dateKey = d.toLocaleDateString('en-CA');
+    //         return {
+    //             date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+    //             signups: userSignupsByDay[dateKey] || 0,
+    //         };
+    //     }).reverse();
+
+    //     return { businessTypeDistribution, newUserSignups };
+    // }, [allUsers, allBusinesses]);
+
     const chartData = useMemo(() => {
         const businessTypeCounts = allBusinesses.reduce((acc, biz) => {
             const type = biz.businessType || 'Unknown';
@@ -132,29 +186,79 @@ const AdminDashboardPage = () => {
             value: businessTypeCounts[type],
         }));
 
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const recentUsers = allUsers.filter(user => new Date(user.createdAt) > sevenDaysAgo);
-        const userSignupsByDay = recentUsers.reduce((acc, user) => {
-            const date = new Date(user.createdAt).toLocaleDateString('en-CA');
-            acc[date] = (acc[date] || 0) + 1;
-            return acc;
-        }, {});
-        const newUserSignups = Array.from({ length: 7 }, (_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const dateKey = d.toLocaleDateString('en-CA');
-            return {
-                date: d.toLocaleDateString('en-US', { weekday: 'short' }),
-                signups: userSignupsByDay[dateKey] || 0,
-            };
-        }).reverse();
+        const now = new Date()
+        let startDate = new Date()
+        let newUserSignups = []
+        
+        switch (timeRange) {
+            case '6_MONTHS':
+                startDate.setMonth(now.getMonth() - 6);
+                const monthlyCounts = Array.from({ length: 6 }, (_, i) => {
+                    const d = new Date(now);
+                    d.setMonth(now.getMonth() - (5 - i));
+                    return { date: d.toLocaleString('default', { month: 'short' }), signups: 0 };
+                });
+                allUsers.forEach(user => {
+                    const userDate = new Date(user.createdAt);
+                    if (userDate >= startDate) {
+                        const monthKey = userDate.toLocaleString('default', { month: 'short' });
+                        const month = monthlyCounts.find(m => m.date === monthKey);
+                        if(month) month.signups++;
+                    }
+                });
+                newUserSignups = monthlyCounts;
+                break;
+            case '7_DAYS':
+                startDate.setDate(now.getDate() - 7);
+                const dailyCounts = {};
+                allUsers.filter(user => new Date(user.createdAt) > startDate)
+                    .forEach(user => {
+                        const date = new Date(user.createdAt).toLocaleDateString('en-CA');
+                        dailyCounts[date] = (dailyCounts[date] || 0) + 1;
+                    });
+                newUserSignups = Array.from({ length: 7 }, (_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const dateKey = d.toLocaleDateString('en-CA');
+                    return {
+                        date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+                        signups: dailyCounts[dateKey] || 0,
+                    };
+                }).reverse();
+                break;
+            case '3_MONTHS':
+            default:
+                startDate.setMonth(now.getMonth() - 3);
+                 const threeMonthCounts = Array.from({ length: 3 }, (_, i) => {
+                    const d = new Date(now);
+                    d.setMonth(now.getMonth() - (2 - i));
+                    return { date: d.toLocaleString('default', { month: 'short' }), signups: 0 };
+                });
+                allUsers.forEach(user => {
+                    const userDate = new Date(user.createdAt);
+                    if (userDate >= startDate) {
+                        const monthKey = userDate.toLocaleString('default', { month: 'short' });
+                        const month = threeMonthCounts.find(m => m.date === monthKey);
+                        if(month) month.signups++;
+                    }
+                });
+                newUserSignups = threeMonthCounts;
+                break;
+        }
 
-        return { businessTypeDistribution, newUserSignups };
-    }, [allUsers, allBusinesses]);
+        return { businessTypeDistribution, newUserSignups }
+    }, [allUsers, allBusinesses, timeRange])
     
     if (usersLoading || businessesLoading) {
         return <div className="text-center p-8">Loading dashboard data...</div>
+    }
+
+    const getButtonClass = (range) => {
+        return `px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+            timeRange === range
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }`
     }
 
     return (
@@ -172,7 +276,14 @@ const AdminDashboardPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md h-80 flex flex-col">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">New User Sign-ups (Last 7 Days)</h3>
+                <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+                    <h3 className="text-lg font-bold text-gray-800">New User Sign-ups</h3>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setTimeRange('7_DAYS')} className={getButtonClass('7_DAYS')}>7 Days</button>
+                        <button onClick={() => setTimeRange('3_MONTHS')} className={getButtonClass('3_MONTHS')}>3 Months</button>
+                        <button onClick={() => setTimeRange('6_MONTHS')} className={getButtonClass('6_MONTHS')}>6 Months</button>
+                    </div>
+                </div>
                 <NewUserChart data={chartData.newUserSignups} />
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md h-80 flex flex-col">

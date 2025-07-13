@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
 import logoPawtner from '@/assets/pawtner2.png'
@@ -69,11 +69,13 @@ const LoginPage = () => {
         <div className="bg-white w-full max-w-lg p-8 rounded-xl shadow-2xl space-y-8">
 
           <div className="text-center">
-            <img 
-              src={logoPawtner} 
-              alt="Logo Pawtner" 
-              className="w-40 h-auto object-contain mx-auto mb-6" 
-            />
+            <NavLink to={'/'}>
+              <img 
+                src={logoPawtner} 
+                alt="Logo Pawtner" 
+                className="w-40 h-auto object-contain mx-auto mb-6" 
+              />
+            </NavLink>
             <h2 className="text-2xl font-bold text-[#495057]">Welcome Back!</h2>
             <p className="text-gray-500">Sign in to your business account</p>
           </div>
@@ -119,8 +121,9 @@ const LoginPage = () => {
 
             {/* {error && <p className="text-red-500 text-sm text-center">{error}</p>} */}
 
-            <Button buttonType="submit" fullWidth disabled={!isValid || isLoginLoading}>
-              {isLoginLoading ? 'Signing In...' : 'Sign In'}
+            <Button buttonType="submit" fullWidth disabled={!isValid || isLoginLoading} isLoading={isLoginLoading}>
+              {/* {isLoginLoading ? 'Signing In...' : 'Sign In'} */}
+              Sign In
             </Button>
           </form>
 
