@@ -1,33 +1,59 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Calendar, Settings, ArrowRight, Smartphone, AlertTriangle, ShieldCheck, ClipboardList, Apple, Play } from 'lucide-react';
+import { ShoppingCart, Calendar, Settings, ArrowRight, Smartphone, AlertTriangle, ShieldCheck, ClipboardList, Apple, Play, Facebook, Twitter, Instagram, Users, Mail, Phone, MapPin} from 'lucide-react';
 import Button from '../components/Button';
 import pawtnerLogo from '../assets/W.png';
 import heroImage from '../assets/undraw_data_0ml2.svg';
 import mobileAppImage from '../assets/undraw_mobile-application_uc2q.svg';
 
 const LandingPage = () => {
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <div className="bg-white text-[#323f56]">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center">
+          <Link 
+            to="/" 
+            className="flex items-center" 
+            onClick={(e) => { e.preventDefault(); scrollToSection('hero'); }}
+          >
             <img src={pawtnerLogo} alt="Pawtner Logo" className="h-8 w-auto" />
             <span className="ml-3 text-xl font-bold">Pawtner</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link to="/signin" className="text-sm font-semibold hover:text-sky-500 transition-colors">
-              Sign In
-            </Link>
-            <Link to="/signup">
-              <Button>Get Started</Button>
-            </Link>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-6">
+              <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} className="text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors">
+                Features
+              </a>
+              <a href="#why-pawtner" onClick={(e) => { e.preventDefault(); scrollToSection('why-pawtner'); }} className="text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors">
+                Why Pawtner
+              </a>
+              <a href="#app" onClick={(e) => { e.preventDefault(); scrollToSection('app'); }} className="text-sm font-semibold text-gray-600 hover:text-sky-500 transition-colors">
+                App
+              </a>
+            </nav>
+
+            <div className="flex items-center space-x-4">
+              <Link to="/signin" className="text-sm font-semibold hover:text-sky-500 transition-colors">
+                Sign In
+              </Link>
+              <Link to="/signup">
+                <Button>Get Started</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <main className="container mx-auto px-6 py-16 sm:py-24">
+      <main id='hero' className="container mx-auto px-6 py-16 sm:py-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="text-center lg:text-left">
             {/* IMPROVEMENT: Clear, benefit-oriented headline */}
@@ -47,13 +73,13 @@ const LandingPage = () => {
             </div>
           </div>
           <div>
-            <img src={heroImage} alt="Business Management Illustration" className="w-full h-auto" />
+            <img src={heroImage} alt="Business Management Illustration" className="w-full h-96" />
           </div>
         </div>
       </main>
 
       {/* Features Section */}
-      <section id="features" className="bg-gray-50 py-20 sm:py-24">
+      <section id="features" className="bg-gray-100 py-20 sm:py-24">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold">Everything You Need to Get Started</h2>
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
@@ -86,7 +112,7 @@ const LandingPage = () => {
       </section>
 
       {/* Section: Why Pet Owners Will Choose You on Pawtner */}
-      <section className="bg-white py-20 sm:py-24">
+      <section id='why-pawtner' className="bg-white py-20 sm:py-24">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold">Why Pet Owners Will Love Your Shop on Pawtner</h2>
           <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
@@ -122,11 +148,11 @@ const LandingPage = () => {
       </section>
 
       {/* Mobile App Promotion Section (For Pet Owners) */}
-      <section className="bg-gray-50 py-20 sm:py-24">
+      <section id='app' className="bg-gray-100 py-20 sm:py-24">
         <div className="container mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <img src={mobileAppImage} alt="Illustration of a person using a mobile app" className="w-full h-auto rounded-lg" />
+              <img src={mobileAppImage} alt="Illustration of a person using a mobile app" className="w-full h-96 rounded-lg" />
             </div>
             <div className="order-1 lg:order-2 text-center lg:text-left">
               <h2 className="text-3xl font-bold">The All-in-One App for Pet Owners</h2>
@@ -174,43 +200,179 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="bg-[#323f56] text-white">
-        <div className="container mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold">Ready to Bring Your Business Online?</h2>
-          <p className="mt-4 max-w-xl mx-auto opacity-90">
-            Join Pawtner today and experience the ease of managing your business in the digital world.
-          </p>
-          <div className="mt-8">
-            <Link to="/signup">
-            <a
-              className="
-                inline-block
-                bg-transparent 
-                border-2 border-white
-                text-white 
-                font-bold text-lg
-                py-3 px-10 
-                rounded-lg 
-                transition-all duration-300 ease-in-out
-                hover:bg-white hover:text-[#323f56]
-                focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#323f56]
-                active:scale-95
-              "
-            >
-              Sign Up Now
-            </a>
-            </Link>
+      <section id="about" className="bg-white py-20 sm:py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Section Icon */}
+            <div className="mx-auto bg-sky-100 text-sky-600 rounded-full h-16 w-16 flex items-center justify-center">
+              <Users className="h-8 w-8" />
+            </div>
+            
+            {/* Section Title */}
+            <h2 className="mt-6 text-3xl font-bold">
+              About Pawtner
+            </h2>
+
+            {/* Section Description */}
+            <p className="mt-4 text-lg text-gray-600">
+              Pawtner was founded with a simple mission: to empower pet business owners with the digital tools they need to succeed. We believe that by simplifying operations, we help you focus on what you love most—caring for pets.
+            </p>
+
+            {/* Key Points/Values */}
+            <div className="mt-12 grid sm:grid-cols-2 gap-8 text-left">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold">Our Mission</h3>
+                <p className="mt-2 text-gray-600">
+                  To provide an intuitive, all-in-one platform that bridges the gap between pet service providers and the pet owners who need them, fostering a community built on trust and excellent care.
+                </p>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold">Our Vision</h3>
+                <p className="mt-2 text-gray-600">
+                  To become the most trusted digital partner for pet businesses everywhere, driving their growth and helping them thrive in an increasingly digital world.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t">
-        <div className="container mx-auto px-6 py-8 text-center text-gray-500">
-          <p>© {new Date().getFullYear()} Pawtner. All Rights Reserved.</p>
+      <section id="contact" className="bg-gray-100 py-20 sm:py-24">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold">Get In Touch</h2>
+          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+            Have a question, a suggestion, or need support? Our team is ready to help you.
+          </p>
+          
+          <div className="mt-12 grid md:grid-cols-3 gap-8 max-w-5xl mx-auto text-left">
+            
+            {/* Contact Card: Email */}
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 flex items-start space-x-4">
+              <div className="bg-sky-100 text-sky-600 rounded-full h-12 w-12 flex-shrink-0 flex items-center justify-center">
+                <Mail className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold">Email Us</h3>
+                <p className="mt-1 text-gray-600">For support or inquiries.</p>
+                <a href="mailto:support@pawtner.com" className="text-sky-500 font-semibold hover:underline break-all">
+                  support@pawtner.com
+                </a>
+              </div>
+            </div>
+
+            {/* Contact Card: Phone */}
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 flex items-start space-x-4">
+              <div className="bg-sky-100 text-sky-600 rounded-full h-12 w-12 flex-shrink-0 flex items-center justify-center">
+                <Phone className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold">Call Us</h3>
+                <p className="mt-1 text-gray-600">Mon-Fri, 9am - 5pm.</p>
+                <a href="tel:+1234567890" className="text-gray-800 font-semibold">
+                  (0341) 12345678
+                </a>
+              </div>
+            </div>
+
+            {/* Contact Card: Address */}
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 flex items-start space-x-4">
+              <div className="bg-sky-100 text-sky-600 rounded-full h-12 w-12 flex-shrink-0 flex items-center justify-center">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold">Our Office</h3>
+                <p className="mt-1 text-gray-600">
+                  Jl. Topaz Nomor. 7, RT 003/RW 008, Kel. Tlogomas, Kecamatan Lowokwaru, Kota Malang - Jawa Timur 65144
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-[#323f56] text-white">
+        <div className="container mx-auto px-6 py-16">
+          {/* Bagian CTA */}
+          <div className="text-center">
+            <h2 className="text-3xl font-bold">Ready to Bring Your Business Online?</h2>
+            <p className="mt-4 max-w-xl mx-auto opacity-90">
+              Join Pawtner today and experience the ease of managing your business in the digital world.
+            </p>
+            <div className="mt-8">
+              <Link to="/signup">
+                <a className="inline-block bg-transparent border-2 border-white text-white font-bold text-lg py-3 px-10 rounded-lg transition-all duration-300 ease-in-out hover:bg-white hover:text-[#323f56] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#323f56] active:scale-95">
+                  Sign Up Now
+                </a>
+              </Link>
+            </div>
+          </div>
+
+          {/* Garis Pemisah */}
+          <div className="mt-16 pt-10 border-t border-gray-200/20">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {/* Kolom Logo & Deskripsi */}
+              <div className="col-span-1 md:col-span-2 mb-8 md:mb-0 space-y-4">
+                <div className="flex items-center">
+                  <div className='rounded-full bg-white p-1'>
+                    <img src={pawtnerLogo} alt="Pawtner Logo" className="h-8 w-auto object-cover" />
+                  </div>
+                  <span className="ml-3 text-xl font-bold">Pawtner</span>
+                </div>
+                <p className="mt-4 text-gray-400 max-w-sm">
+                  The all-in-one platform for pet businesses to thrive in the digital age.
+                </p>
+                <div className="flex space-x-4 mt-4 sm:mt-0">
+                  <a href="#" className="text-gray-400 hover:text-white"><Facebook size={20} /></a>
+                  <a href="#" className="text-gray-400 hover:text-white"><Twitter size={20} /></a>
+                  <a href="#" className="text-gray-400 hover:text-white"><Instagram size={20} /></a>
+                </div>
+              </div>
+              
+              {/* Kolom Tautan Company */}
+              <div>
+                <h4 className="font-semibold text-white">Company</h4>
+                <ul className="mt-4 space-y-2">
+                  <li>
+                    <Link 
+                      to="/#" 
+                      className="text-gray-400 hover:text-white"
+                      onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
+                    >
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      to="/" 
+                      className="text-gray-400 hover:text-white"
+                      onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}
+                    >
+                      Contact
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Kolom Tautan Legal */}
+              <div>
+                <h4 className="font-semibold text-white">Legal</h4>
+                <ul className="mt-4 space-y-2">
+                  <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
+                  <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-12 pt-8 border-t border-gray-200/20 flex flex-col sm:flex-row justify-center items-center">
+              <p className="text-gray-400 text-sm">
+                © {new Date().getFullYear()} Pawtner. All Rights Reserved.
+              </p>
+            </div>
+          </div>
         </div>
       </footer>
+
     </div>
   );
 };
