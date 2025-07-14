@@ -41,9 +41,9 @@ const LandingPage = () => {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <Link to="/signin" className="text-sm font-semibold hover:text-sky-500 transition-colors">
+              {/* <Link to="/signin" className="text-sm font-semibold hover:text-sky-500 transition-colors">
                 Sign In
-              </Link>
+              </Link> */}
               <Link to="/signup">
                 <Button>Get Started</Button>
               </Link>

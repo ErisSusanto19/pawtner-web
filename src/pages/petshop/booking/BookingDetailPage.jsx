@@ -199,7 +199,7 @@ const BookingDetailPage = () => {
         return <div className="p-6 text-center">Booking not found.</div>;
     }
     
-    const isVeterinaryService = booking.service?.category.toLowerCase() === 'veterinary';
+    const isVeterinaryService = booking.service?.category.toLowerCase() === 'veterinary' || booking.service?.category.toLowerCase() === 'hybrid'
 
     return (
         <div className="p-4 md:p-6 bg-gray-50 min-h-full space-y-6">
@@ -217,7 +217,7 @@ const BookingDetailPage = () => {
                             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">
                             <Edit size={16} /> Update Status
                         </button>
-                        {isVeterinaryService /**&& booking.status === 'COMPLETED'*/ && prescriptions.length === 0 && (
+                        {isVeterinaryService && booking.status === 'COMPLETED' && prescriptions.length === 0 && (
                             <button
                                 onClick={() => setIsPrescriptionModalOpen(true)}
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#545F71] rounded-md hover:bg-[#495057]">

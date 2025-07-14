@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { isToday, isThisMonth, isAfter, startOfToday, parseISO, format, subDays } from 'date-fns';
 import RevenueChart from '../../../components/RevenueChart';
-import { LoaderCircle } from 'lucide-react'
 import clsx from 'clsx';
 import StatCard from '../../../components/StatCard';
 import WelcomePage from './WelcomePage';
@@ -31,27 +30,6 @@ const DashboardPage = () => {
             dispatch(fetchBusinessOrders({ page: 0, size: 200 }));
         }
     }, [dispatch, user?.hasBusiness]);
-
-    // const chartData = useMemo(() => {
-    //     if (bookingStatus !== 'succeeded' || orderStatus !== 'succeeded') return [];
-    //     const last7Days = Array.from({ length: 7 }, (_, i) => subDays(new Date(), i));
-    //     const dataMap = new Map();
-    //     last7Days.forEach(day => {
-    //         dataMap.set(format(day, 'yyyy-MM-dd'), { date: format(day, 'MMM d'), revenue: 0 });
-    //     });
-    //     const allCompletedTransactions = [
-    //         ...bookings.filter(b => b.status === 'COMPLETED'),
-    //         ...orders.filter(o => o.status === 'COMPLETED')
-    //     ];
-    //     allCompletedTransactions.forEach(t => {
-    //         const transactionDateStr = format(parseISO(t.createdAt), 'yyyy-MM-dd');
-    //         if (dataMap.has(transactionDateStr)) {
-    //             const dayData = dataMap.get(transactionDateStr);
-    //             dayData.revenue += (t.totalPrice || t.totalAmount);
-    //         }
-    //     });
-    //     return Array.from(dataMap.values()).reverse();
-    // }, [bookings, orders, bookingStatus, orderStatus]);
 
     const chartData = useMemo(() => {
         if (bookingStatus !== 'succeeded' || orderStatus !== 'succeeded') return [];

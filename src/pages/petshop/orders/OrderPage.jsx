@@ -232,7 +232,7 @@ const OrderPage = () => {
                                     <td className="py-3 px-4 font-medium text-[#545F71]">{order.orderNumber}</td>
                                     <td className="py-3 px-4">
                                         <div>
-                                            <p className="font-medium text-[#5D6D7E]">{order.customerName}</p>
+                                            <p className="font-medium text-[#5D6D7E]">{order.customer?.name}</p>
                                             <p className="text-xs text-[#ADB5BD]">{order.customer?.email}</p>
                                         </div>
                                     </td>

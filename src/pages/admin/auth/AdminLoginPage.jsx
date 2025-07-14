@@ -1,5 +1,3 @@
-// src/pages/admin/AdminLoginPage.jsx
-
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import Input from '../../../components/Input'; // Asumsi path komponen sama
@@ -18,7 +16,6 @@ const AdminLoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // Anda mungkin ingin state terpisah di Redux untuk admin, atau gunakan yang sama
   const { isLoading, error, isAdminAuthenticated } = useSelector((state) => state.auth);
 
   const { register, handleSubmit, formState: { errors, isValid } } = useForm({

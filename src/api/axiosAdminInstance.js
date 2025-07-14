@@ -14,6 +14,7 @@ const axiosAdminInstance = axios.create({
 
 axiosAdminInstance.interceptors.request.use(
   (config) => {
+    // console.log('Interceptor running. Is store defined?', !!store);
     
     if (store) {
       const state = store.getState()
@@ -25,7 +26,7 @@ axiosAdminInstance.interceptors.request.use(
         // console.log('Interceptor: Token found, attaching to headers.', token)
         config.headers['Authorization'] = `Bearer ${token}`
       } else {
-        console.log('Interceptor: No token found in state.')
+        console.log('Interceptor: No token found in state.', state.adminAuth)
       }
     }
 

@@ -1,10 +1,8 @@
 import Input from '../../../components/Input'
 import TextArea from '../../../components/TextArea'
-import FileUpload from '../../../components/FileUploadV2'
 import { UserRound, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
-import MapPicker from '../../../components/MapPicker'
 
 const RegisterStep1 = ({register, errors, getValues, watch, setValue}) => {
 

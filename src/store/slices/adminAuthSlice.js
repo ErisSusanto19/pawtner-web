@@ -1,20 +1,25 @@
 import { createSlice } from '@reduxjs/toolkit';
-import * as adminApi from '../../api/adminAuthApi'
+import * as adminApi from '../../api/adminAuthApi';
 
 const getInitialState = () => {
   try {
     const adminToken = localStorage.getItem('adminToken');
-    const adminData = localStorage.getItem('admin');
+    const adminData = localStorage.getItem('adminDetails');
 
-    return {
-      admin: adminData ? JSON.parse(adminData) : null,
-      adminToken: adminToken,
-      isAdminAuthenticated: !!adminToken,
-    };
+    if (adminToken && adminData) {
+      return {
+        admin: JSON.parse(adminData),
+        adminToken: adminToken,
+        isAdminAuthenticated: true,
+      };
+    }
+
+    throw new Error("Sesi admin tidak lengkap atau tidak ada.");
+
   } catch (error) {
-    console.error("Failed to parse admin data from localStorage", error)
-    localStorage.removeItem('adminToken')
-    localStorage.removeItem('admin')
+    // console.error("Gagal menginisialisasi state admin dari localStorage:", error.message);
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminDetails');
     return {
       admin: null,
       adminToken: null,
@@ -28,84 +33,91 @@ const initialState = {
   isLoading: false,
   error: null,
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-}
+};
 
 const adminAuthSlice = createSlice({
   name: 'adminAuth',
   initialState,
   reducers: {
     adminOperationStart: (state) => {
-      state.isLoading = true
-      state.error = null
-      state.status = 'loading'
+      state.isLoading = true;
+      state.error = null;
+      state.status = 'loading';
     },
 
     adminOperationFail: (state, action) => {
-      state.isLoading = false
-      state.error = action.payload.error
-      state.status = 'failed'
+      state.isLoading = false;
+      state.error = action.payload.error;
+      state.status = 'failed';
     },
 
     adminLoginSuccess: (state, action) => {
-      state.isLoading = false
-      state.isAdminAuthenticated = true
-      state.admin = action.payload.admin
-      state.token = action.payload.token
+      state.isLoading = false;
+      state.isAdminAuthenticated = true;
+      state.admin = action.payload.adminDetails;
+      state.adminToken = action.payload.adminToken;
       state.error = null;
-      state.status = 'succeeded'
+      state.status = 'succeeded';
     },
 
     adminLogoutSuccess: (state) => {
-      Object.assign(state, {
-        ...initialState,
-        admin: null,
-        token: null,
-        isAdminAuthenticated: false,
-      })
+      state.admin = null;
+      state.adminToken = null;
+      state.isAdminAuthenticated = false;
+      state.isLoading = false;
+      state.error = null;
+      state.status = 'idle';
     },
 
     clearAdminError: (state) => {
       state.error = null;
-    }
+    },
   },
-})
+});
 
 export const {
   adminOperationStart,
   adminOperationFail,
   adminLoginSuccess,
   adminLogoutSuccess,
-  clearAdminError
-} = adminAuthSlice.actions
+  clearAdminError,
+} = adminAuthSlice.actions;
+
 
 export const loginAdmin = (credentials) => async (dispatch) => {
   dispatch(adminOperationStart());
   try {
-    const { data }= await adminApi.loginAdmin(credentials)
+    const fullResponse = await adminApi.loginAdmin(credentials);
+    console.log(fullResponse, '<<< full response after login');
     
-    // if (data?.admin?.role !== 'admin') {
-    //   throw new Error('Access Denied. User does not have admin privileges.')
-    // }
-
-    localStorage.setItem('adminToken', data.token)
-    localStorage.setItem('admin', JSON.stringify(data))
-
-    dispatch(adminLoginSuccess({ admin: data, token: data.token }))
     
-    return data
+    const responseData = fullResponse.data;
+
+    const { token, ...adminDetails } = responseData;
+
+    if (!token) {
+        throw new Error("There is no token in login response.");
+    }
+
+    localStorage.setItem('adminToken', token);
+    localStorage.setItem('adminDetails', JSON.stringify(adminDetails));
+
+    dispatch(adminLoginSuccess({ adminDetails, adminToken: token }));
+
+    return fullResponse;
 
   } catch (error) {
-    const errorMessage = error.response?.data?.message || error.message || 'Admin login failed.';
+    const errorMessage = error.response?.data?.message || error.message || 'Login failed.';
     dispatch(adminOperationFail({ error: errorMessage }));
-    throw new Error(errorMessage)
+    throw new Error(errorMessage);
   }
-}
+};
 
 export const logoutAdmin = () => (dispatch) => {
-  localStorage.removeItem('adminToken')
-  localStorage.removeItem('admin')
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminDetails');
   
-  dispatch(adminLogoutSuccess())
-}
+  dispatch(adminLogoutSuccess());
+};
 
-export default adminAuthSlice.reducer
+export default adminAuthSlice.reducer;

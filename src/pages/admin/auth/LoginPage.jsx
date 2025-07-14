@@ -104,14 +104,6 @@ const LoginPage = () => {
               }}
             />
 
-            <div className="mt-4 h-5 text-center"> 
-              {(error || errors.root?.serverError) && (
-                <p className="text-red-500 text-sm -my-2">
-                  {errors.root?.serverError?.message || error}
-                </p>
-              )}
-            </div>
-
             <Button buttonType="submit" fullWidth disabled={!isValid || isLoading}>
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>

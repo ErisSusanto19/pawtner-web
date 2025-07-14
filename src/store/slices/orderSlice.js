@@ -76,7 +76,6 @@ export const fetchBusinessOrders = (params) => {
         try {
             const businessId = getState().business.details?.businessId
             const response = await orderApi.getBusinessOrders(businessId, params)
-            console.log(response, '<<< cek order response');
             
             dispatch(fetchOrdersSuccess(response.data))
         } catch (error) {
@@ -92,9 +91,6 @@ export const fetchOrderById = (orderId) => {
         dispatch(orderOperationStart());
         try {
             const response = await orderApi.getOrderById(orderId)
-
-            console.log(response, '<<< cek response order by id');
-            
 
             dispatch(fetchOrderByIdSuccess(response.data))
         } catch (error) {

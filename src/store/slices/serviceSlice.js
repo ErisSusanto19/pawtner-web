@@ -175,7 +175,6 @@ export const deleteExistingService = (serviceId) => async (dispatch) => {
     dispatch(serviceOperationStart())
     try {
         const response = await serviceApi.deleteService(serviceId)
-        console.log(response, '<<< cek response delete')
         dispatch(deleteServiceSuccess({ serviceId }))
         return response
     } catch (error) {

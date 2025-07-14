@@ -59,7 +59,6 @@ export const {
 
 export const createBusiness = (formData) => {
   return async (dispatch) => {
-    // const { updateUserBusinessStatus } = require('./authSlice');
     dispatch(businessOperationStart())
 
     try {
@@ -129,7 +128,6 @@ export const createBusiness = (formData) => {
 
 export const fetchMyBusiness = () => {
   return async (dispatch) => {
-    // const { updateUserBusinessStatus } = require('./authSlice');
     dispatch(businessOperationStart())
     try {
       const response = await businessApi.getMyBusiness()

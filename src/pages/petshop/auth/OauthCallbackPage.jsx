@@ -13,11 +13,11 @@ const OAuthCallbackPage = () => {
   
   
   useEffect(() => {
-      console.log(searchParams, 'cek params');
+    // console.log(searchParams, 'cek params');
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    console.log(params, 'cek param oauth');
+    // console.log(params, 'cek param oauth');
     
     const userId = params.get("userId");
 
@@ -45,11 +45,13 @@ const OAuthCallbackPage = () => {
 
         // Fetch business
         const businessAction = await dispatch(fetchMyBusiness());
-        if (businessAction.payload) {
-          dispatch(updateUserBusinessStatus(true));
-        } else {
-          dispatch(updateUserBusinessStatus(false));
-        }
+        // console.log(businessAction, '<<< cek bisnis ketika login oauth');
+        
+        // if (businessAction?.payload) {
+        //   dispatch(updateUserBusinessStatus(true));
+        // } else {
+        //   dispatch(updateUserBusinessStatus(false));
+        // }
         toast.success("Welcome! You're signed in with Google.");
         navigate("/dashboard");
       } catch (error) {

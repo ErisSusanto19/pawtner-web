@@ -15,7 +15,6 @@ const initialState = {
 
 describe('businessSlice reducers', () => {
   beforeEach(() => {
-    // Membersihkan mock localStorage sebelum setiap tes
     vi.spyOn(Storage.prototype, 'setItem').mockClear();
     vi.spyOn(Storage.prototype, 'removeItem').mockClear();
   });
@@ -23,7 +22,6 @@ describe('businessSlice reducers', () => {
   it('should return the initial state on first run', () => {
     expect(businessReducer(undefined, { type: 'unknown' })).toEqual({
       ...initialState,
-      // Menyesuaikan dengan implementasi slice yang memanggil localStorage saat inisialisasi
       details: JSON.parse(localStorage.getItem('businessDetails')) || null,
     });
   });
@@ -65,9 +63,6 @@ describe('businessSlice reducers', () => {
       details: { id: 'biz-123', name: 'Pawtner Petshop' },
     };
     const state = businessReducer(loggedInState, clearBusinessData());
-
-    // Perilaku `Object.assign(state, initialState)` akan membuat state kembali ke nilai default
-    // yang mungkin membaca dari localStorage lagi, jadi kita cek nilai intinya.
     expect(state.details).toBeNull();
     expect(state.isLoading).toBe(false);
     expect(state.error).toBeNull();

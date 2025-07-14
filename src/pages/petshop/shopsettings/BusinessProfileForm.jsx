@@ -158,13 +158,6 @@ const BusinessProfileForm = ({ initialData }) => {
     const MAX_FILE_SIZE_MB = 2
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
-    console.log({ 
-        isDirty, 
-        isValid, 
-        isSubmitting,
-        errors 
-    })
-
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 

@@ -9,7 +9,17 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './setupTests.js'
+    setupFiles: './setupTests.js',
+    include: [
+      'src/**/*.{test,spec}.{js,ts,jsx,tsx}',
+      'src/**/__test__/*.{js,ts,jsx,tsx}'
+    ],
+    coverage: {
+      reporter: ['text', 'html'],
+      exclude: ['src/setupTests.js'],
+    },
+    ui: true,
+    watch: true,
   },
   resolve: {
     alias: {

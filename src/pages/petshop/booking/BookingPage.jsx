@@ -10,6 +10,7 @@ import BookingStats from './BookingStats';
 import ConfirmModal from '../../../components/ConfirmationModal';
 import { useDebounce } from '../../../hooks/useDebounce';
 import Pagination from '../../../components/Pagination';
+import { toast } from 'react-toastify';
 
 const BookingPage = () => {
     const dispatch = useDispatch();

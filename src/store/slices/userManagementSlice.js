@@ -79,7 +79,7 @@ export const {
   clearSelectedUser
 } = userManagementSlice.actions;
 
-export const fetchAllUsers = (params = {page: 0, size: 20}) => async (dispatch) => {
+export const fetchAllUsers = (params) => async (dispatch) => {
   dispatch(operationStart());
   try {
     const data = await userManagementApi.getAllUsers(params);
@@ -108,8 +108,6 @@ export const fetchUserById = (userId) => async (dispatch) => {
 };
 
 export const toggleUserStatusAction = ({ userId, action, value, reason, isSend }) => async (dispatch) => {
-  console.log(reason, 'cekk reason from modal');
-  console.log(isSend, 'cek isSend from modal');
   
   dispatch(operationStart());
   try {
@@ -119,8 +117,6 @@ export const toggleUserStatusAction = ({ userId, action, value, reason, isSend }
     dispatch(updateUserSuccess(updatedUserData.data))
     return updatedUserData
   } catch (error) {
-    console.log(error, '<<< cek error');
-    
     const errorMessage = error.response?.data?.message || error.message || 'Failed to update user status.'
     dispatch(operationFail({ error: errorMessage }))
     throw new Error(errorMessage)

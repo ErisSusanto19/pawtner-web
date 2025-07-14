@@ -7,6 +7,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         <div 
             className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center"
             onClick={onClose}
+            data-testid="modal-overlay"
         >
             {/* Modal Content */}
             <div 
